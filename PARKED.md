@@ -30,8 +30,8 @@ Bring dewmark out of `deweydex/dewlab` (where it lives as the folder
 
 ## Where the work stands
 
-1. **Understand (in progress).** Seven readers ran as one workflow. Four
-   finished, and their reports are in `planning/research-2026-09-27/`:
+1. **Understand (done).** Seven readers ran as one workflow. Their
+   reports are in `planning/research-2026-09-27/`:
    - `design-docs.md`: dewmark's written design, with a critique
    - `code.md`: the builder, exam page and workbench, audited and run
      (18/18 tests pass, all five samples build, seven runtime bugs found)
@@ -40,14 +40,17 @@ Bring dewmark out of `deweydex/dewlab` (where it lives as the folder
    - `dewlab-runtime.md`: what dewlab built after PR #181 that dewmark
      should reuse, including an offline Python engine verified in
      Chromium (`probes/engine/`)
+   - `extraction.md`: the move, rehearsed end to end, with the
+     filter-repo callback and the dewlab removal diff in
+     `probes/extraction/`
+   - `local-llm.md`: serving options, the browser side, models, marking
+     evidence, the EU AI Act, and a proposed API contract
+   - `exam-types.md`: a question-type taxonomy for maths, biology and
+     programming, with QTI equivalents and QQI context
 
-   Three did not finish: **extraction** (the mechanics of the move),
-   **local-llm** (serving options, the API contract, EU AI Act) and
-   **exam-types** (maths, biology and programming question types, QTI,
-   QQI). Their prompts are in `planning/research-2026-09-27/understand-workflow.js`.
-   Re-run only those three.
-2. **Design (not started).** Once all seven reports are in, run a design
-   round covering: the repository move; one exam format reconciling
+   The prompts are in `planning/research-2026-09-27/understand-workflow.js`.
+2. **Design (next; Josh asked for it at the 13:15 UTC check-in).** Run a
+   design round covering: the repository move; one exam format reconciling
    dewmark's grammar with the PDP format and dewlab's `question` fence;
    the start flow (identity, settings, loading, Begin); branding keys; a
    type registry for maths and biology; the local-LLM contract. Then take
