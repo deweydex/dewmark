@@ -49,7 +49,8 @@ Bring dewmark out of `deweydex/dewlab` (where it lives as the folder
      programming, with QTI equivalents and QQI context
 
    The prompts are in `planning/research-2026-09-27/understand-workflow.js`.
-2. **Design (next; Josh asked for it at the 13:15 UTC check-in).** Run a
+2. **Design (running since 13:05 UTC; script in
+   `planning/research-2026-09-27/design-round-workflow.js`).** A
    design round covering: the repository move; one exam format reconciling
    dewmark's grammar with the PDP format and dewlab's `question` fence;
    the start flow (identity, settings, loading, Begin); branding keys; a
