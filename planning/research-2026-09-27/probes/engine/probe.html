@@ -1,0 +1,86 @@
+<!doctype html><meta charset="utf-8"><title>probe</title>
+<script src="http://127.0.0.1:8799/pyodide/pyodide.js"></script>
+<script>
+const R = window.RESULTS = {};
+R.protocol = location.protocol;
+R.crossOriginIsolated = self.crossOriginIsolated;
+R.SAB = typeof SharedArrayBuffer;
+R.JSPI = typeof WebAssembly.Suspending;
+R.ua = navigator.userAgent;
+R.swAvailable = "serviceWorker" in navigator;
+function moduleWorkerTest(){
+  return new Promise(res => {
+    try {
+      const w = new Worker("w.js", {type:"module"});
+      w.onmessage = e => res("ok:"+e.data);
+      w.onerror = e => res("error-event");
+      setTimeout(()=>res("timeout"), 3000);
+    } catch(e){ res("throw:"+e.name+":"+e.message); }
+  });
+}
+function blobWorkerTest(){
+  const src = `
+    importScripts("http://127.0.0.1:8799/pyodide/pyodide.js");
+    let py;
+    self.onmessage = async (e) => {
+      if (e.data === "boot") { const t=Date.now(); py = await loadPyodide({indexURL:"http://127.0.0.1:8799/pyodide/"}); postMessage("booted:"+(Date.now()-t)+"ms:"+py.runPython("1+1")); }
+      if (e.data === "loop") { postMessage("looping"); py.runPython("while True: pass"); postMessage("loop-ended"); }
+    };`;
+  return new Promise(res => {
+    let w;
+    try { w = new Worker(URL.createObjectURL(new Blob([src], {type:"text/javascript"}))); }
+    catch(e){ return res({create:"throw:"+e.message}); }
+    const out = {create:"ok"};
+    w.onerror = e => { out.err = String(e.message); res(out); };
+    w.onmessage = async e => {
+      if (String(e.data).startsWith("booted")) { out.boot = e.data; w.postMessage("loop"); }
+      else if (e.data === "looping") {
+        setTimeout(async () => {
+          const t = Date.now();
+          w.terminate();  // Stop without SharedArrayBuffer
+          out.terminatedAfterLoop = true;
+          // reboot a fresh worker to measure warm-cache restart cost
+          const w2 = new Worker(URL.createObjectURL(new Blob([src], {type:"text/javascript"})));
+          w2.onmessage = e2 => { out.restart = e2.data + " (wall " + (Date.now()-t) + "ms)"; res(out); };
+          w2.postMessage("boot");
+        }, 1000);
+      }
+    };
+    w.postMessage("boot");
+  });
+}
+async function jspiInputTest(py){
+  // input() that awaits a JS promise (an on-page text box, simulated) via JSPI run_sync
+  window.askStudent = (prompt) => new Promise(r => setTimeout(() => r("Ada"), 300));
+  try {
+    await py.runPythonAsync(`
+import builtins, js
+from pyodide.ffi import run_sync
+def _input(prompt=""):
+    print(prompt, end="")
+    return run_sync(js.askStudent(prompt))
+builtins.input = _input
+`);
+    const out = await py.runPythonAsync(`
+name = input("Name? ")
+f"Hello {name}"`);
+    return "ok:" + out;
+  } catch(e) { return "fail:" + String(e.message).slice(-300); }
+}
+async function settraceCost(py){
+  const code = "s=0\nfor i in range(2_000_000):\n    s+=i\n";
+  let t=performance.now(); await py.runPythonAsync(code); const plain=performance.now()-t;
+  await py.runPythonAsync("import sys, time\ndef _tr(f,e,a):\n    return _tr\nsys.settrace(_tr)");
+  t=performance.now(); await py.runPythonAsync(code); const traced=performance.now()-t;
+  await py.runPythonAsync("import sys\nsys.settrace(None)");
+  return {plainMs: Math.round(plain), tracedMs: Math.round(traced)};
+}
+window.addEventListener("load", async () => {
+  R.moduleWorker = await moduleWorkerTest();
+  R.blobWorker = await Promise.race([blobWorkerTest(), new Promise(r=>setTimeout(()=>r("blob-timeout"),60000))]);
+  const py = await loadPyodide({indexURL:"http://127.0.0.1:8799/pyodide/"});
+  R.jspiInput = await jspiInputTest(py);
+  R.settrace = await settraceCost(py);
+  R.done = true;
+});
+</script>
