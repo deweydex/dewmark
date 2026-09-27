@@ -1,0 +1,51 @@
+<!doctype html><meta charset="utf-8"><title>assistant probe</title>
+<script>
+// Inject a CSP before anything else, built from the saved assistant address (here: from the URL hash).
+const allowed = decodeURIComponent(location.hash.slice(1) || "");
+if (allowed) {
+  const m = document.createElement("meta");
+  m.httpEquiv = "Content-Security-Policy";
+  m.content = "default-src 'self' 'unsafe-inline'; connect-src " + allowed;
+  document.head.appendChild(m);
+}
+window.RESULTS = {origin: location.origin, csp: allowed || "(none)", steps: []};
+const log = (k, v) => window.RESULTS.steps.push([k, v]);
+const B = "http://127.0.0.1:11434";
+async function tryFetch(label, url, opts) {
+  const t0 = performance.now();
+  try { const r = await fetch(url, opts); let body = "";
+        try { body = r.type === "opaque" ? "(opaque)" : (await r.text()).slice(0, 120); } catch (e) {}
+        log(label, {ok: true, type: r.type, status: r.status, body, ms: Math.round(performance.now() - t0)}); return r; }
+  catch (e) { log(label, {ok: false, error: e.name + ": " + e.message, ms: Math.round(performance.now() - t0)}); }
+}
+document.addEventListener("securitypolicyviolation", e => log("csp-violation", e.blockedURI + " (" + e.violatedDirective + ")"));
+(async () => {
+  await tryFetch("cors GET /v1/models", B + "/v1/models");
+  await tryFetch("no-cors GET /api/version (server up)", B + "/api/version", {mode: "no-cors"});
+  await tryFetch("no-cors GET nothing listening :11999", "http://127.0.0.1:11999/", {mode: "no-cors"});
+  await tryFetch("cors GET other port :8080", "http://127.0.0.1:8080/v1/models");
+  // streaming + abort
+  const ctl = new AbortController();
+  const t0 = performance.now();
+  try {
+    const r = await fetch(B + "/v1/chat/completions", {method: "POST", signal: ctl.signal,
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({model: "qwen3:0.6b", stream: true, max_tokens: 300, reasoning_effort: "none",
+        messages: [{role: "user", content: "Count slowly from 1 to 100, one number per line."}]})});
+    const rd = r.body.getReader(); let chunks = 0, first = null;
+    while (true) { const {value, done} = await rd.read(); if (done) break; chunks++;
+      if (!first) first = new TextDecoder().decode(value).slice(0, 160);
+      if (chunks === 5) { ctl.abort(); } }
+    log("stream", {chunks});
+  } catch (e) { log("stream+abort", {error: e.name, ms: Math.round(performance.now() - t0)}); }
+  // timeout
+  try { await fetch(B + "/v1/chat/completions", {method: "POST", signal: AbortSignal.timeout(300),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({model: "qwen3:0.6b", max_tokens: 200, messages: [{role: "user", content: "Write a poem."}]})});
+      log("timeout", "no timeout?"); }
+  catch (e) { log("timeout 300ms", e.name + ": " + e.message); }
+  await tryFetch("wrong model", B + "/v1/chat/completions", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({model: "qwen3.8:27b", messages: [{role: "user", content: "hi"}]})});
+  window.RESULTS.done = true; const pre = document.createElement("pre"); pre.id = "out"; pre.textContent = JSON.stringify(window.RESULTS, null, 1); document.body.appendChild(pre);
+})();
+</script>
