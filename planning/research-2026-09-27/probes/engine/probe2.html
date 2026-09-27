@@ -1,0 +1,49 @@
+<!doctype html><meta charset="utf-8"><title>probe2</title>
+<script>
+const R = window.RESULTS = {protocol: location.protocol, crossOriginIsolated: self.crossOriginIsolated, SAB: typeof SharedArrayBuffer};
+const BASE = "http://127.0.0.1:8799/pyodide/";
+const src = `
+  importScripts("${BASE}pyodide.js");
+  let py; const waiting = new Map(); let n = 0;
+  self.askPage = (prompt) => new Promise(res => { const id = ++n; waiting.set(id, res); postMessage({type:"input-request", id, prompt}); });
+  self.onmessage = async (e) => {
+    const m = e.data;
+    if (m.type === "boot") {
+      py = await loadPyodide({indexURL: "${BASE}"});
+      await py.runPythonAsync(\`
+import builtins, js
+from pyodide.ffi import run_sync
+def _input(prompt=""):
+    return run_sync(js.askPage(str(prompt)))
+builtins.input = _input\`);
+      if (m.sab) py.setInterruptBuffer(new Int32Array(m.sab));
+      postMessage({type:"booted"});
+    } else if (m.type === "input-reply") { waiting.get(m.id)(m.value); waiting.delete(m.id); }
+    else if (m.type === "run") {
+      try { const r = await py.runPythonAsync(m.code); postMessage({type:"result", value: String(r)}); }
+      catch (err) { postMessage({type:"result", value: "ERR " + String(err.message).split("\\n").filter(Boolean).slice(-1)[0]}); }
+    }
+  };`;
+function mk(){ return new Worker(URL.createObjectURL(new Blob([src], {type:"text/javascript"}))); }
+function once(w, type){ return new Promise(r => { const h = e => { if (e.data.type === type) { w.removeEventListener("message", h); r(e.data); } }; w.addEventListener("message", h); }); }
+window.addEventListener("load", async () => {
+  const sab = self.crossOriginIsolated ? new SharedArrayBuffer(4) : null;
+  const w = mk();
+  w.addEventListener("message", e => { if (e.data.type === "input-request") setTimeout(() => w.postMessage({type:"input-reply", id: e.data.id, value: "7"}), 200); });
+  w.postMessage({type:"boot", sab}); await once(w, "booted");
+  w.postMessage({type:"run", code: "a = int(input('first? '))\nb = int(input('second? '))\na * b"});
+  R.workerJspiInput = (await once(w, "result")).value;
+  if (sab) {
+    w.postMessage({type:"run", code: "while True: pass"});
+    setTimeout(() => { new Int32Array(sab)[0] = 2; }, 800);
+    R.interruptBufferStop = (await once(w, "result")).value;
+    w.postMessage({type:"run", code: "'alive after interrupt'"});
+    R.stateAfterInterrupt = (await once(w, "result")).value;
+  } else {
+    w.postMessage({type:"run", code: "while True: pass"});
+    await new Promise(r => setTimeout(r, 800));
+    w.terminate(); R.terminateStop = "terminated";
+  }
+  R.done = true;
+});
+</script>

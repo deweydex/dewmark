@@ -1,0 +1,474 @@
+{
+  "format_version": 1,
+  "exam_code": "sample-essays-2027",
+  "exam_version": "2027.01.20.1",
+  "title": "Sample Essay Paper - Reading and Writing",
+  "total_marks": 100,
+  "sections": [
+    {
+      "name": "A",
+      "choose": null,
+      "questions": [
+        {
+          "name": "a1",
+          "marks": 5,
+          "topic": "comprehension",
+          "prose": "### Question A2 \u2014 How the argument is built",
+          "answers": [
+            {
+              "settings": {
+                "name": "a1.position",
+                "type": "short-written-answer",
+                "marks": 5,
+                "prompt": "In one or two sentences of your own, state the conclusion the writer reaches. Take care: it is not \"recordings are bad\".\n",
+                "model_answer": "The writer concludes that recording has real costs as well as real\nbenefits, so each college must weigh the two losses and decide for\nitself. The writer does not come down on either side."
+              },
+              "marking": {
+                "method": "marks-out-of-a-total",
+                "guidance": [
+                  "3 marks for seeing that the writer takes neither side",
+                  "2 marks for the idea of weighing two kinds of loss",
+                  "a summary of only the benefits, or only the costs, earns at most 2"
+                ],
+                "marks": 5
+              }
+            }
+          ]
+        },
+        {
+          "name": "a2",
+          "marks": 10,
+          "topic": "analysis",
+          "prose": "### Question A3 \u2014 Your own view, briefly",
+          "answers": [
+            {
+              "settings": {
+                "name": "a2.technique",
+                "type": "long-written-answer",
+                "marks": 10,
+                "prompt": "Identify two techniques the writer uses to persuade, and quote the words where each appears. For each technique, explain what it does to the reader.\n",
+                "model_answer": "The writer uses the rule of three: \"the room, the routine, and the\ncompany\" and the October/May contrast pile up concrete details, so\nthe loss feels real rather than claimed. The writer also uses a\nbalanced turn: \"not between convenience and tradition... between\ntwo different kinds of loss\" reframes the whole question, which\nmakes the writer sound fair and makes the reader trust the\nconclusion. Other defensible answers include the short blunt\nsentence \"A recording preserves the words of a class but not the\nclass\", which lands the central distinction."
+              },
+              "marking": {
+                "method": "marks-out-of-a-total",
+                "guidance": [
+                  "5 marks per technique - 2 for naming it, 1 for the quotation, 2 for the effect on the reader",
+                  "any two defensible techniques earn the marks; the model lists three the passage supports"
+                ],
+                "marks": 10
+              }
+            }
+          ]
+        },
+        {
+          "name": "a3",
+          "marks": 15,
+          "topic": "response",
+          "prose": "",
+          "answers": [
+            {
+              "settings": {
+                "name": "a3.response",
+                "type": "long-written-answer",
+                "marks": 15,
+                "prompt": "In about 150 words, agree or disagree with the writer's claim that \"the students who stop coming are often the ones who most need the room\". Give one reason from your own experience or observation, and one piece of evidence the writer would need to show to convince you fully.\n",
+                "model_answer": "A strong answer takes a clear side in the first sentence, supports\nit with one specific observed case, and then names checkable\nevidence, such as attendance figures compared with results for the\nsame students. The side taken does not matter; the marks follow\nthe reasoning."
+              },
+              "marking": {
+                "method": "marks-out-of-a-total",
+                "guidance": [
+                  "5 marks for a clear stated position",
+                  "5 marks for one specific reason from experience or observation",
+                  "5 marks for naming evidence that could actually be gathered"
+                ],
+                "marks": 15
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "B",
+      "choose": 1,
+      "questions": [
+        {
+          "name": "b1",
+          "marks": 40,
+          "topic": "essay",
+          "prose": "\"Convenience is the quietest way a thing gets worse.\" Discuss, with\nexamples from technology, education, or daily life. ### Title B2",
+          "answers": [
+            {
+              "settings": {
+                "name": "b1.essay",
+                "type": "essay",
+                "marks": 40,
+                "guide_words": 800,
+                "planning_box": true
+              },
+              "marking": {
+                "method": "a-criteria-grid",
+                "criteria": [
+                  {
+                    "name": "Argument and structure",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "one position, sustained; each paragraph advances it"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "a clear position, developed unevenly"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "drifts between positions or retells the title"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "no discernible argument"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Evidence and examples",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "specific named cases, examined rather than cited"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "real examples, summarised rather than used"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "generalities standing in for examples"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "little or no evidence"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Clarity and control of language",
+                    "marks": 10,
+                    "bands": [
+                      {
+                        "low": 8,
+                        "high": 10,
+                        "text": "precise, controlled prose throughout"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "clear overall, with lapses"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "meaning is often unclear"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "b2",
+          "marks": 40,
+          "topic": "essay",
+          "prose": "\"Nobody remembers an easy year.\" Write about difficulty: when it\nteaches, when it merely wounds, and how a person can tell the\ndifference. ### Title B3",
+          "answers": [
+            {
+              "settings": {
+                "name": "b2.essay",
+                "type": "essay",
+                "marks": 40,
+                "guide_words": 800,
+                "planning_box": true
+              },
+              "marking": {
+                "method": "a-criteria-grid",
+                "criteria": [
+                  {
+                    "name": "Argument and structure",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "one position, sustained; each paragraph advances it"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "a clear position, developed unevenly"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "drifts between positions or retells the title"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "no discernible argument"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Evidence and examples",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "specific named cases, examined rather than cited"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "real examples, summarised rather than used"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "generalities standing in for examples"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "little or no evidence"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Clarity and control of language",
+                    "marks": 10,
+                    "bands": [
+                      {
+                        "low": 8,
+                        "high": 10,
+                        "text": "precise, controlled prose throughout"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "clear overall, with lapses"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "meaning is often unclear"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "b3",
+          "marks": 40,
+          "topic": "essay",
+          "prose": "Some places teach us more than any class does. Write about one such\nplace: what it looks like, what happens there, and what it taught\nyou.",
+          "answers": [
+            {
+              "settings": {
+                "name": "b3.essay",
+                "type": "essay",
+                "marks": 40,
+                "guide_words": 800,
+                "planning_box": true
+              },
+              "marking": {
+                "method": "a-criteria-grid",
+                "criteria": [
+                  {
+                    "name": "Argument and structure",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "one place, one lesson, built steadily to the close"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "a clear subject, developed unevenly"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "a list of details without a direction"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "no discernible shape"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Evidence and examples",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "the place is rendered in specific observed detail"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "real detail, thinly spread"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "generalities standing in for detail"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "little concrete detail"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Clarity and control of language",
+                    "marks": 10,
+                    "bands": [
+                      {
+                        "low": 8,
+                        "high": 10,
+                        "text": "precise, controlled prose throughout"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "clear overall, with lapses"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "meaning is often unclear"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "C",
+      "choose": null,
+      "questions": [
+        {
+          "name": "c1",
+          "marks": 30,
+          "topic": "formal writing",
+          "prose": "The heating in your college's library has been broken for three\nweeks. Students are studying in coats, and evening classes have\nmoved to the canteen. Write a formal letter to the college's\nfacilities manager. Your letter must say what is wrong and for how\nlong, describe the effect on students, ask for a specific action by\na specific date, and stay polite throughout.",
+          "answers": [
+            {
+              "settings": {
+                "name": "c1.letter",
+                "type": "essay",
+                "marks": 30,
+                "guide_words": 300,
+                "planning_box": false
+              },
+              "marking": {
+                "method": "a-criteria-grid",
+                "criteria": [
+                  {
+                    "name": "Content",
+                    "marks": 15,
+                    "bands": [
+                      {
+                        "low": 13,
+                        "high": 15,
+                        "text": "the problem, its duration, its effects, and a dated, specific request are all present"
+                      },
+                      {
+                        "low": 8,
+                        "high": 12,
+                        "text": "most of the required content, or a vague request"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "the complaint without the request, or the reverse"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "little of the required content"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Form and register",
+                    "marks": 10,
+                    "bands": [
+                      {
+                        "low": 8,
+                        "high": 10,
+                        "text": "a proper formal letter, courteous and firm"
+                      },
+                      {
+                        "low": 4,
+                        "high": 7,
+                        "text": "mostly formal, with lapses into chat or into anger"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "not recognisable as a formal letter"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Accuracy",
+                    "marks": 5,
+                    "bands": [
+                      {
+                        "low": 4,
+                        "high": 5,
+                        "text": "spelling and punctuation support the register"
+                      },
+                      {
+                        "low": 0,
+                        "high": 3,
+                        "text": "errors that a facilities manager would notice"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

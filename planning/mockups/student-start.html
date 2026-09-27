@@ -1,0 +1,1702 @@
+<!doctype html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'">
+<title>Mockup · 5N2927 exam start</title>
+<style>
+/* ------------------------------------------------------------------
+   dewmark student start flow: MOCKUP.
+   Self-contained: system fonts only, no network requests (see the CSP
+   above). Loading is faked with timers. Nothing is stored or sent.
+   Palette follows dewlab's tokens (navy #1b2a4a, rust #b8541a, paper
+   #fdfcfa), as dewmark's APPEARANCE_AND_READABILITY.md asks.
+   ------------------------------------------------------------------ */
+:root{
+  color-scheme: light;
+  --serif: Charter, "Bitstream Charter", "Iowan Old Style", "Sitka Text", Cambria, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --lexend: Lexend, "Lexend Deca", Verdana, "DejaVu Sans", sans-serif;
+  --dyslexic: OpenDyslexic, "Comic Sans MS", "Comic Neue", "Chalkboard SE", "Segoe Print", sans-serif;
+
+  --font-read: var(--serif);
+  --font-ui: var(--sans);
+  --size: 18px;
+  --lh: 1.6;
+  --ls: 0em;
+  --ws: 0em;
+  --measure: 68ch;
+  --code-size: 16px;
+
+  /* light palette */
+  --ground: #eceff3;
+  --sheet: #fdfcfa;
+  --fg: #1a1d24;
+  --muted: #535d6c;
+  --rule: #d9dde3;
+  --head: #1b2a4a;
+  --ink: #1b2a4a;
+  --ink-fg: #ffffff;
+  --focus: #b8541a;
+  --link: #9a4312;
+  --field: #ffffff;
+  --field-border: #737d8d;
+  --answer-bg: #f2f4f7;
+  --answer-edge: #a3adbd;
+  --answer-done: #1b2a4a;
+  --ok: #1d6a3c;
+  --ok-bg: #e7f3eb;
+  --warn: #6f4700;
+  --warn-bg: #fff2d3;
+  --bad: #9b2226;
+  --bad-bg: #fdeceb;
+  --practice: #1d6a3c;
+  --practice-bg: #eaf5ee;
+  --code-bg: #f6f4f0;
+  --code-fg: #1a1a1a;
+  --code-border: #d6d0c5;
+  --out-bg: #fbfaf8;
+  --echo-bg: #fbe8a6;
+  --ruler: rgba(255, 206, 60, .22);
+  --ruler-edge: rgba(160, 110, 0, .55);
+  --ribbon-bg: #fff0bf;
+  --ribbon-fg: #3d2c00;
+  --shadow: 0 1px 2px rgba(27,42,74,.08), 0 8px 28px rgba(27,42,74,.08);
+  --strong: #1b2a4a;
+  --scen-bg: rgba(255,255,255,.4);
+  --bw: 1px;
+  --radius: 10px;
+}
+
+/* dark palette: used for "Dark", and for "Match my computer" on a dark system */
+@media (prefers-color-scheme: dark){
+  :root:not([data-scheme]):not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#0e1116; --sheet:#171c24; --fg:#e7e4de; --muted:#a4adbb; --rule:#2c3442;
+    --head:#c5d2ec; --ink:#2b416e; --ink-fg:#ffffff; --focus:#f0a060; --link:#f0a060;
+    --field:#10141a; --field-border:#8a94a5; --answer-bg:#1d232d; --answer-edge:#586377; --answer-done:#a9bde3;
+    --ok:#8fd9ab; --ok-bg:#15261c; --warn:#f3cb6d; --warn-bg:#2c2410; --bad:#f4a3a5; --bad-bg:#2c1a1c;
+    --practice:#8fd9ab; --practice-bg:#12201a; --code-bg:#11151c; --code-fg:#e7e4de; --code-border:#2f3743;
+    --out-bg:#141920; --echo-bg:#4a3a12; --ruler:rgba(255,206,60,.13); --ruler-edge:rgba(255,206,60,.45);
+    --ribbon-bg:#3a300f; --ribbon-fg:#fbe7a6; --strong:#c5d2ec; --scen-bg:rgba(0,0,0,.25);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-scheme="dark"], :root[data-theme="dark"]:not([data-scheme]){
+  color-scheme: dark;
+  --ground:#0e1116; --sheet:#171c24; --fg:#e7e4de; --muted:#a4adbb; --rule:#2c3442;
+  --head:#c5d2ec; --ink:#2b416e; --ink-fg:#ffffff; --focus:#f0a060; --link:#f0a060;
+  --field:#10141a; --field-border:#8a94a5; --answer-bg:#1d232d; --answer-edge:#586377; --answer-done:#a9bde3;
+  --ok:#8fd9ab; --ok-bg:#15261c; --warn:#f3cb6d; --warn-bg:#2c2410; --bad:#f4a3a5; --bad-bg:#2c1a1c;
+  --practice:#8fd9ab; --practice-bg:#12201a; --code-bg:#11151c; --code-fg:#e7e4de; --code-border:#2f3743;
+  --out-bg:#141920; --echo-bg:#4a3a12; --ruler:rgba(255,206,60,.13); --ruler-edge:rgba(255,206,60,.45);
+  --ribbon-bg:#3a300f; --ribbon-fg:#fbe7a6; --strong:#c5d2ec; --scen-bg:rgba(0,0,0,.25);
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px rgba(0,0,0,.35);
+}
+:root[data-scheme="cream"]{
+  --ground:#ece3cf; --sheet:#fbf5e6; --fg:#2a2418; --muted:#5b5141; --rule:#ddd0b5;
+  --field:#fffaf0; --answer-bg:#f3ead6; --code-bg:#f3ead6; --out-bg:#f8f1e1; --code-border:#d8c9aa;
+}
+:root[data-scheme="blue"]{
+  --ground:#d5e0ec; --sheet:#eaf1f8; --fg:#13202e; --muted:#425066; --rule:#c3d1e1;
+  --field:#f7fafd; --answer-bg:#dce7f2; --code-bg:#e0e9f3; --out-bg:#e6eef7; --code-border:#bccbdd;
+}
+:root[data-scheme="contrast"]{
+  --ground:#ffffff; --sheet:#ffffff; --fg:#000000; --muted:#1f1f1f; --rule:#000000;
+  --head:#000000; --ink:#000000; --focus:#0030c0; --link:#0030c0;
+  --field:#ffffff; --field-border:#000000; --answer-bg:#ffffff; --answer-edge:#000000; --answer-done:#000000;
+  --ok:#004d1f; --ok-bg:#ffffff; --warn:#4d3000; --warn-bg:#ffffff; --bad:#8a0000; --bad-bg:#ffffff;
+  --practice:#004d1f; --practice-bg:#ffffff; --code-bg:#ffffff; --code-fg:#000000; --code-border:#000000;
+  --out-bg:#ffffff; --shadow:none; --bw:2px; --strong:#000000;
+}
+
+:root[data-font="sans"]{ --font-read: var(--sans); }
+:root[data-font="lexend"]{ --font-read: var(--lexend); --font-ui: var(--lexend); }
+:root[data-font="dyslexic"]{ --font-read: var(--dyslexic); --font-ui: var(--dyslexic); }
+:root[data-spacing="wide"]{ --ls:.04em; --ws:.12em; }
+:root[data-spacing="wider"]{ --ls:.08em; --ws:.24em; }
+
+*,*::before,*::after{ box-sizing:border-box; }
+[hidden]{ display:none !important; }
+main:focus{ outline:none; }
+html{ font-size: var(--size); -webkit-text-size-adjust:100%; }
+body{
+  margin:0; background:var(--ground); color:var(--fg);
+  font-family:var(--font-ui); line-height:var(--lh);
+  letter-spacing:var(--ls); word-spacing:var(--ws);
+  overflow-wrap:break-word;
+}
+:root[data-motion="reduce"] *{ transition:none !important; animation:none !important; }
+@media (prefers-reduced-motion: reduce){ :root:not([data-motion="normal"]) *{ transition:none !important; animation:none !important; } }
+
+h1,h2,h3{ text-wrap:balance; line-height:1.25; margin:0; color:var(--head); }
+p{ margin:0; }
+button,input,select,textarea{ font:inherit; letter-spacing:inherit; word-spacing:inherit; color:inherit; }
+:focus-visible{ outline:3px solid var(--focus); outline-offset:3px; border-radius:4px; }
+.vh{ position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
+.skip{ position:absolute; left:16px; top:-100px; background:var(--sheet); color:var(--fg); padding:.5rem .8rem; border-radius:6px; z-index:100; box-shadow:var(--shadow); }
+.skip:focus{ top:12px; }
+a{ color:var(--link); }
+
+/* ---------- mockup ribbon ---------- */
+.ribbon{
+  background:var(--ribbon-bg); color:var(--ribbon-fg);
+  background-image:repeating-linear-gradient(135deg, transparent 0 14px, rgba(0,0,0,.035) 14px 28px);
+  border-bottom:1px solid rgba(0,0,0,.12);
+  padding:.5rem 16px; font-size:.8rem; line-height:1.45;
+}
+.ribbon-in{ max-width:78rem; margin:0 auto; display:flex; flex-wrap:wrap; gap:.4rem 1rem; align-items:center; justify-content:space-between; }
+.ribbon strong{ letter-spacing:.08em; text-transform:uppercase; font-size:.72rem; border:1.5px solid currentColor; border-radius:4px; padding:.05rem .4rem; margin-right:.5rem; }
+.scen > summary{ cursor:pointer; font-weight:600; list-style:none; display:inline-flex; gap:.35rem; align-items:center; padding:.2rem .55rem; border:1px solid currentColor; border-radius:6px; }
+.scen > summary::-webkit-details-marker{ display:none; }
+.scen[open] > summary{ background:rgba(0,0,0,.06); }
+.scen-body{ margin-top:.6rem; display:grid; gap:.6rem 1.4rem; grid-template-columns:repeat(auto-fit, minmax(min(13rem,100%),1fr)); padding:.7rem .8rem; border:1px solid rgba(0,0,0,.15); border-radius:8px; background:var(--scen-bg); }
+.scen fieldset{ border:0; margin:0; padding:0; display:grid; gap:.2rem; }
+.scen legend{ font-weight:600; padding:0; margin-bottom:.2rem; }
+.scen label{ display:flex; gap:.4rem; align-items:flex-start; }
+.scen input{ margin-top:.3em; }
+.scen .jump{ display:flex; flex-wrap:wrap; gap:.3rem; }
+.scen .jump button, .scen .mini{ font-size:.78rem; padding:.2rem .5rem; border:1px solid currentColor; background:transparent; border-radius:5px; cursor:pointer; }
+.scen small{ opacity:.85; }
+.mock-tag{ position:fixed; right:10px; bottom:10px; opacity:.9; z-index:40; font:600 .66rem/1 var(--sans); letter-spacing:.1em; text-transform:uppercase; padding:.35rem .5rem; border-radius:4px; background:var(--ribbon-bg); color:var(--ribbon-fg); border:1px solid rgba(0,0,0,.2); pointer-events:none; }
+
+/* ---------- layout for sheet screens ---------- */
+.stage{ padding:clamp(16px, 4vw, 40px) 16px 64px; }
+.sheet{
+  max-width:44rem; margin:0 auto; background:var(--sheet);
+  border:var(--bw) solid var(--rule); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.sheet.wide{ max-width:72rem; }
+.sheet-body{ padding:clamp(18px, 4vw, 40px); display:grid; gap:1.5rem; }
+
+/* kind band */
+.band{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  padding:.55rem clamp(18px, 4vw, 40px);
+  font:700 .78rem/1.3 var(--sans); letter-spacing:.22em; text-transform:uppercase;
+  background:var(--ink); color:var(--ink-fg);
+}
+.band .band-sub{ letter-spacing:.04em; text-transform:none; font-weight:500; opacity:.92; }
+:root[data-kind="practice"] .band{
+  background:var(--practice-bg); color:var(--practice);
+  background-image:repeating-linear-gradient(135deg, transparent 0 9px, color-mix(in srgb, var(--practice) 14%, transparent) 9px 18px);
+  border-bottom:2px solid var(--practice);
+}
+.badge{
+  display:inline-flex; align-items:center; gap:.35rem; font:700 .66rem/1 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+  padding:.38rem .55rem; border-radius:4px; background:var(--ink); color:var(--ink-fg); white-space:nowrap;
+}
+:root[data-kind="practice"] .badge{ background:var(--practice-bg); color:var(--practice); box-shadow:inset 0 0 0 1.5px var(--practice); }
+
+/* cover identity */
+.id-top{ display:flex; flex-wrap:wrap; gap:1rem; align-items:flex-start; justify-content:space-between; }
+.id-brand{ display:flex; gap:1rem; align-items:center; min-width:0; }
+.logo{
+  flex:none; width:3.1rem; height:3.1rem; border-radius:8px; border:1.5px dashed var(--muted);
+  display:grid; place-items:center; font:600 .55rem/1 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+  background:var(--sheet);
+}
+.logo.sm{ width:2.2rem; height:2.2rem; font-size:.45rem; }
+.inst{ font:600 .72rem/1.35 var(--font-ui); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.college{ font-family:var(--font-read); font-size:1.5rem; font-weight:700; color:var(--head); line-height:1.2; }
+.aa{
+  flex:none; display:inline-flex; gap:.4rem; align-items:center; background:transparent; border:var(--bw) solid var(--rule);
+  border-radius:999px; padding:.35rem .75rem; cursor:pointer; font-size:.85rem; color:var(--fg);
+}
+.aa b{ font-family:var(--serif); font-size:1.05rem; }
+.aa:hover{ border-color:var(--muted); }
+hr.rule{ border:0; border-top:var(--bw) solid var(--rule); margin:0; }
+.module{ display:grid; gap:.35rem; }
+.module-name{ font-family:var(--font-read); font-size:1.35rem; font-weight:600; color:var(--fg); line-height:1.25; }
+.code-chip{ font:600 .78rem/1 var(--mono); letter-spacing:.06em; padding:.25rem .45rem; border-radius:4px; border:var(--bw) solid var(--rule); color:var(--muted); vertical-align:.2em; white-space:nowrap; }
+.paper-title{ font-family:var(--font-read); font-size:clamp(1.55rem, 1.1rem + 2vw, 2.1rem); font-weight:700; }
+.facts{ display:flex; flex-wrap:wrap; gap:.5rem 1.6rem; margin:0; padding:0; }
+.facts div{ display:grid; }
+.facts dt{ font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.facts dd{ margin:0; font-weight:600; font-variant-numeric:tabular-nums; }
+.practice-note{ display:none; border-left:4px solid var(--practice); background:var(--practice-bg); color:var(--fg); padding:.6rem .9rem; border-radius:0 6px 6px 0; font-size:.9rem; }
+:root[data-kind="practice"] .practice-note{ display:block; }
+
+/* stepper */
+.steps{ list-style:none; margin:0; padding:0; display:flex; gap:.4rem; flex-wrap:wrap; counter-reset:s; }
+.steps li{ counter-increment:s; display:flex; align-items:center; gap:.45rem; font-size:.82rem; color:var(--muted); padding:.25rem .7rem .25rem .3rem; border-radius:999px; border:var(--bw) solid var(--rule); }
+.steps li::before{ content:counter(s); display:grid; place-items:center; width:1.45rem; height:1.45rem; border-radius:50%; border:1.5px solid currentColor; font-weight:700; font-size:.75rem; font-family:var(--sans); }
+.steps li[aria-current="step"]{ color:var(--fg); border-color:var(--strong); font-weight:600; }
+.steps li[aria-current="step"]::before{ background:var(--ink); color:var(--ink-fg); border-color:var(--ink); }
+.steps li.done::before{ content:"✓"; }
+.steps li.done{ color:var(--fg); }
+
+/* forms */
+.stack{ display:grid; gap:1.1rem; }
+.field{ display:grid; gap:.3rem; }
+.field label, .lbl{ font-weight:600; }
+.hint{ font-size:.85rem; color:var(--muted); }
+input[type=text], select, input[type=number]{
+  width:100%; max-width:26rem; padding:.6rem .75rem; border-radius:7px; border:var(--bw) solid var(--field-border); background:var(--field);
+  min-height:2.8rem;
+}
+input[type=text][aria-invalid="true"]{ border-color:var(--bad); box-shadow:0 0 0 1px var(--bad); }
+.err{ color:var(--bad); font-weight:600; font-size:.9rem; display:flex; gap:.4rem; align-items:flex-start; }
+.warnmsg{ color:var(--warn); background:var(--warn-bg); padding:.55rem .75rem; border-radius:7px; font-size:.9rem; max-width:34rem; }
+.actions{ display:flex; flex-wrap:wrap; gap:.7rem; align-items:center; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.45rem; cursor:pointer;
+  min-height:2.75rem; padding:.55rem 1.15rem; border-radius:8px; font-weight:600;
+  border:var(--bw) solid var(--field-border); background:var(--sheet); color:var(--fg);
+}
+.btn:hover{ border-color:var(--fg); }
+.btn.primary{ background:var(--ink); color:var(--ink-fg); border-color:var(--ink); }
+.btn.primary:hover{ filter:brightness(1.12); }
+.btn.big{ min-height:3.2rem; padding:.7rem 2rem; font-size:1.08rem; }
+.btn.quiet{ border-color:transparent; background:transparent; text-decoration:underline; text-underline-offset:.2em; color:var(--link); padding-inline:.4rem; }
+.btn[disabled]{ opacity:1; cursor:not-allowed; background:var(--answer-bg); color:var(--muted); border-color:var(--rule); }
+.foot{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem 1rem; font-size:.8rem; color:var(--muted); border-top:var(--bw) solid var(--rule); padding-top:1rem; }
+.foot .btn.quiet{ font-size:.8rem; min-height:auto; padding:0; }
+
+/* resume card */
+.card{ border:var(--bw) solid var(--rule); border-radius:var(--radius); padding:1.1rem 1.2rem; display:grid; gap:.8rem; background:var(--sheet); }
+.card.welcome{ border-color:var(--strong); border-width:2px; }
+.card h3{ font-size:1.15rem; }
+.inv-list{ margin:.4rem 0 0; padding:0; list-style:none; display:grid; gap:.35rem; font-size:.82rem; font-variant-numeric:tabular-nums; }
+.inv-list li{ display:flex; flex-wrap:wrap; gap:.3rem .8rem; align-items:center; padding:.35rem .5rem; border:1px solid var(--rule); border-radius:6px; }
+
+/* ---------- settings ---------- */
+.settings-grid{ display:grid; grid-template-columns:minmax(0,1fr); gap:1.6rem; }
+@media (min-width: 900px){ .settings-grid{ grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); align-items:start; } .preview-col{ position:sticky; top:1rem; order:2; } }
+.preview-col{ min-width:0; }
+.set-form{ display:grid; gap:1.4rem; min-width:0; }
+.set-form fieldset{ border:0; padding:0; margin:0; min-width:0; }
+.set-group{ display:grid; gap:1rem; padding-bottom:1.3rem; border-bottom:var(--bw) solid var(--rule); }
+.set-group:last-child{ border-bottom:0; }
+.set-group > h3{ font:700 .74rem/1.2 var(--font-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+.row{ display:grid; gap:.45rem; }
+.row > legend, .row > .lbl{ font-weight:600; padding:0; margin-bottom:.1rem; }
+.seg{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.seg label{ position:relative; }
+.seg input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
+.seg span{
+  display:inline-flex; align-items:center; gap:.4rem; min-height:2.5rem; padding:.4rem .85rem; border-radius:7px;
+  border:var(--bw) solid var(--field-border); background:var(--field); font-size:.9rem; cursor:pointer;
+}
+.seg input:checked + span{ background:var(--ink); color:var(--ink-fg); border-color:var(--ink); font-weight:600; }
+.seg input:checked + span::before{ content:"✓"; font-size:.8em; }
+.seg input:focus-visible + span{ outline:3px solid var(--focus); outline-offset:2px; }
+.fonts{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(8.5rem,100%), 1fr)); gap:.5rem; }
+.fonts span{ display:grid; justify-items:start; gap:.1rem; padding:.55rem .75rem; min-height:4rem; }
+.fonts span i{ font-style:normal; font-size:1.35rem; line-height:1.1; }
+.fonts input:checked + span::before{ content:none; }
+.fonts input:checked + span i::after{ content:" ✓"; font-size:.7em; }
+.swatches span .sw{ width:1.1rem; height:1.1rem; border-radius:50%; border:1px solid rgba(0,0,0,.35); flex:none; }
+.range{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+.range input[type=range]{ flex:1 1 10rem; min-width:0; accent-color:var(--strong); height:2rem; }
+.range output{ min-width:4.2rem; font-variant-numeric:tabular-nums; font-weight:600; }
+.stepbtn{ width:2.4rem; height:2.4rem; border-radius:7px; border:var(--bw) solid var(--field-border); background:var(--field); cursor:pointer; font-weight:700; }
+.toggle{ display:flex; gap:.7rem; align-items:flex-start; cursor:pointer; }
+.toggle input{ width:1.3rem; height:1.3rem; margin:.2rem 0 0; accent-color:var(--strong); flex:none; }
+.toggle .t{ display:grid; }
+.toggle .t small{ color:var(--muted); font-size:.85rem; }
+.set-note{ font-size:.85rem; color:var(--muted); }
+.mock-note{ font-size:.82rem; color:var(--ribbon-fg); background:var(--ribbon-bg); border-radius:6px; padding:.45rem .65rem; }
+.remembered{ font-size:.88rem; color:var(--warn); background:var(--warn-bg); padding:.5rem .75rem; border-radius:7px; }
+
+.preview{
+  border:var(--bw) solid var(--rule); border-radius:var(--radius); overflow:hidden; background:var(--sheet);
+}
+.preview-h{ display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; padding:.5rem .9rem; font:600 .72rem/1.3 var(--font-ui); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); border-bottom:var(--bw) solid var(--rule); }
+.preview-b{ padding:1rem 1.1rem 1.2rem; display:grid; gap:.8rem; }
+
+/* ---------- paper text (shared by preview and paper) ---------- */
+.prose{ font-family:var(--font-read); max-width:var(--measure); }
+.prose p + p{ margin-top:.7em; }
+.prose code, .inline-code{ font-family:var(--mono); font-size:.88em; background:var(--code-bg); border:1px solid var(--code-border); border-radius:4px; padding:.05em .3em; letter-spacing:0; word-spacing:0; }
+.part-h{ font-family:var(--font-read); font-size:1.12rem; color:var(--head); }
+.marks{ font-family:var(--font-ui); font-weight:600; font-size:.85rem; color:var(--muted); white-space:nowrap; }
+.answer{ max-width:var(--measure); display:grid; gap:.3rem; }
+.answer-l{ display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; font-size:.82rem; color:var(--muted); font-weight:600; }
+.answer-l .st{ display:inline-flex; gap:.3rem; align-items:center; }
+.answer textarea, .answer .fake{
+  width:100%; min-height:5.2em; resize:vertical; padding:.65rem .8rem; border-radius:0 7px 7px 0;
+  background:var(--answer-bg); color:var(--fg); border:var(--bw) solid var(--rule); border-left:5px solid var(--answer-edge);
+  font-family:var(--font-read); line-height:var(--lh);
+}
+.answer.filled textarea, .answer.filled .fake{ border-left-color:var(--answer-done); }
+.answer .fake{ min-height:auto; }
+
+/* code cell */
+.cell{ border:var(--bw) solid var(--code-border); border-radius:8px; overflow:hidden; background:var(--code-bg); max-width:min(100%, calc(var(--measure) + 6rem)); }
+.cell[data-code="dark"]{ --code-bg:#11151c; --code-fg:#e7e4de; --code-border:#2f3743; --out-bg:#141920; --muted:#a4adbb; --bad:#f4a3a5; --bad-bg:#2c1a1c; --echo-bg:#4a3a12; --warn:#f3cb6d; --warn-bg:#2c2410; }
+.cell[data-code="light"]{ --code-bg:#f6f4f0; --code-fg:#1a1a1a; --code-border:#d6d0c5; --out-bg:#fbfaf8; --muted:#535d6c; --bad:#9b2226; --bad-bg:#fdeceb; --echo-bg:#fbe8a6; --warn:#6f4700; --warn-bg:#fff2d3; }
+.cell-h{ display:flex; flex-wrap:wrap; gap:.4rem .8rem; align-items:center; justify-content:space-between; padding:.45rem .7rem; border-bottom:1px solid var(--code-border); font-size:.8rem; color:var(--code-fg); }
+.cell-h .lab{ font-weight:700; font-family:var(--sans); letter-spacing:.03em; }
+.cell-h .cst{ color:var(--muted); display:inline-flex; gap:.35rem; align-items:center; }
+.edited{ font-size:.72rem; font-weight:700; letter-spacing:.04em; padding:.15rem .45rem; border-radius:4px; background:var(--warn-bg); color:var(--warn); }
+.editor{ display:grid; grid-template-columns:auto minmax(0,1fr); font-family:var(--mono); font-size:var(--code-size); line-height:1.55; letter-spacing:0; word-spacing:0; }
+.gutter{ padding:.6rem .5rem .6rem .7rem; text-align:right; color:var(--muted); user-select:none; border-right:1px solid var(--code-border); white-space:pre; overflow:hidden; font-variant-numeric:tabular-nums; }
+.code{
+  display:block; width:100%; min-height:9.3em; border:0; resize:vertical; padding:.6rem .8rem; margin:0;
+  background:transparent; color:var(--code-fg); font:inherit; line-height:inherit; letter-spacing:0; word-spacing:0;
+  white-space:pre; overflow-x:auto; tab-size:4;
+}
+.cell.wrap .code{ white-space:pre-wrap; }
+.code:focus-visible{ outline-offset:-3px; }
+.cell-f{ display:flex; flex-wrap:wrap; gap:.5rem .8rem; align-items:center; padding:.5rem .7rem; border-top:1px solid var(--code-border); }
+.cell-f .kbd-hint{ font-size:.78rem; color:var(--muted); }
+.run{ min-height:2.3rem; padding:.3rem 1rem; border-radius:7px; border:1px solid var(--ink); background:var(--ink); color:var(--ink-fg); font-weight:700; cursor:pointer; display:inline-flex; gap:.4rem; align-items:center; }
+.run.stop{ background:var(--bad-bg); color:var(--bad); border-color:var(--bad); }
+.run[disabled]{ background:var(--answer-bg); color:var(--muted); border-color:var(--rule); cursor:not-allowed; }
+.out{ border-top:1px solid var(--code-border); background:var(--out-bg); color:var(--code-fg); padding:.6rem .8rem; font-family:var(--mono); font-size:calc(var(--code-size) * .94); line-height:1.5; letter-spacing:0; word-spacing:0; display:grid; gap:.3rem; }
+.out:empty{ display:none; }
+.out pre{ margin:0; white-space:pre-wrap; font:inherit; }
+.out .echo{ background:var(--echo-bg); border-radius:3px; padding:0 .2em; }
+.out .errblock{ color:var(--bad); background:var(--bad-bg); border:1px solid color-mix(in srgb, var(--bad) 35%, transparent); border-radius:6px; padding:.45rem .6rem; }
+.out .note{ font-family:var(--font-ui); font-size:.85rem; color:var(--muted); }
+.stdin{ display:flex; flex-wrap:wrap; gap:.4rem .6rem; align-items:center; }
+.stdin label{ font-weight:600; }
+.stdin input{ flex:1 1 9rem; min-width:0; max-width:16rem; font-family:var(--mono); padding:.35rem .55rem; border-radius:6px; border:2px solid var(--focus); background:var(--field); color:var(--fg); }
+.stdin .sendbtn{ font-size:.85rem; padding:.3rem .7rem; border-radius:6px; border:1px solid var(--field-border); background:var(--field); cursor:pointer; }
+
+/* preview mini versions */
+.preview .cell .code{ min-height:auto; resize:none; }
+
+/* ---------- get ready ---------- */
+.you{ display:flex; flex-wrap:wrap; gap:.6rem 1.2rem; align-items:center; justify-content:space-between; padding:1rem 1.2rem; border-radius:var(--radius); background:var(--answer-bg); border:var(--bw) solid var(--rule); }
+.you .who{ display:grid; }
+.you .who small{ font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+.you .who b{ font-family:var(--font-read); font-size:1.45rem; color:var(--head); line-height:1.2; }
+.you .who span{ font:600 1.05rem/1.3 var(--mono); letter-spacing:.08em; }
+.instr{ font-family:var(--font-read); margin:0; padding-left:1.4rem; display:grid; gap:.35rem; max-width:var(--measure); }
+.checklist{ list-style:none; margin:0; padding:0; display:grid; border:var(--bw) solid var(--rule); border-radius:var(--radius); overflow:hidden; }
+.checklist li{ display:grid; grid-template-columns:1.6rem minmax(0,1fr) auto; gap:.2rem .8rem; align-items:start; padding:.75rem 1rem; border-top:var(--bw) solid var(--rule); }
+.checklist li:first-child{ border-top:0; }
+.ci{ width:1.4rem; height:1.4rem; margin-top:.1rem; }
+.ci svg{ width:100%; height:100%; display:block; }
+.cm{ display:grid; gap:.15rem; min-width:0; }
+.cn{ font-weight:600; }
+.cs{ font-size:.82rem; color:var(--muted); }
+.cw{ font-size:.85rem; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.bar{ height:.4rem; border-radius:99px; background:var(--answer-bg); border:1px solid var(--rule); overflow:hidden; margin-top:.3rem; max-width:22rem; }
+.bar i{ display:block; height:100%; width:0; background:var(--strong); transition:width .4s ease; }
+li[data-state="ready"] .ci, li[data-state="ready"] .cw{ color:var(--ok); }
+li[data-state="failed"] .ci, li[data-state="failed"] .cw{ color:var(--bad); }
+li[data-state="loading"] .ci, li[data-state="loading"] .cw{ color:var(--head); }
+li[data-state="waiting"] .ci, li[data-state="waiting"] .cw, li[data-state="off"] .ci, li[data-state="off"] .cw{ color:var(--muted); }
+li[data-state="slow"] .ci, li[data-state="slow"] .cw{ color:var(--warn); }
+.spin{ animation:spin 1.1s linear infinite; transform-origin:50% 50%; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.status-line{ display:flex; gap:.6rem; align-items:flex-start; padding:.75rem 1rem; border-radius:8px; background:var(--answer-bg); font-size:.95rem; }
+.status-line.ok{ background:var(--ok-bg); color:var(--fg); }
+.status-line.warn{ background:var(--warn-bg); }
+.status-line.bad{ background:var(--bad-bg); }
+.status-line .ic{ flex:none; width:1.3rem; height:1.3rem; margin-top:.15rem; }
+.details-inv{ font-size:.85rem; }
+.details-inv summary{ cursor:pointer; color:var(--link); }
+.details-inv code{ font-family:var(--mono); font-size:.9em; overflow-wrap:anywhere; }
+.filebox{ display:flex; flex-wrap:wrap; gap:.6rem 1rem; align-items:center; justify-content:space-between; padding:.9rem 1rem; border:var(--bw) solid var(--rule); border-radius:var(--radius); }
+.filebox .fn{ font-family:var(--mono); font-size:.85rem; overflow-wrap:anywhere; letter-spacing:0; }
+.two{ display:grid; gap:1.4rem; grid-template-columns:minmax(0,1fr); }
+@media (min-width: 760px){ .two{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); } }
+.begin-row{ display:grid; gap:.6rem; justify-items:start; padding-top:.4rem; }
+.sec-h{ font:700 .74rem/1.2 var(--font-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:.6rem; }
+
+/* ---------- paper screen ---------- */
+.topbar{
+  position:sticky; top:env(safe-area-inset-top, 0px); z-index:20; background:var(--sheet); border-bottom:var(--bw) solid var(--rule);
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.topbar-in{ display:flex; flex-wrap:wrap; align-items:center; gap:.45rem .7rem; padding:.45rem 16px; max-width:100%; }
+.tb-title{ font:600 .9rem/1.2 var(--font-ui); color:var(--head); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; }
+.tb-title .long{ font-weight:500; color:var(--muted); }
+.tb-who{ font-size:.85rem; color:var(--muted); white-space:nowrap; }
+.tb-space{ flex:1 1 0; min-width:0; }
+.chip{
+  display:inline-flex; align-items:center; gap:.35rem; min-height:2.2rem; padding:.25rem .65rem; border-radius:999px;
+  border:var(--bw) solid var(--rule); background:var(--sheet); font-size:.82rem; font-weight:600; white-space:nowrap; cursor:pointer; color:var(--fg);
+  font-variant-numeric:tabular-nums;
+}
+.chip svg{ width:1rem; height:1rem; flex:none; }
+.chip.ok{ color:var(--ok); }
+.chip.warn{ color:var(--warn); background:var(--warn-bg); border-color:transparent; }
+.chip.bad{ color:var(--bad); background:var(--bad-bg); border-color:var(--bad); }
+.chip.low{ color:var(--warn); background:var(--warn-bg); border-color:var(--warn); }
+.tbtn{ min-height:2.2rem; padding:.25rem .75rem; border-radius:7px; border:var(--bw) solid var(--rule); background:var(--sheet); cursor:pointer; font-size:.85rem; font-weight:600; color:var(--fg); white-space:nowrap; }
+.tbtn.primary{ background:var(--ink); color:var(--ink-fg); border-color:var(--ink); }
+.tbtn .ser{ font-family:var(--serif); font-size:1rem; }
+#menuBtn{ display:none; }
+@media (max-width: 899px){ #menuBtn{ display:inline-flex; } .tb-title .long{ display:none; } }
+@media (max-width: 560px){
+  .tb-who, #refBtn{ display:none; }
+  .topbar-in{ gap:.35rem .45rem; padding-block:.35rem; }
+  .chip, .tbtn{ min-height:2rem; padding-inline:.55rem; font-size:.78rem; }
+  .checklist li{ grid-template-columns:1.6rem minmax(0,1fr); }
+  .checklist .cw{ grid-column:2; text-align:left; }
+}
+.savepop{ position:absolute; right:16px; top:calc(100% + 6px); width:min(22rem, calc(100vw - 32px)); background:var(--sheet); border:var(--bw) solid var(--rule); border-radius:10px; box-shadow:var(--shadow); padding:.9rem 1rem; display:grid; gap:.55rem; font-size:.88rem; z-index:30; }
+.savepop dl{ margin:0; display:grid; gap:.4rem; }
+.savepop dt{ font-weight:700; }
+.savepop dd{ margin:0; color:var(--muted); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.banner{ margin:0; padding:.8rem 16px; display:flex; flex-wrap:wrap; gap:.6rem 1rem; align-items:center; background:var(--bad-bg); border-bottom:2px solid var(--bad); }
+.banner p{ flex:1 1 20rem; }
+.banner.warnb{ background:var(--warn-bg); border-bottom-color:var(--warn); }
+
+.app{ display:grid; grid-template-columns:minmax(0,1fr); }
+@media (min-width: 900px){ .app{ grid-template-columns:17.5rem minmax(0,1fr); } }
+.side{
+  background:var(--sheet); border-right:var(--bw) solid var(--rule); padding:1rem 16px 2rem; display:grid; gap:1.2rem; align-content:start;
+  font-size:.9rem;
+}
+@media (min-width: 900px){ .side{ position:sticky; top:3.2rem; height:calc(100vh - 3.2rem); overflow:auto; } }
+@media (max-width: 899px){
+  .side{ position:fixed; inset:0 auto 0 0; width:min(20rem, 88vw); z-index:35; box-shadow:var(--shadow); overflow:auto; transform:translateX(-102%); transition:transform .2s ease; visibility:hidden; }
+  .side.open{ transform:none; visibility:visible; }
+}
+.scrim{ position:fixed; inset:0; background:rgba(10,14,22,.45); z-index:34; }
+.side h2{ font:700 .72rem/1.2 var(--font-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+.qnav{ list-style:none; margin:.5rem 0 0; padding:0; display:grid; gap:.3rem; }
+.qnav button{
+  width:100%; text-align:left; display:grid; grid-template-columns:1.8rem minmax(0,1fr); gap:.1rem .6rem; align-items:start;
+  padding:.55rem .6rem; border-radius:8px; border:var(--bw) solid transparent; background:transparent; cursor:pointer; color:var(--fg);
+}
+.qnav button:hover{ border-color:var(--rule); }
+.qnav button[aria-current="true"]{ background:var(--answer-bg); border-color:var(--rule); }
+.qn{ grid-row:span 3; display:grid; place-items:center; width:1.7rem; height:1.7rem; border-radius:50%; background:var(--ink); color:var(--ink-fg); font:700 .8rem/1 var(--sans); }
+.qt{ font-weight:600; line-height:1.3; }
+.qm{ font-size:.78rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+.qbar{ height:.3rem; border-radius:99px; background:var(--answer-bg); border:1px solid var(--rule); overflow:hidden; }
+.qbar i{ display:block; height:100%; background:var(--answer-done); }
+.side .box{ border-top:var(--bw) solid var(--rule); padding-top:1rem; display:grid; gap:.45rem; }
+.side .box p{ color:var(--muted); font-size:.85rem; }
+.kbd{ font-family:var(--mono); font-size:.78rem; border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px; padding:0 .3rem; background:var(--answer-bg); letter-spacing:0; }
+
+.paper{ padding:1.4rem 16px 5rem; display:grid; justify-items:center; min-width:0; }
+.paper-in{ width:100%; max-width:calc(var(--measure) + 8rem); display:grid; gap:1.4rem; min-width:0; }
+.masthead{ border:var(--bw) solid var(--rule); border-radius:var(--radius); overflow:hidden; background:var(--sheet); }
+.masthead .band{ padding-inline:1rem; font-size:.7rem; }
+.mh-b{ padding:.9rem 1rem 1rem; display:grid; gap:.4rem; }
+.mh-row{ display:flex; gap:.7rem; align-items:center; }
+.mh-row .inst{ font-size:.66rem; }
+.mh-college{ font-family:var(--font-read); font-weight:700; color:var(--head); line-height:1.2; }
+.mh-title{ font-family:var(--font-read); font-size:1.3rem; }
+.mh-meta{ font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+.q-h{ font-family:var(--font-read); font-size:1.45rem; padding-bottom:.4rem; border-bottom:2px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:.3rem 1rem; align-items:baseline; }
+.part{ display:grid; gap:.8rem; min-width:0; }
+.skipnote{ font-size:.85rem; color:var(--muted); border:1px dashed var(--rule); border-radius:8px; padding:.6rem .8rem; text-align:center; }
+.sub{ font-family:var(--font-read); font-weight:700; }
+
+/* ---------- finish ---------- */
+.fsteps{ list-style:none; margin:0; padding:0; display:grid; gap:1rem; counter-reset:f; }
+.fsteps > li{ counter-increment:f; display:grid; grid-template-columns:2.3rem minmax(0,1fr); gap:.2rem 1rem; padding:1.1rem 1.1rem 1.2rem; border:var(--bw) solid var(--rule); border-radius:var(--radius); }
+.fsteps > li::before{ content:counter(f); grid-row:span 3; width:2.1rem; height:2.1rem; border-radius:50%; display:grid; place-items:center; background:var(--ink); color:var(--ink-fg); font:700 .95rem/1 var(--sans); }
+.fsteps > li.done::before{ content:"✓"; background:var(--ok); color:var(--sheet); }
+.fsteps h3{ font-size:1.15rem; }
+.fbody{ display:grid; gap:.7rem; min-width:0; }
+.clist{ margin:0; padding:0; list-style:none; display:grid; gap:.45rem; }
+.clist li{ display:flex; gap:.55rem; align-items:flex-start; }
+.clist .ic{ flex:none; width:1.2rem; height:1.2rem; margin-top:.2rem; }
+.clist .warnc{ color:var(--warn); }
+.clist .okc{ color:var(--ok); }
+.linkbtn{ background:none; border:0; padding:0; color:var(--link); text-decoration:underline; text-underline-offset:.2em; cursor:pointer; font-weight:600; }
+.confirm{
+  border:2px solid var(--strong); border-radius:12px; overflow:hidden; background:var(--sheet);
+}
+.confirm .band{ font-size:.7rem; }
+.confirm-b{ padding:1.2rem 1.3rem 1.4rem; display:grid; gap:1rem; }
+.confirm-name{ font-family:var(--font-read); font-size:clamp(1.6rem, 1.2rem + 2vw, 2.2rem); font-weight:700; color:var(--head); line-height:1.15; }
+.confirm dl{ margin:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(10rem,100%),1fr)); gap:.8rem 1.4rem; }
+.confirm dt{ font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+.confirm dd{ margin:0; font-weight:600; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.receipt{ font:700 1.6rem/1.1 var(--mono); letter-spacing:.14em; color:var(--head); }
+.notice{ padding:.7rem .9rem; border-radius:8px; background:var(--warn-bg); color:var(--fg); border-left:4px solid var(--warn); }
+.okline{ padding:.7rem .9rem; border-radius:8px; background:var(--ok-bg); color:var(--fg); border-left:4px solid var(--ok); }
+
+/* ---------- drawer (reading settings from any screen) ---------- */
+.drawer{ position:fixed; inset:0 0 0 auto; width:min(34rem, 100vw); background:var(--sheet); z-index:60; box-shadow:var(--shadow); display:grid; grid-template-rows:auto minmax(0,1fr) auto; border-left:var(--bw) solid var(--rule); }
+.drawer-h{ display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.9rem 16px; border-bottom:var(--bw) solid var(--rule); }
+.drawer-b{ overflow:auto; padding:1rem 16px 1.4rem; }
+.drawer-f{ padding:.8rem 16px; border-top:var(--bw) solid var(--rule); display:flex; flex-wrap:wrap; gap:.6rem; justify-content:flex-end; }
+.drawer .settings-grid{ grid-template-columns:minmax(0,1fr); }
+.drawer .preview-col{ position:static; order:0; }
+.dscrim{ position:fixed; inset:0; background:rgba(10,14,22,.5); z-index:55; }
+
+/* reading ruler */
+#ruler{ position:fixed; left:0; right:0; height:2.3em; pointer-events:none; z-index:50; background:var(--ruler); border-top:2px solid var(--ruler-edge); border-bottom:2px solid var(--ruler-edge); top:40vh; transition:top .06s linear; }
+
+@media print{
+  .ribbon, .mock-tag, .topbar, .side, #ruler{ display:none !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<div class="ribbon" role="region" aria-label="About this mockup">
+  <div class="ribbon-in">
+    <p><strong>Mockup</strong>This is a design mockup of dewmark's student start flow, not a working exam. Python loading is faked with timers. Nothing is saved or sent anywhere. The logo is a placeholder.</p>
+    <details class="scen" id="scen">
+      <summary>Try a scenario</summary>
+      <div class="scen-body">
+        <fieldset>
+          <legend>Paper</legend>
+          <label><input type="radio" name="kind" id="kindExam" value="exam" checked> Examination</label>
+          <label><input type="radio" name="kind" id="kindPractice" value="practice"> Practice copy of the same paper</label>
+        </fieldset>
+        <fieldset>
+          <legend>This computer</legend>
+          <label><input type="checkbox" id="scSaved"> <span>Has saved exam work for D00123456 <small>(type that number on the cover)</small></span></label>
+          <label><input type="checkbox" id="scNoFsa"> <span>Browser cannot save to a file as you go <small>(Firefox, Safari)</small></span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Python loading</legend>
+          <label><input type="radio" name="load" value="normal" checked> Normal</label>
+          <label><input type="radio" name="load" value="slow"> Slow</label>
+          <label><input type="radio" name="load" value="fail"> Fails</label>
+        </fieldset>
+        <fieldset>
+          <legend>Jump to a screen</legend>
+          <div class="jump">
+            <button type="button" data-jump="1">Cover</button>
+            <button type="button" data-jump="2">Settings</button>
+            <button type="button" data-jump="3">Get ready</button>
+            <button type="button" data-jump="4">Paper</button>
+            <button type="button" data-jump="5">Finish</button>
+          </div>
+          <button type="button" class="mini" id="scFull">Fill the browser's storage (on the paper screen)</button>
+        </fieldset>
+      </div>
+    </details>
+  </div>
+</div>
+
+<main id="main" tabindex="-1">
+
+<!-- =============================== SCREEN 1: COVER =============================== -->
+<section class="stage" id="s1" aria-labelledby="s1h">
+  <div class="sheet">
+    <div class="band"><span class="kind-word">Examination</span><span class="band-sub">Dublin College Dundrum</span></div>
+    <div class="sheet-body">
+      <div class="id-top">
+        <div class="id-brand">
+          <div class="logo" aria-hidden="true">Logo</div>
+          <div>
+            <p class="inst">Dublin and Dún Laoghaire ETB</p>
+            <p class="college">Dublin College Dundrum</p>
+          </div>
+        </div>
+        <button type="button" class="aa" data-open-settings aria-haspopup="dialog"><b aria-hidden="true">Aa</b> Reading settings</button>
+      </div>
+      <hr class="rule">
+      <div class="module">
+        <p class="module-name">Programming and Design Principles <span class="code-chip">5N2927</span></p>
+        <h1 class="paper-title">Written Examination 2026–2027</h1>
+      </div>
+      <dl class="facts">
+        <div><dt>Session</dt><dd>2026–2027</dd></div>
+        <div><dt>Time allowed</dt><dd>2 hours</dd></div>
+        <div><dt>Total</dt><dd>60 marks</dd></div>
+        <div><dt>Weighting</dt><dd>30% of the module</dd></div>
+      </dl>
+      <p class="practice-note">This is a practice copy of the paper. Your work here is kept apart from the exam, and the exam will never offer it back to you.</p>
+
+      <ol class="steps" aria-label="Before you begin">
+        <li aria-current="step">Your details</li><li>Reading settings</li><li>Get ready</li>
+      </ol>
+
+      <div id="idForm" class="stack">
+        <h2 id="s1h" tabindex="-1" style="font-size:1.25rem">Your details</h2>
+        <div class="field">
+          <label for="fName">Full name</label>
+          <span class="hint" id="fNameHint">As it appears on your college record</span>
+          <input type="text" id="fName" autocomplete="off" spellcheck="false" aria-describedby="fNameHint fNameErr">
+          <p class="err" id="fNameErr" hidden></p>
+        </div>
+        <div class="field">
+          <label for="fNum">Student number</label>
+          <span class="hint" id="fNumHint">As on your student card, for example D00123456</span>
+          <input type="text" id="fNum" autocomplete="off" spellcheck="false" autocapitalize="characters" aria-describedby="fNumHint fNumErr" style="max-width:16rem;font-family:var(--mono);letter-spacing:.06em">
+          <p class="err" id="fNumErr" hidden></p>
+          <p class="warnmsg" id="fNumWarn" hidden></p>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn primary big" id="toSettings">Next</button>
+          <button type="button" class="btn quiet" id="haveFile">I have an answer file</button>
+        </div>
+        <p class="hint" id="fileMsg" hidden role="status"></p>
+      </div>
+
+      <!-- resume card: shown only after the student types a number that has saved work -->
+      <div id="resume" class="card welcome" hidden>
+        <h2 id="resumeH" tabindex="-1" style="font-size:1.25rem">Welcome back</h2>
+        <p>This computer has your work on this paper: <b>14 answers</b>, last saved at <b id="resumeTime">10:41</b> today.</p>
+        <div class="actions" id="resumeActions">
+          <button type="button" class="btn primary" id="resumeGo">Continue my work</button>
+          <button type="button" class="btn" id="resumeAgain">Start again</button>
+          <button type="button" class="btn quiet" id="resumeNotMe">This is not my number</button>
+        </div>
+        <div id="againConfirm" class="notice" hidden>
+          <p><b>Start the paper again?</b> Your earlier work will be set aside, not deleted. Your invigilator can still find it.</p>
+          <div class="actions" style="margin-top:.6rem">
+            <button type="button" class="btn" id="againYes">Set it aside and start again</button>
+            <button type="button" class="btn quiet" id="againNo">Keep my work</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>Opened from this computer. This page sends nothing anywhere.</span>
+        <details id="inv">
+          <summary class="btn quiet" style="display:inline">Saved work on this computer (for invigilators)</summary>
+          <ul class="inv-list">
+            <li><span>A. B. · …456</span><span>14 answers</span><span>saved 10:41</span><button type="button" class="linkbtn" data-mock="Mockup: this would save a copy of that student's answer file.">Save a copy</button></li>
+            <li><span>C. M. · …118</span><span>9 answers</span><span>set aside 09:58</span><button type="button" class="linkbtn" data-mock="Mockup: this would save a copy of that student's answer file.">Save a copy</button></li>
+          </ul>
+          <p class="hint" id="invMsg" role="status"></p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== SCREEN 2: SETTINGS =============================== -->
+<section class="stage" id="s2" aria-labelledby="s2h" hidden>
+  <div class="sheet wide">
+    <div class="band"><span class="kind-word">Examination</span><span class="band-sub">5N2927 · Written Examination 2026–2027</span></div>
+    <div class="sheet-body">
+      <ol class="steps" aria-label="Before you begin">
+        <li class="done">Your details</li><li aria-current="step">Reading settings</li><li>Get ready</li>
+      </ol>
+      <div class="stack" style="gap:.5rem">
+        <h2 id="s2h" tabindex="-1" style="font-size:1.5rem">Reading settings</h2>
+        <p class="prose" style="max-width:48rem">Change anything that makes the paper easier to read. The whole page changes as you choose. You can change these again at any time with the <b>Aa</b> button.</p>
+      </div>
+      <div id="settingsHome">
+        <!-- the settings tool: moved into the drawer when opened from another screen -->
+        <div id="settingsTool" class="settings-grid">
+          <div class="preview-col">
+            <div class="preview" aria-label="Preview from this paper" role="group">
+              <div class="preview-h"><span>Preview from this paper</span><span>Question 3</span></div>
+              <div class="preview-b">
+                <p class="part-h">3(e): Volume of a sphere <span class="marks">(3 marks)</span></p>
+                <div class="prose"><p>Write a program to calculate the volume of a sphere. The program should ask the user to input a value for the radius. Remember to convert the input to a numeric value.</p></div>
+                <div class="answer filled">
+                  <div class="answer-l"><span>Your answer to 3(a)(i)</span><span class="st">● answered</span></div>
+                  <div class="fake">Python, Java and C#</div>
+                </div>
+                <div class="cell" id="pvCell">
+                  <div class="editor"><div class="gutter" aria-hidden="true">1
+2
+3</div><div class="code" role="img" aria-label="Example code in the chosen code settings">radius = float(input("Radius: "))
+volume = 4 / 3 * math.pi * radius ** 3
+print(round(volume, 2))</div></div>
+                </div>
+              </div>
+            </div>
+            <p class="remembered" id="remembered" hidden>These settings are remembered on this computer. If someone else used it before you, check them, or choose <b>Use standard settings</b>.</p>
+          </div>
+
+          <form class="set-form" id="setForm" onsubmit="return false">
+            <div class="set-group">
+              <h3>Reading</h3>
+              <fieldset class="row">
+                <legend>Font</legend>
+                <div class="seg fonts">
+                  <label><input type="radio" name="font" value="serif" checked><span><i style="font-family:var(--serif)">Aa Bb</i>Standard</span></label>
+                  <label><input type="radio" name="font" value="sans"><span><i style="font-family:var(--sans)">Aa Bb</i>Plain</span></label>
+                  <label><input type="radio" name="font" value="lexend"><span><i style="font-family:var(--lexend)">Aa Bb</i>Lexend</span></label>
+                  <label><input type="radio" name="font" value="dyslexic"><span><i style="font-family:var(--dyslexic)">Aa Bb</i>OpenDyslexic</span></label>
+                </div>
+                <p class="mock-note">Mockup: the real page carries Lexend and OpenDyslexic inside it. Here your computer's nearest font stands in.</p>
+              </fieldset>
+              <div class="row">
+                <label class="lbl" for="sSize">Text size</label>
+                <div class="range">
+                  <button type="button" class="stepbtn" data-step="sSize" data-d="-1" aria-label="Smaller text">−</button>
+                  <input type="range" id="sSize" min="14" max="32" step="1" value="18">
+                  <button type="button" class="stepbtn" data-step="sSize" data-d="1" aria-label="Larger text">+</button>
+                  <output for="sSize" id="oSize">18 px</output>
+                </div>
+              </div>
+              <div class="row">
+                <label class="lbl" for="sLh">Line spacing</label>
+                <div class="range">
+                  <input type="range" id="sLh" min="1.3" max="2.4" step="0.1" value="1.6">
+                  <output for="sLh" id="oLh">1.6</output>
+                </div>
+              </div>
+              <fieldset class="row">
+                <legend>Letter and word spacing</legend>
+                <div class="seg">
+                  <label><input type="radio" name="spacing" value="normal" checked><span>Normal</span></label>
+                  <label><input type="radio" name="spacing" value="wide"><span>Wide</span></label>
+                  <label><input type="radio" name="spacing" value="wider"><span>Wider</span></label>
+                </div>
+              </fieldset>
+              <fieldset class="row">
+                <legend>Line length</legend>
+                <div class="seg">
+                  <label><input type="radio" name="width" value="56ch"><span>Narrow</span></label>
+                  <label><input type="radio" name="width" value="68ch" checked><span>Medium</span></label>
+                  <label><input type="radio" name="width" value="84ch"><span>Wide</span></label>
+                  <label><input type="radio" name="width" value="100%"><span>Full width</span></label>
+                </div>
+              </fieldset>
+              <fieldset class="row">
+                <legend>Colours</legend>
+                <div class="seg swatches">
+                  <label><input type="radio" name="scheme" value="" checked><span><i class="sw" style="background:linear-gradient(135deg,#fdfcfa 50%,#171c24 50%)"></i>Match my computer</span></label>
+                  <label><input type="radio" name="scheme" value="light"><span><i class="sw" style="background:#fdfcfa"></i>Light</span></label>
+                  <label><input type="radio" name="scheme" value="cream"><span><i class="sw" style="background:#fbf5e6"></i>Cream paper</span></label>
+                  <label><input type="radio" name="scheme" value="blue"><span><i class="sw" style="background:#dce7f2"></i>Blue tint</span></label>
+                  <label><input type="radio" name="scheme" value="dark"><span><i class="sw" style="background:#171c24"></i>Dark</span></label>
+                  <label><input type="radio" name="scheme" value="contrast"><span><i class="sw" style="background:linear-gradient(135deg,#fff 50%,#000 50%)"></i>High contrast</span></label>
+                </div>
+              </fieldset>
+              <label class="toggle"><input type="checkbox" id="sRuler"><span class="t">Reading ruler<small>A band that follows your mouse, and the line you are typing on</small></span></label>
+              <label class="toggle"><input type="checkbox" id="sMotion"><span class="t">Reduce motion<small>Stops sliding and spinning. On by itself if your computer asks for it.</small></span></label>
+            </div>
+
+            <div class="set-group">
+              <h3>Code</h3>
+              <div class="row">
+                <label class="lbl" for="sCode">Code text size</label>
+                <div class="range">
+                  <input type="range" id="sCode" min="12" max="28" step="1" value="16">
+                  <output for="sCode" id="oCode">16 px</output>
+                </div>
+              </div>
+              <fieldset class="row">
+                <legend>Code colours</legend>
+                <div class="seg">
+                  <label><input type="radio" name="ctheme" value="auto" checked><span>Match the page</span></label>
+                  <label><input type="radio" name="ctheme" value="light"><span>Light</span></label>
+                  <label><input type="radio" name="ctheme" value="dark"><span>Dark</span></label>
+                </div>
+              </fieldset>
+              <label class="toggle"><input type="checkbox" id="sWrap"><span class="t">Wrap long lines of code</span></label>
+              <label class="toggle"><input type="checkbox" id="sBrackets" checked><span class="t">Close brackets and quotes for me</span></label>
+              <label class="toggle"><input type="checkbox" id="sSuggest" checked><span class="t">Code suggestions<small>Press Ctrl+Space to see names you can use. Your teacher allows this on this paper.</small></span></label>
+            </div>
+
+            <div class="set-group">
+              <h3>Time</h3>
+              <fieldset class="row">
+                <legend>Show time</legend>
+                <div class="seg">
+                  <label><input type="radio" name="time" value="left" checked><span>Time left</span></label>
+                  <label><input type="radio" name="time" value="clock"><span>Clock</span></label>
+                  <label><input type="radio" name="time" value="hidden"><span>Hidden</span></label>
+                </div>
+              </fieldset>
+              <p class="set-note">Settings are remembered on this computer. Printing always uses the standard layout.</p>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="actions" style="justify-content:space-between">
+        <button type="button" class="btn quiet" data-go="1">Back to your details</button>
+        <div class="actions">
+          <button type="button" class="btn" data-reset>Use standard settings</button>
+          <button type="button" class="btn primary big" data-go="3">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== SCREEN 3: GET READY =============================== -->
+<section class="stage" id="s3" aria-labelledby="s3h" hidden>
+  <div class="sheet wide">
+    <div class="band"><span class="kind-word">Examination</span><span class="band-sub">5N2927 · Written Examination 2026–2027</span></div>
+    <div class="sheet-body">
+      <div class="id-top" style="align-items:center;flex-wrap:wrap">
+        <ol class="steps" aria-label="Before you begin">
+          <li class="done">Your details</li><li class="done">Reading settings</li><li aria-current="step">Get ready</li>
+        </ol>
+        <button type="button" class="aa" data-open-settings aria-haspopup="dialog"><b aria-hidden="true">Aa</b> Reading settings</button>
+      </div>
+      <h2 id="s3h" tabindex="-1" style="font-size:1.5rem">Get ready</h2>
+
+      <div class="you">
+        <div class="who"><small>You are sitting this paper as</small><b id="youName">Aoife Byrne</b><span id="youNum">D00123456</span></div>
+        <button type="button" class="btn" data-go="1">Change</button>
+      </div>
+      <p class="okline" id="restoredLine" hidden>Your work is ready to continue: 14 answers, saved at 10:41. Your time carries on from when you first began.</p>
+
+      <div class="two">
+        <div>
+          <h3 class="sec-h">Instructions to candidates</h3>
+          <ol class="instr">
+            <li>Answer <b>all four</b> questions. Each question is worth 15 marks.</li>
+            <li>Answer each part in the box or code cell directly below it.</li>
+            <li>You may run any code cell to test your work. Press <b>Run</b>, or Ctrl+Enter.</li>
+            <li>When a program asks for input, a line appears under your code. Type your answer there and press Enter.</li>
+            <li>Show all necessary work clearly in each answer.</li>
+            <li>Your work saves by itself. The save sign at the top of the screen shows when it last saved.</li>
+            <li>The <b>Reference</b> button opens a quick reference sheet. The <b>Aa</b> button changes the font, text size, colours and code editor.</li>
+            <li>When you finish, press <b>Finish</b> and follow the three steps.</li>
+          </ol>
+        </div>
+        <div style="display:grid;gap:1.2rem;align-content:start;min-width:0">
+          <div>
+            <h3 class="sec-h">What this paper needs</h3>
+            <ul class="checklist" id="checklist">
+              <li data-state="ready" data-id="paper"><span class="ci"></span><div class="cm"><span class="cn">The paper: questions and figures</span><span class="cs">Inside this page</span></div><span class="cw">Ready</span></li>
+              <li data-state="ready" data-id="fonts"><span class="ci"></span><div class="cm"><span class="cn">Reading fonts and code editor</span><span class="cs">Inside this page</span></div><span class="cw">Ready</span></li>
+              <li data-state="loading" data-id="py"><span class="ci"></span><div class="cm"><span class="cn">Python 3.13</span><span class="cs">From the room computer · 12.3 MB</span><div class="bar" aria-hidden="true"><i></i></div></div><span class="cw">Loading</span></li>
+              <li data-state="waiting" data-id="check"><span class="ci"></span><div class="cm"><span class="cn">Python check</span><span class="cs">Runs a short program that prints and asks for input</span></div><span class="cw">Waiting</span></li>
+              <li data-state="waiting" data-id="jedi"><span class="ci"></span><div class="cm"><span class="cn">Code suggestions</span><span class="cs">Optional · 5.3 MB · you can begin without it</span><div class="bar" aria-hidden="true"><i></i></div></div><span class="cw">Waiting</span></li>
+              <li data-state="ready" data-id="store"><span class="ci"></span><div class="cm"><span class="cn">Saving in this browser</span><span class="cs">Tested just now</span></div><span class="cw">Ready</span></li>
+            </ul>
+          </div>
+          <div class="status-line" id="loadStatus" role="status" aria-live="polite" tabindex="-1"></div>
+          <div id="failBox" hidden class="stack" style="gap:.6rem">
+            <div class="actions"><button type="button" class="btn" id="retry">Try again</button></div>
+            <details class="details-inv"><summary>Details for your invigilator</summary><p style="margin-top:.4rem">Could not reach <code>http://10.0.0.5:8756/python/</code> (connection refused). Check that the room computer is running the exam server.</p></details>
+          </div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div>
+          <h3 class="sec-h">Your answer file</h3>
+          <div class="filebox" id="fileBox">
+            <p id="fileText">Choose where your answer file goes, for example your home folder or a USB stick. The page saves into it as you work.</p>
+            <button type="button" class="btn" id="chooseFile">Choose where to save…</button>
+          </div>
+          <p class="hint" id="fileNote" style="margin-top:.4rem">Mockup: in the real page your browser opens its own save window here.</p>
+        </div>
+        <div>
+          <h3 class="sec-h">Time</h3>
+          <div class="stack" style="gap:.7rem">
+            <p>Time allowed: <b>2 hours</b>. Your time starts when you press Begin.</p>
+            <div class="field">
+              <label for="extra">Extra time</label>
+              <span class="hint" id="extraHint">Only choose this if the college has given you extra time. Your invigilator will check.</span>
+              <select id="extra" aria-describedby="extraHint">
+                <option value="0">No extra time</option>
+                <option value="20">10 minutes for each hour (20 minutes)</option>
+                <option value="30">15 minutes for each hour (30 minutes)</option>
+                <option value="other">Another amount</option>
+              </select>
+              <div id="extraOther" hidden class="field" style="margin-top:.4rem">
+                <label for="extraMin">Extra minutes</label>
+                <input type="number" id="extraMin" min="1" max="120" value="15" style="max-width:8rem">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="begin-row">
+        <button type="button" class="btn primary big" id="beginBtn">Begin</button>
+        <p class="hint" id="beginHint">Press Begin when your invigilator tells you to start.</p>
+      </div>
+      <div class="foot"><button type="button" class="btn quiet" data-go="2">Back to reading settings</button><span>Opened from this computer</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== SCREEN 4: THE PAPER =============================== -->
+<section id="s4" aria-labelledby="mhTitle" hidden>
+  <div class="topbar" id="topbar">
+    <div class="topbar-in">
+      <button type="button" class="tbtn" id="menuBtn" aria-controls="side" aria-expanded="false">Questions</button>
+      <span class="tb-title">5N2927 <span class="long">· Written Examination 2026–2027</span></span>
+      <span class="badge kind-word">Examination</span>
+      <span class="tb-who" id="tbWho">Aoife Byrne</span>
+      <span class="tb-space"></span>
+      <button type="button" class="chip" id="timeChip" aria-live="off"></button>
+      <button type="button" class="chip ok" id="saveChip" aria-expanded="false" aria-controls="savePop"></button>
+      <button type="button" class="tbtn" data-open-settings aria-haspopup="dialog" aria-label="Reading settings"><span class="ser" aria-hidden="true">Aa</span></button>
+      <button type="button" class="tbtn" id="refBtn">Reference</button>
+      <button type="button" class="tbtn primary" data-go="5">Finish</button>
+    </div>
+    <div class="savepop" id="savePop" hidden role="region" aria-label="Where your work is saved">
+      <dl>
+        <div><dt>In this browser</dt><dd id="popBrowser"></dd></div>
+        <div><dt>Your answer file</dt><dd id="popFile"></dd></div>
+      </dl>
+      <p class="hint">The time shown is when the last save finished, never when it started.</p>
+    </div>
+    <div class="banner" id="storeBanner" hidden role="alert">
+      <p id="storeBannerText"></p>
+      <div class="actions"><button type="button" class="btn" id="saveCopy">Save a copy now</button><button type="button" class="btn quiet" id="storeRetry">Try again</button></div>
+    </div>
+  </div>
+  <p class="vh" id="saveAnnounce" role="status" aria-live="polite"></p>
+
+  <div class="app">
+    <nav class="side" id="side" aria-label="Questions and help">
+      <div>
+        <h2>Questions</h2>
+        <ul class="qnav" id="qnav"></ul>
+        <p class="hint" id="navNote" role="status" style="margin-top:.5rem"></p>
+      </div>
+      <div class="box">
+        <h2>Help</h2>
+        <button type="button" class="btn" id="refSide">Python reference</button>
+      </div>
+      <div class="box">
+        <h2>Your work</h2>
+        <p id="sideSave">Your work saves by itself, in this browser and in your answer file.</p>
+      </div>
+      <div class="box">
+        <h2>If the page stops responding</h2>
+        <p>Close it and open it again. Type your details and choose <b>Continue my work</b>. Everything up to your last change is saved.</p>
+      </div>
+      <div class="box">
+        <h2>Keys</h2>
+        <p><span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> runs the code you are in.</p>
+        <p><span class="kbd">Tab</span> indents code. To leave the code, press <span class="kbd">Esc</span>, then <span class="kbd">Tab</span>.</p>
+        <p><span class="kbd">Ctrl</span>+<span class="kbd">Space</span> shows code suggestions.</p>
+      </div>
+    </nav>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <div class="paper">
+      <div class="paper-in">
+        <header class="masthead">
+          <div class="band"><span class="kind-word">Examination</span><span class="band-sub">Session 2026–2027</span></div>
+          <div class="mh-b">
+            <div class="mh-row">
+              <div class="logo sm" aria-hidden="true">Logo</div>
+              <div><p class="mh-college">Dublin College Dundrum</p><p class="inst">Dublin and Dún Laoghaire ETB</p></div>
+            </div>
+            <h1 class="mh-title" id="mhTitle" tabindex="-1">Programming and Design Principles <span class="code-chip">5N2927</span></h1>
+            <p class="mh-meta">Written Examination 2026–2027 · 2 hours · 60 marks · 30% of the module</p>
+          </div>
+        </header>
+
+        <p class="skipnote">Questions 1 and 2 are not shown in this mockup.</p>
+
+        <h2 class="q-h" id="q3" tabindex="-1"><span>Question 3: Languages, Variables and Programs</span><span class="marks">15 marks</span></h2>
+
+        <div class="part">
+          <h3 class="part-h">3(a): Programming languages <span class="marks">(3 marks)</span></h3>
+          <div class="prose"><p><span class="sub">(i)</span> Name three high-level programming languages.</p></div>
+          <div class="answer filled" data-space="3(a)(i)">
+            <div class="answer-l"><label for="a1">Your answer to 3(a)(i)</label><span class="st" aria-hidden="true">● answered</span></div>
+            <textarea id="a1" rows="2">Python, Java and C#</textarea>
+          </div>
+          <div class="prose"><p><span class="sub">(ii)</span> List two advantages of using a high-level programming language.</p></div>
+          <div class="answer" data-space="3(a)(ii)">
+            <div class="answer-l"><label for="a2">Your answer to 3(a)(ii)</label><span class="st" aria-hidden="true">○ empty</span></div>
+            <textarea id="a2" rows="3"></textarea>
+          </div>
+          <div class="prose"><p><span class="sub">(iii)</span> List two advantages of using a low-level programming language.</p></div>
+          <div class="answer filled" data-space="3(a)(iii)">
+            <div class="answer-l"><label for="a3">Your answer to 3(a)(iii)</label><span class="st" aria-hidden="true">● answered</span></div>
+            <textarea id="a3" rows="3">It runs faster, and it gives the programmer direct control over memory and hardware.</textarea>
+          </div>
+        </div>
+
+        <p class="skipnote">3(b), 3(c) and 3(d) are answered but not shown in this mockup.</p>
+
+        <div class="part">
+          <h3 class="part-h" id="p3e">3(e): Volume of a sphere <span class="marks">(3 marks)</span></h3>
+          <div class="prose">
+            <p>Write a program to calculate the volume of a sphere.</p>
+            <ol style="margin:.5em 0 0;padding-left:1.3em">
+              <li>The program should import any necessary libraries.</li>
+              <li>The volume of a sphere is given by the formula <i>V</i> = <sup>4</sup>⁄<sub>3</sub>π<i>r</i>³. The value of π should be taken from <code>math.pi</code>.</li>
+              <li>The program should ask the user to input a value for the radius. Remember to convert the input to a numeric value.</li>
+              <li>The program should round the calculated volume to 2 decimal places before displaying the result.</li>
+            </ol>
+          </div>
+          <div class="cell" id="cell3e" data-space="3(e)">
+            <div class="cell-h"><span class="lab">3(e)</span><span class="cst"><span id="cellStatus"></span><span class="edited" id="editedTag" hidden>Edited since last run</span></span></div>
+            <div class="editor">
+              <div class="gutter" id="gutter" aria-hidden="true">1</div>
+              <textarea class="code" id="code3e" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code for 3(e)" aria-describedby="codeHint" rows="7">import math
+
+radius = float(input("Enter the radius: "))
+volume = (4 / 3) * math.pi * radius ** 3
+print("The volume is", round(volume, 2))
+</textarea>
+            </div>
+            <div class="cell-f">
+              <button type="button" class="run" id="runBtn">Run</button>
+              <span class="kbd-hint" id="codeHint">Ctrl+Enter runs. Tab indents. To leave the code, press Esc, then Tab.</span>
+            </div>
+            <div class="out" id="out3e" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <p class="skipnote">Question 4 is not shown in this mockup.</p>
+        <div class="actions" style="justify-content:center"><button type="button" class="btn primary big" data-go="5">Finish</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== SCREEN 5: FINISH =============================== -->
+<section class="stage" id="s5" aria-labelledby="s5h" hidden>
+  <div class="sheet wide" style="max-width:52rem">
+    <div class="band"><span class="kind-word">Examination</span><span class="band-sub">5N2927 · Written Examination 2026–2027</span></div>
+    <div class="sheet-body">
+      <div class="stack" style="gap:.4rem">
+        <h2 id="s5h" tabindex="-1" style="font-size:1.6rem">Finish</h2>
+        <p id="finishIntro">Three steps. Nothing ends until you choose; you can go back to the paper at any time.</p>
+      </div>
+      <p class="notice" id="changedNotice" hidden></p>
+      <ol class="fsteps">
+        <li id="f1">
+          <h3>Check your answers</h3>
+          <div class="fbody">
+            <ul class="clist" id="checkList"></ul>
+          </div>
+        </li>
+        <li id="f2">
+          <h3>Save your answer file</h3>
+          <div class="fbody">
+            <p id="f2text"></p>
+            <div class="actions"><button type="button" class="btn primary" id="saveFileBtn">Save and check my answer file</button></div>
+            <p id="f2result" role="status" hidden></p>
+          </div>
+        </li>
+        <li id="f3">
+          <h3 id="f3h">Hand it in</h3>
+          <div class="fbody"><p id="f3text"></p></div>
+        </li>
+      </ol>
+
+      <div class="confirm" id="confirmCard" hidden>
+        <div class="band"><span class="kind-word">Examination</span><span class="band-sub">Show this to your invigilator</span></div>
+        <div class="confirm-b">
+          <p class="confirm-name" id="cName">Aoife Byrne</p>
+          <dl>
+            <div><dt>Student number</dt><dd id="cNum" style="font-family:var(--mono);letter-spacing:.06em">D00123456</dd></div>
+            <div><dt>Paper</dt><dd>5N2927 Written Examination 2026–2027</dd></div>
+            <div><dt>Answer spaces used</dt><dd id="cCount"></dd></div>
+            <div><dt>Saved</dt><dd id="cTime"></dd></div>
+            <div style="grid-column:1/-1"><dt>File</dt><dd id="cFile" style="font-family:var(--mono);font-size:.9rem;letter-spacing:0"></dd></div>
+            <div style="grid-column:1/-1"><dt>Receipt</dt><dd class="receipt" id="cReceipt"></dd></div>
+          </dl>
+          <p class="hint">Your teacher sees the same receipt when they open your file, so both of you can tell it is the same work.</p>
+          <div class="actions">
+            <button type="button" class="btn" id="removeBtn">Remove my work from this computer</button>
+          </div>
+          <p class="hint" id="removeMsg" role="status"></p>
+        </div>
+      </div>
+
+      <div class="actions"><button type="button" class="btn" data-go="4">Back to the paper</button></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- settings drawer, opened with Aa from the cover, Get ready or the paper -->
+<div class="dscrim" id="dscrim" hidden></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerH" hidden>
+  <div class="drawer-h"><h2 id="drawerH" style="font-size:1.2rem">Reading settings</h2><button type="button" class="btn" id="drawerX">Close</button></div>
+  <div class="drawer-b" id="drawerBody"></div>
+  <div class="drawer-f"><button type="button" class="btn" data-reset>Use standard settings</button><button type="button" class="btn primary" id="drawerDone">Done</button></div>
+</div>
+
+<div id="ruler" hidden aria-hidden="true"></div>
+<div class="mock-tag" aria-hidden="true">Mockup</div>
+
+<script>
+"use strict";
+/* ============================================================
+   MOCKUP ONLY. Every delay, size and file name below is invented
+   to show the flow. No storage, no network, no real Python.
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const root = document.documentElement;
+const pad = n => String(n).padStart(2, "0");
+const clock = (d = new Date(), secs = false) => pad(d.getHours()) + ":" + pad(d.getMinutes()) + (secs ? ":" + pad(d.getSeconds()) : "");
+
+const ICON = {
+  ready: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>',
+  loading: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9.5" opacity=".25"/><path class="spin" d="M12 2.5a9.5 9.5 0 0 1 9.5 9.5"/></svg>',
+  waiting: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3.2"><circle cx="12" cy="12" r="9.5"/></svg>',
+  failed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>',
+  slow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg>',
+  off: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8"/></svg>',
+  save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  saving: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path class="spin" d="M20 12a8 8 0 1 1-2.3-5.6"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>',
+  cross: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/></svg>',
+};
+
+/* ---------------- state ---------------- */
+const S = {
+  screen: 1, kind: "exam", load: "normal", saved: false, noFsa: false,
+  name: "", number: "", warnedShape: false, resumed: false,
+  fileChosen: false, fileName: "", extra: 0,
+  begunAt: null, full: false,
+  browserSavedAt: null, fileSavedAt: null, browserOk: true,
+  pyMB: 0, pyTotal: 12.3, pyState: "loading", jediMB: 0, jediTotal: 5.3, jediState: "waiting", checkState: "waiting",
+  stallSince: null, lastMB: 0,
+  running: false, codeEditedSinceRun: false, everRun: false,
+  handedFileAt: null, changedSinceFile: 0, receipt: "",
+};
+
+/* ---------------- screens ---------------- */
+function go(n, focus = true) {
+  if (n === 4 && !S.begunAt) { S.begunAt = Date.now(); }
+  S.screen = n;
+  for (let i = 1; i <= 5; i++) $("#s" + i).hidden = i !== n;
+  closeSide(); $("#savePop").hidden = true; $("#saveChip").setAttribute("aria-expanded", "false");
+  if (n === 3) renderReady();
+  if (n === 4) { renderPaper(); if (!S.browserSavedAt) changed(); }
+  if (n === 5) renderFinish();
+  document.title = "Mockup · 5N2927 " + (S.kind === "practice" ? "practice copy" : "Written Examination") + (n >= 4 && S.name ? " · " + S.name : "");
+  window.scrollTo(0, 0);
+  if (focus) {
+    const target = { 1: S.resumeShown ? "#resumeH" : "#s1h", 2: "#s2h", 3: "#s3h", 4: "#mhTitle", 5: "#s5h" }[n];
+    setTimeout(() => $(target) && $(target).focus({ preventScroll: true }), 30);
+  }
+}
+$$("[data-go]").forEach(b => b.addEventListener("click", () => go(+b.dataset.go)));
+$$("[data-jump]").forEach(b => b.addEventListener("click", () => {
+  if (+b.dataset.jump >= 2 && !S.name) { S.name = "Aoife Byrne"; S.number = "D00123456"; $("#fName").value = S.name; $("#fNum").value = S.number; }
+  if (+b.dataset.jump >= 3 && !S.fileChosen && !S.noFsa) chooseFile(true);
+  go(+b.dataset.jump);
+}));
+
+/* ---------------- kind (exam / practice) ---------------- */
+function setKind(k) {
+  S.kind = k; root.dataset.kind = k;
+  $$(".kind-word").forEach(el => el.textContent = k === "practice" ? "Practice paper" : "Examination");
+  if (!timeTouched) { setRadio("time", k === "practice" ? "hidden" : "left"); applySettings(); }
+  updateFileName();
+  if (S.screen === 5) renderFinish();
+  if (S.screen === 4) renderPaper();
+}
+$$('input[name="kind"]').forEach(r => r.addEventListener("change", () => setKind(r.value)));
+$("#scSaved").addEventListener("change", e => { S.saved = e.target.checked; });
+$("#scNoFsa").addEventListener("change", e => { S.noFsa = e.target.checked; if (S.noFsa) { S.fileChosen = false; } renderFile(); if (S.screen === 4) renderSave(); if (S.screen === 5) renderFinish(); });
+$$('input[name="load"]').forEach(r => r.addEventListener("change", () => { S.load = r.value; startLoading(); }));
+
+/* ---------------- screen 1: identity ---------------- */
+function normNum(v) { return v.toUpperCase().replace(/[\s-]/g, ""); }
+function showErr(input, id, msg) {
+  const el = $(id); el.hidden = !msg; el.textContent = msg || "";
+  input.setAttribute("aria-invalid", msg ? "true" : "false");
+}
+$("#toSettings").addEventListener("click", () => {
+  const nameEl = $("#fName"), numEl = $("#fNum");
+  const name = nameEl.value.trim(), num = normNum(numEl.value);
+  showErr(nameEl, "#fNameErr", name ? "" : "Type your full name.");
+  showErr(numEl, "#fNumErr", num ? "" : "Type your student number.");
+  if (!name) { nameEl.focus(); return; }
+  if (!num) { numEl.focus(); return; }
+  const shapeOk = /^[A-Z]\d{8}$/.test(num);
+  const w = $("#fNumWarn");
+  if (!shapeOk && !S.warnedShape) {
+    S.warnedShape = true;
+    w.hidden = false;
+    w.textContent = num + " has " + num.length + " characters. Student numbers here usually look like D00123456. Check it, then press Next again to continue.";
+    numEl.focus(); return;
+  }
+  w.hidden = true;
+  S.name = name; S.number = num; updateFileName();
+  if (S.saved && S.kind === "exam" && num === "D00123456" && !S.resumed) {
+    $("#idForm").hidden = true; $("#resume").hidden = false; S.resumeShown = true;
+    $("#resumeH").focus(); return;
+  }
+  go(2);
+});
+$("#fNum").addEventListener("input", () => { S.warnedShape = false; $("#fNumWarn").hidden = true; });
+$("#resumeGo").addEventListener("click", () => { S.resumed = true; S.begunAt = Date.now() - 38 * 60000; resetResume(); go(3); });
+$("#resumeAgain").addEventListener("click", () => { $("#againConfirm").hidden = false; $("#againYes").focus(); });
+$("#againNo").addEventListener("click", () => { $("#againConfirm").hidden = true; $("#resumeAgain").focus(); });
+$("#againYes").addEventListener("click", () => { S.saved = false; $("#scSaved").checked = false; resetResume(); go(2); });
+$("#resumeNotMe").addEventListener("click", () => { resetResume(); $("#fNum").focus(); });
+function resetResume() { $("#resume").hidden = true; $("#idForm").hidden = false; $("#againConfirm").hidden = true; S.resumeShown = false; }
+$("#haveFile").addEventListener("click", () => { const m = $("#fileMsg"); m.hidden = false; m.textContent = "Mockup: this opens your saved answer file, checks that it belongs to this paper, and shows how many answers it holds before you continue."; });
+$$("[data-mock]").forEach(b => b.addEventListener("click", () => { $("#invMsg").textContent = b.dataset.mock; }));
+
+/* ---------------- settings ---------------- */
+const STD = { font: "serif", size: 18, lh: 1.6, spacing: "normal", width: "68ch", scheme: "", ruler: false, motion: false, code: 16, ctheme: "auto", wrap: false, brackets: true, suggest: true };
+let timeTouched = false;
+function getRadio(n) { const r = $('input[name="' + n + '"]:checked'); return r ? r.value : ""; }
+function setRadio(n, v) { const r = $('input[name="' + n + '"][value="' + v + '"]'); if (r) r.checked = true; }
+function readSettings() {
+  return {
+    font: getRadio("font"), size: +$("#sSize").value, lh: +$("#sLh").value, spacing: getRadio("spacing"),
+    width: getRadio("width"), scheme: getRadio("scheme"), ruler: $("#sRuler").checked, motion: $("#sMotion").checked,
+    code: +$("#sCode").value, ctheme: getRadio("ctheme"), wrap: $("#sWrap").checked, brackets: $("#sBrackets").checked, suggest: $("#sSuggest").checked,
+  };
+}
+function applySettings() {
+  const s = readSettings();
+  root.dataset.font = s.font;
+  root.style.setProperty("--size", s.size + "px");
+  root.style.setProperty("--lh", s.lh.toFixed(1));
+  root.dataset.spacing = s.spacing;
+  root.style.setProperty("--measure", s.width === "100%" ? "100%" : s.width);
+  if (s.scheme) root.dataset.scheme = s.scheme; else delete root.dataset.scheme;
+  if (s.motion) root.dataset.motion = "reduce"; else delete root.dataset.motion;
+  root.style.setProperty("--code-size", s.code + "px");
+  $$(".cell").forEach(c => { if (s.ctheme === "auto") delete c.dataset.code; else c.dataset.code = s.ctheme; c.classList.toggle("wrap", s.wrap); });
+  $("#oSize").textContent = s.size + " px"; $("#sSize").setAttribute("aria-valuetext", s.size + " pixels");
+  $("#oLh").textContent = s.lh.toFixed(1); $("#sLh").setAttribute("aria-valuetext", s.lh.toFixed(1) + " times the text size");
+  $("#oCode").textContent = s.code + " px"; $("#sCode").setAttribute("aria-valuetext", s.code + " pixels");
+  $("#ruler").hidden = !s.ruler;
+  const differs = Object.keys(STD).some(k => STD[k] !== s[k]);
+  $("#remembered").hidden = !differs;
+  if (S.screen === 4) renderTime();
+}
+$("#setForm").addEventListener("input", e => { if (e.target.name === "time") timeTouched = true; applySettings(); });
+$("#setForm").addEventListener("change", e => { if (e.target.name === "time") timeTouched = true; applySettings(); });
+$$(".stepbtn").forEach(b => b.addEventListener("click", () => {
+  const r = $("#" + b.dataset.step); r.value = +r.value + +b.dataset.d; applySettings();
+}));
+$$("[data-reset]").forEach(b => b.addEventListener("click", () => {
+  setRadio("font", STD.font); $("#sSize").value = STD.size; $("#sLh").value = STD.lh; setRadio("spacing", STD.spacing);
+  setRadio("width", STD.width); setRadio("scheme", STD.scheme); $("#sRuler").checked = false; $("#sMotion").checked = false;
+  $("#sCode").value = STD.code; setRadio("ctheme", "auto"); $("#sWrap").checked = false; $("#sBrackets").checked = true; $("#sSuggest").checked = true;
+  applySettings();
+}));
+
+/* drawer: the same settings tool, moved in and out */
+let drawerReturn = null;
+function openDrawer(from) {
+  drawerReturn = from;
+  $("#drawerBody").appendChild($("#settingsTool"));
+  $("#drawer").hidden = false; $("#dscrim").hidden = false;
+  $("main").inert = true; $(".ribbon").inert = true;
+  $("#drawerH").setAttribute("tabindex", "-1"); $("#drawerH").focus();
+}
+function closeDrawer() {
+  $("#settingsHome").appendChild($("#settingsTool"));
+  $("#drawer").hidden = true; $("#dscrim").hidden = true;
+  $("main").inert = false; $(".ribbon").inert = false;
+  if (drawerReturn) drawerReturn.focus();
+}
+$$("[data-open-settings]").forEach(b => b.addEventListener("click", () => openDrawer(b)));
+$("#drawerX").addEventListener("click", closeDrawer);
+$("#drawerDone").addEventListener("click", closeDrawer);
+$("#dscrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (!$("#drawer").hidden) { closeDrawer(); return; }
+  if ($("#side").classList.contains("open")) { closeSide(); $("#menuBtn").focus(); return; }
+  if (!$("#savePop").hidden) { $("#savePop").hidden = true; $("#saveChip").setAttribute("aria-expanded", "false"); $("#saveChip").focus(); }
+});
+$("#drawer").addEventListener("keydown", e => {
+  if (e.key !== "Tab") return;
+  const f = $$('button, input, select, textarea, [tabindex="0"]', $("#drawer")).filter(x => !x.disabled && x.offsetParent !== null);
+  if (!f.length) return;
+  if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+  else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+});
+
+/* reading ruler: follows the mouse, keyboard focus and the typing line */
+const ruler = $("#ruler");
+function placeRuler(y) { ruler.style.top = Math.max(0, y - ruler.offsetHeight / 2) + "px"; }
+document.addEventListener("mousemove", e => { if (!ruler.hidden) placeRuler(e.clientY); });
+document.addEventListener("focusin", e => { if (!ruler.hidden) { const r = e.target.getBoundingClientRect(); placeRuler(r.top + Math.min(r.height, 40) / 2); } });
+function caretRuler(t) {
+  if (ruler.hidden || !t.matches("textarea")) return;
+  const cs = getComputedStyle(t), lhpx = parseFloat(cs.lineHeight) || 24;
+  const line = t.value.slice(0, t.selectionStart).split("\n").length - 1;
+  const r = t.getBoundingClientRect();
+  placeRuler(r.top + parseFloat(cs.paddingTop) + line * lhpx - t.scrollTop + lhpx / 2);
+}
+document.addEventListener("keyup", e => caretRuler(e.target));
+document.addEventListener("click", e => caretRuler(e.target));
+
+/* ---------------- loading (faked) ---------------- */
+let loadTimer = null;
+function startLoading() {
+  clearInterval(loadTimer);
+  Object.assign(S, { pyMB: 0, pyState: "loading", jediMB: 0, jediState: "waiting", checkState: "waiting", stallSince: null, lastMB: 0 });
+  const t0 = Date.now();
+  loadTimer = setInterval(() => {
+    const el = (Date.now() - t0) / 1000;
+    if (S.pyState === "loading") {
+      let rate = 0.62 + 0.25 * Math.sin(el * 1.7);
+      if (S.load === "slow" && S.pyMB >= 4.1 && el < 45) rate = 0;
+      if (S.load === "slow" && el >= 45) rate = 0.18;
+      if (S.load === "fail" && S.pyMB >= 3.2) { S.pyState = "failed"; }
+      else S.pyMB = Math.min(S.pyTotal, S.pyMB + rate * 0.5);
+      if (S.pyMB > S.lastMB + 0.01) { S.lastMB = S.pyMB; S.stallSince = null; } else if (!S.stallSince) S.stallSince = Date.now();
+      if (S.pyMB >= S.pyTotal) { S.pyState = "done"; S.checkState = "loading"; setTimeout(() => { S.checkState = "ready"; S.jediState = "loading"; renderAll(); }, 900); }
+    } else if (S.jediState === "loading") {
+      S.jediMB = Math.min(S.jediTotal, S.jediMB + 0.45);
+      if (S.jediMB >= S.jediTotal) S.jediState = "ready";
+    }
+    renderAll();
+    if (S.jediState === "ready" || S.pyState === "failed") { clearInterval(loadTimer); renderAll(); }
+  }, 500);
+  renderAll();
+}
+function pyReady() { return S.pyState === "done" && S.checkState === "ready"; }
+function setRow(id, state, word, sub, pct) {
+  const li = $('#checklist li[data-id="' + id + '"]'); if (!li) return;
+  li.dataset.state = state;
+  li.querySelector(".ci").innerHTML = ICON[state] || ICON.waiting;
+  li.querySelector(".cw").textContent = word;
+  if (sub !== undefined) li.querySelector(".cs").textContent = sub;
+  const bar = li.querySelector(".bar i"); if (bar && pct !== undefined) bar.style.width = pct + "%";
+  const barBox = li.querySelector(".bar"); if (barBox) barBox.hidden = !(state === "loading" || state === "slow");
+}
+let lastAnnounced = null;
+function renderReady() {
+  ["paper", "fonts", "store"].forEach(id => setRow(id, "ready", "Ready"));
+  const mb = S.pyMB.toFixed(1), stalled = S.stallSince && Date.now() - S.stallSince > 20000;
+  if (S.pyState === "loading") setRow("py", stalled ? "slow" : "loading", mb + " of 12.3 MB", "From the room computer · 12.3 MB", 100 * S.pyMB / S.pyTotal);
+  else if (S.pyState === "failed") setRow("py", "failed", "Failed", "From the room computer · 12.3 MB");
+  else setRow("py", "ready", "Ready", "From the room computer · 12.3 MB");
+  setRow("check", S.checkState === "ready" ? "ready" : S.checkState === "loading" ? "loading" : (S.pyState === "failed" ? "off" : "waiting"),
+    S.checkState === "ready" ? "Ready" : S.checkState === "loading" ? "Running" : (S.pyState === "failed" ? "Not run" : "Waiting"),
+    S.checkState === "ready" ? "print and input work · 0.2 s" : "Runs a short program that prints and asks for input");
+  if (S.jediState === "loading") setRow("jedi", "loading", S.jediMB.toFixed(1) + " of 5.3 MB", "Optional · 5.3 MB · you can begin without it", 100 * S.jediMB / S.jediTotal);
+  else if (S.jediState === "ready") setRow("jedi", "ready", "Ready", "Optional · press Ctrl+Space in a code cell");
+  else setRow("jedi", S.pyState === "failed" ? "off" : "waiting", S.pyState === "failed" ? "Not loaded" : "Waiting", "Optional · 5.3 MB · you can begin without it");
+
+  const st = $("#loadStatus"); let cls = "", icon = ICON.loading, msg;
+  if (S.pyState === "failed") {
+    cls = "bad"; icon = ICON.failed;
+    msg = "Python did not load. Your written answers work normally, and the code you write is saved even though it cannot run yet. Tell your invigilator.";
+  } else if (pyReady()) {
+    cls = "ok"; icon = ICON.ready; msg = S.jediState === "ready" ? "Everything is ready." : "Python is ready. Code suggestions are still loading; you can begin without them.";
+  } else if (stalled) {
+    cls = "warn"; icon = ICON.slow;
+    msg = (Date.now() - S.stallSince > 90000 ? "Python is still loading. Written answers work now. Tell your invigilator." : "Python is loading slowly. You can begin now. Run buttons will turn on by themselves.");
+  } else {
+    msg = "Python is still loading. You can begin now: written answers work, and Run buttons turn on by themselves.";
+  }
+  st.className = "status-line " + cls;
+  const key = cls + (pyReady() ? "r" : "") + (stalled ? "s" : "");
+  if (key !== lastAnnounced) { lastAnnounced = key; st.innerHTML = '<span class="ic" aria-hidden="true">' + icon + '</span><span></span>'; }
+  if (st.lastChild.textContent !== msg) st.lastChild.textContent = msg;
+  $("#failBox").hidden = S.pyState !== "failed";
+  $("#restoredLine").hidden = !S.resumed;
+  $("#beginBtn").textContent = S.resumed ? "Continue my work" : "Begin";
+  renderFile();
+}
+$("#retry").addEventListener("click", () => { S.load = "normal"; setRadio("load", "normal"); startLoading(); $("#loadStatus").focus(); });
+
+/* answer file choice */
+function updateFileName() {
+  const slug = (S.name || "aoife byrne").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  S.fileName = (S.kind === "practice" ? "pdp-5n2927-exam-2027-practice" : "pdp-5n2927-exam-2027") + "_" + (S.number || "D00123456") + "_" + slug + ".html";
+  if (S.screen === 3) renderFile();
+}
+function renderFile() {
+  const box = $("#fileBox"), t = $("#fileText"), b = $("#chooseFile");
+  if (S.noFsa) {
+    t.textContent = "This browser saves your work in the browser only. You will save your answer file at the end."; b.hidden = true; $("#fileNote").hidden = true; return;
+  }
+  b.hidden = false; $("#fileNote").hidden = false;
+  if (S.fileChosen) { t.innerHTML = 'Saving to <span class="fn"></span> in Documents.'; t.querySelector(".fn").textContent = S.fileName; b.textContent = "Change…"; }
+  else { t.textContent = "Choose where your answer file goes, for example your home folder or a USB stick. The page saves into it as you work."; b.textContent = "Choose where to save…"; }
+}
+function chooseFile(quiet) {
+  if (S.noFsa) return;
+  $("#chooseFile").disabled = true;
+  setTimeout(() => { S.fileChosen = true; $("#chooseFile").disabled = false; renderFile(); if (!quiet) $("#chooseFile").focus(); }, quiet ? 0 : 650);
+}
+$("#chooseFile").addEventListener("click", () => chooseFile(false));
+$("#extra").addEventListener("change", e => { $("#extraOther").hidden = e.target.value !== "other"; readExtra(); });
+$("#extraMin").addEventListener("input", readExtra);
+function readExtra() { const v = $("#extra").value; S.extra = v === "other" ? Math.max(0, Math.min(120, +$("#extraMin").value || 0)) : +v; }
+$("#beginBtn").addEventListener("click", () => { readExtra(); if (!S.begunAt) S.begunAt = Date.now(); go(4); });
+
+/* ---------------- screen 4: the paper ---------------- */
+const QUESTIONS = [
+  { n: 1, t: "Expressions, Strings and Variables", total: 5, hidden: 5 },
+  { n: 2, t: "Functions", total: 6, hidden: 6 },
+  { n: 3, t: "Languages, Variables and Programs", total: 7, hidden: 3 },
+  { n: 4, t: "Loops", total: 8, hidden: 7 },
+];
+function answeredVisible() {
+  let n = 0;
+  $$(".answer textarea").forEach(t => { if (t.value.trim()) n++; });
+  if ($("#code3e").value.trim() && $("#code3e").value.trim() !== "# Write your program here") n++;
+  return n;
+}
+function qDone(q) { return q.n === 3 ? q.hidden + answeredVisible() : q.hidden; }
+function renderNav() {
+  const ul = $("#qnav"); ul.innerHTML = "";
+  QUESTIONS.forEach(q => {
+    const d = qDone(q), li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button"; if (q.n === 3) b.setAttribute("aria-current", "true");
+    b.innerHTML = '<span class="qn"></span><span class="qt"></span><span class="qm"></span><span class="qbar" aria-hidden="true"><i></i></span>';
+    b.querySelector(".qn").textContent = q.n;
+    b.querySelector(".qt").textContent = q.t;
+    b.querySelector(".qm").textContent = "15 marks · " + d + " of " + q.total + " parts answered";
+    b.querySelector(".qbar i").style.width = (100 * d / q.total) + "%";
+    b.addEventListener("click", () => {
+      closeSide();
+      if (q.n === 3) { $("#q3").focus(); $("#navNote").textContent = ""; }
+      else $("#navNote").textContent = "Mockup: only Question 3 is shown.";
+    });
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+function renderAnswers() {
+  $$(".answer").forEach(a => {
+    const t = a.querySelector("textarea"); if (!t) return;
+    const filled = !!t.value.trim(); a.classList.toggle("filled", filled);
+    a.querySelector(".st").textContent = filled ? "● answered" : "○ empty";
+    t.setAttribute("aria-description", filled ? "answered" : "empty");
+  });
+}
+function renderPaper() {
+  $("#tbWho").textContent = S.name || "Aoife Byrne";
+  renderNav(); renderAnswers(); renderTime(); renderSave(); renderCell(); updateGutter();
+}
+
+/* time */
+function renderTime() {
+  const chip = $("#timeChip"); const mode = getRadio("time");
+  chip.hidden = mode === "hidden";
+  if (mode === "hidden") return;
+  const allowed = (120 + S.extra) * 60000, used = S.begunAt ? Date.now() - S.begunAt : 0, left = allowed - used;
+  chip.classList.remove("low");
+  let text;
+  if (mode === "clock") text = clock();
+  else if (left <= 0) text = "Time allowed has passed";
+  else {
+    const m = Math.ceil(left / 60000), h = Math.floor(m / 60), mm = m % 60;
+    text = h ? h + " h" + (mm ? " " + mm + " min" : "") + " left" : mm + " min left";
+    if (m <= 10) { chip.classList.add("low"); text = m + " min left"; }
+  }
+  chip.innerHTML = ICON.clock + "<span></span>";
+  chip.lastChild.textContent = text;
+  chip.setAttribute("aria-label", (mode === "clock" ? "Clock: " : "Time: ") + text + (S.extra ? ", including " + S.extra + " minutes extra time" : "") + ". Press to switch between time left and the clock.");
+}
+$("#timeChip").addEventListener("click", () => { timeTouched = true; setRadio("time", getRadio("time") === "clock" ? "left" : "clock"); applySettings(); });
+setInterval(() => { if (S.screen === 4) renderTime(); if (S.screen === 3) renderReady(); }, 15000);
+
+/* save indicator: only ever shows a completed write */
+let saveTimer = null;
+function renderSave(state) {
+  const c = $("#saveChip");
+  const fileOn = S.fileChosen && !S.noFsa;
+  c.className = "chip";
+  let html, label;
+  if (state === "saving") { html = ICON.saving + "<span>Saving…</span>"; label = "Saving"; }
+  else if (!S.browserOk && !fileOn) { c.classList.add("bad"); html = ICON.cross + "<span>Not being saved</span>"; label = "Your work is not being saved"; }
+  else if (!S.browserOk) { c.classList.add("warn"); html = ICON.warn + "<span>Not saved in this browser</span>"; label = "Not saved in this browser. Answer file saved at " + (S.fileSavedAt ? clock(S.fileSavedAt) : "not yet"); }
+  else {
+    c.classList.add("ok");
+    const at = S.browserSavedAt ? clock(S.browserSavedAt) : null;
+    html = ICON.save + "<span>" + (at ? "Saved " + at + (fileOn ? "" : " in this browser") : "Saved") + "</span>";
+    label = at ? "Saved at " + at + (fileOn ? " in this browser and your answer file" : " in this browser only") : "Saved";
+  }
+  c.innerHTML = html; c.setAttribute("aria-label", label + ". Press for details.");
+  $("#popBrowser").textContent = S.browserOk ? (S.browserSavedAt ? "✓ Saved at " + clock(S.browserSavedAt, true) : "✓ Ready") : "✗ Not saved: this browser's storage is full";
+  $("#popFile").textContent = S.noFsa ? "This browser cannot save to a file as you go. You will save your answer file at the end." : fileOn ? "✓ Saved at " + (S.fileSavedAt ? clock(S.fileSavedAt, true) : "—") + " to " + S.fileName : "No answer file chosen. You will save it at the end.";
+  $("#sideSave").textContent = fileOn ? "Your work saves by itself, in this browser and in your answer file." : "Your work saves by itself in this browser. You will save your answer file at the end.";
+  const b = $("#storeBanner");
+  if (!S.browserOk) {
+    b.hidden = false;
+    $("#storeBannerText").textContent = fileOn
+      ? "This browser's storage is full, so your latest work is not saved here. Your answer file is still saving (last saved " + (S.fileSavedAt ? clock(S.fileSavedAt, true) : "—") + "). Nothing is lost. To be safe, press Save a copy now."
+      : "Your work is not being saved: this browser's storage is full and there is no answer file. Press Save a copy now, then tell your invigilator.";
+  } else b.hidden = true;
+}
+function changed() {
+  if (S.handedFileAt) S.changedSinceFile++;
+  renderSave("saving"); clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const now = new Date();
+    if (S.full) { S.browserOk = false; $("#saveAnnounce").textContent = "Your work could not be saved in this browser."; } else { S.browserOk = true; S.browserSavedAt = now; }
+    if (S.fileChosen && !S.noFsa) S.fileSavedAt = new Date(now.getTime() + 400);
+    renderSave(); renderNav();
+  }, 700);
+}
+$("#saveChip").addEventListener("click", () => {
+  const p = $("#savePop"), open = p.hidden; p.hidden = !open; $("#saveChip").setAttribute("aria-expanded", String(open));
+});
+$("#scFull").addEventListener("click", () => {
+  S.full = true;
+  if (S.screen !== 4) { if (!S.name) { S.name = "Aoife Byrne"; S.number = "D00123456"; } go(4); }
+  changed(); $("#scen").open = false;
+});
+$("#saveCopy").addEventListener("click", () => { $("#storeBannerText").textContent = "Mockup: a copy of your answer file was saved to Downloads at " + clock(new Date(), true) + ". Keep working; tell your invigilator if this message stays."; });
+$("#storeRetry").addEventListener("click", () => { S.full = false; changed(); });
+
+$$(".answer textarea").forEach(t => t.addEventListener("input", () => { renderAnswers(); changed(); }));
+
+/* side panel on narrow screens */
+function openSide() { const s = $("#side"); s.classList.add("open"); s.inert = false; $("#scrim").hidden = false; $("#menuBtn").setAttribute("aria-expanded", "true"); const f = s.querySelector("button"); f && f.focus(); }
+function closeSide() { const s = $("#side"); s.classList.remove("open"); $("#scrim").hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false"); syncSideInert(); }
+function syncSideInert() { $("#side").inert = window.matchMedia("(max-width: 899px)").matches && !$("#side").classList.contains("open"); }
+$("#menuBtn").addEventListener("click", () => $("#side").classList.contains("open") ? closeSide() : openSide());
+$("#scrim").addEventListener("click", () => { closeSide(); $("#menuBtn").focus(); });
+window.matchMedia("(max-width: 899px)").addEventListener("change", syncSideInert); syncSideInert();
+$("#refSide").addEventListener("click", () => { $("#navNote").textContent = "Mockup: Reference opens a searchable Python reference sheet in this panel."; });
+$("#refBtn").addEventListener("click", () => { $("#navNote").textContent = "Mockup: Reference opens a searchable Python reference sheet in this panel."; openSide(); if (!window.matchMedia("(max-width: 899px)").matches) $("#navNote").scrollIntoView({ block: "nearest" }); });
+
+/* code cell: editor, run, input(), stop */
+const code = $("#code3e"), out = $("#out3e");
+let escArmed = false, runTimer = null;
+function updateGutter() { const n = code.value.split("\n").length; $("#gutter").textContent = Array.from({ length: n }, (_, i) => i + 1).join("\n"); $("#gutter").scrollTop = code.scrollTop; }
+code.addEventListener("scroll", () => { $("#gutter").scrollTop = code.scrollTop; });
+code.addEventListener("keydown", e => {
+  if (e.key === "Escape") { escArmed = true; e.stopPropagation(); return; }
+  if (e.key === "Tab" && !escArmed) {
+    e.preventDefault();
+    const s = code.selectionStart, en = code.selectionEnd;
+    code.setRangeText("    ", s, en, "end"); code.dispatchEvent(new Event("input"));
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); if (!S.running) run(); return; }
+  if (e.key !== "Tab") escArmed = false;
+});
+code.addEventListener("blur", () => { escArmed = false; });
+code.addEventListener("input", () => { updateGutter(); if (S.everRun) S.codeEditedSinceRun = true; renderCell(); renderNav(); changed(); });
+function renderCell() {
+  const btn = $("#runBtn"), st = $("#cellStatus");
+  $("#editedTag").hidden = !S.codeEditedSinceRun;
+  if (S.running) { btn.disabled = false; btn.textContent = "Stop"; btn.classList.add("stop"); return; }
+  btn.classList.remove("stop"); btn.textContent = "Run";
+  if (S.pyState === "failed") { btn.disabled = true; st.textContent = "Python did not load · your code is saved"; }
+  else if (!pyReady()) { btn.disabled = true; st.textContent = "Python loading · " + S.pyMB.toFixed(1) + " of 12.3 MB"; }
+  else if (S.restarting) { btn.disabled = true; st.textContent = "Restarting Python…"; }
+  else { btn.disabled = false; st.textContent = S.lastRun ? "Ran at " + S.lastRun : "Ready"; }
+}
+function line(text, cls) { const p = document.createElement("pre"); if (cls) p.className = cls; p.textContent = text; out.appendChild(p); return p; }
+function run() {
+  if (!pyReady()) return;
+  S.running = true; S.everRun = true; S.codeEditedSinceRun = false; out.innerHTML = ""; renderCell();
+  runTimer = setTimeout(() => {
+    const prompt = "Enter the radius: ";
+    const wrap = document.createElement("div"); wrap.className = "stdin";
+    wrap.innerHTML = '<label for="stdinBox"></label><input id="stdinBox" type="text" autocomplete="off" spellcheck="false"><button type="button" class="sendbtn">Send (Enter)</button><span class="note">Your program is waiting for you to type. Stop ends it.</span>';
+    wrap.querySelector("label").textContent = prompt.trim();
+    out.appendChild(wrap);
+    const box = wrap.querySelector("input");
+    const send = () => answer(box.value, prompt, wrap);
+    box.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); send(); } });
+    wrap.querySelector("button").addEventListener("click", send);
+    box.focus();
+  }, 350);
+}
+function answer(val, prompt, wrap) {
+  wrap.remove();
+  const p = line(prompt); const echo = document.createElement("span"); echo.className = "echo"; echo.textContent = val; p.appendChild(echo);
+  const ok = /^\s*-?\d+(\.\d+)?\s*$/.test(val);
+  setTimeout(() => {
+    if (ok) {
+      const r = parseFloat(val), v = Math.round((4 / 3) * Math.PI * r ** 3 * 100) / 100;
+      line("The volume is " + (Number.isInteger(v) ? v.toFixed(1) : String(v)));
+    } else {
+      line("Line 3 of your code\nValueError: could not convert string to float: '" + val + "'", "errblock");
+      if (S.kind === "practice") { const n = document.createElement("p"); n.className = "note"; n.textContent = "Hint: float() needs a number written with digits, such as 3 or 2.5."; out.appendChild(n); }
+    }
+    S.running = false; S.lastRun = clock(); renderCell(); changed(); code.focus();
+  }, 250);
+}
+function stop() {
+  clearTimeout(runTimer); S.running = false; S.restarting = true;
+  $$(".stdin", out).forEach(w => w.remove());
+  const n = document.createElement("p"); n.className = "note";
+  n.textContent = "Stopped. Python restarted, so variables from other cells are gone. Run the cells this code needs, then run it again.";
+  out.appendChild(n); renderCell();
+  setTimeout(() => { S.restarting = false; renderCell(); }, 1600);
+}
+$("#runBtn").addEventListener("click", () => S.running ? stop() : run());
+
+/* ---------------- screen 5: finish ---------------- */
+function totals() {
+  const total = QUESTIONS.reduce((a, q) => a + q.total, 0), done = QUESTIONS.reduce((a, q) => a + qDone(q), 0);
+  return { total, done };
+}
+function renderFinish() {
+  const { total, done } = totals();
+  const empty = [];
+  if (!$("#a1").value.trim()) empty.push(["3(a)(i)", "#a1", 1]);
+  if (!$("#a2").value.trim()) empty.push(["3(a)(ii)", "#a2", 1]);
+  if (!$("#a3").value.trim()) empty.push(["3(a)(iii)", "#a3", 1]);
+  empty.push(["4(f): explanation", null, 1]);
+  const emptyMarks = empty.reduce((a, e) => a + e[2], 0);
+  const ul = $("#checkList"); ul.innerHTML = "";
+  const add = (cls, icon, build) => { const li = document.createElement("li"); li.innerHTML = '<span class="ic ' + cls + '" aria-hidden="true">' + icon + "</span><span></span>"; build(li.lastChild); ul.appendChild(li); };
+  add("warnc", ICON.warn, s => {
+    s.append(empty.length + " answer space" + (empty.length === 1 ? " is" : "s are") + " empty, worth " + emptyMarks + " mark" + (emptyMarks === 1 ? "" : "s") + ": ");
+    empty.forEach(([lab, sel], i) => {
+      if (i) s.append(", ");
+      const b = document.createElement("button"); b.type = "button"; b.className = "linkbtn"; b.textContent = lab;
+      b.addEventListener("click", () => { go(4, false); setTimeout(() => sel ? $(sel).focus() : ($("#navNote").textContent = "Mockup: Question 4 is not shown.", openSide()), 40); });
+      s.append(b);
+    });
+    s.append(".");
+  });
+  if (S.codeEditedSinceRun || !S.everRun) add("warnc", ICON.warn, s => {
+    s.append(S.everRun ? "1 code answer was changed after it last ran: " : "1 code answer has not been run in this sitting: ");
+    const b = document.createElement("button"); b.type = "button"; b.className = "linkbtn"; b.textContent = "3(e)";
+    b.addEventListener("click", () => { go(4, false); setTimeout(() => code.focus(), 40); }); s.append(b, ". Its saved output may not match the code.");
+  });
+  add("okc", ICON.ready, s => s.append(done + " of " + total + " answer spaces used. Rough work is not checked."));
+  add("okc", ICON.ready, s => s.append("Handing in as " + (S.name || "Aoife Byrne") + ", " + (S.number || "D00123456") + "."));
+
+  const fileOn = S.fileChosen && !S.noFsa;
+  $("#f2text").textContent = fileOn
+    ? "Your answer file is " + S.fileName + ". The page saves it one last time, then opens it again to check that it holds your work."
+    : "Save your answer file. Your browser puts it in your Downloads folder.";
+  $("#saveFileBtn").textContent = fileOn ? "Save and check my answer file" : "Save my answer file";
+  if (S.kind === "practice") {
+    $("#f3h").textContent = "Keep your file";
+    $("#f3text").textContent = "Keep your answer file so you can look at it with your lecturer. In the real exam, this step tells you where to upload the file, and your invigilator checks the card below.";
+  } else {
+    $("#f3h").textContent = "Hand it in";
+    $("#f3text").innerHTML = "Upload the file to <b>PDP Written Examination submission</b> on Moodle. Then raise your hand. Your invigilator will check the card below.";
+  }
+  $("#finishIntro").textContent = S.kind === "practice"
+    ? "These are the steps you will follow in the real exam, so it is worth practising them now. You can go back to the paper at any time."
+    : "Three steps. Nothing ends until you choose; you can go back to the paper at any time.";
+  const cn = $("#changedNotice");
+  if (S.handedFileAt && S.changedSinceFile) {
+    cn.hidden = false; cn.textContent = "You changed your answers after saving your file at " + clock(S.handedFileAt) + ". Save it again and hand in the new one.";
+    $("#f2").classList.remove("done"); $("#confirmCard").hidden = true; $("#f2result").hidden = true;
+  } else cn.hidden = true;
+}
+async function receiptFor(obj) {
+  const txt = JSON.stringify(obj);
+  try {
+    const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
+    return [...new Uint8Array(h)].slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  } catch (e) {
+    let x = 2166136261; for (const ch of txt) { x ^= ch.codePointAt(0); x = Math.imul(x, 16777619) >>> 0; } return x.toString(16).toUpperCase().padStart(8, "0");
+  }
+}
+$("#saveFileBtn").addEventListener("click", async () => {
+  const btn = $("#saveFileBtn"); btn.disabled = true; btn.textContent = "Saving…";
+  const data = { exam_code: "pdp-5n2927-exam-2027", variant: S.kind, number: S.number || "D00123456", name: S.name || "Aoife Byrne",
+    answers: { "3(a)(i)": $("#a1").value, "3(a)(ii)": $("#a2").value, "3(a)(iii)": $("#a3").value, "3(e)": code.value } };
+  const rc = await receiptFor(data); S.receipt = rc.slice(0, 4) + " " + rc.slice(4);
+  setTimeout(() => {
+    const fileOn = S.fileChosen && !S.noFsa, { total, done } = totals(), now = new Date();
+    S.handedFileAt = now; S.changedSinceFile = 0;
+    const r = $("#f2result"); r.hidden = false; r.className = "okline";
+    r.textContent = fileOn
+      ? "Checked: the file holds " + done + " answers. Receipt " + S.receipt + "."
+      : "Your browser put " + S.fileName + " in Downloads. To check it, open it: it shows your answers. (Mockup: no file is created.)";
+    $("#f2").classList.add("done"); $("#changedNotice").hidden = true;
+    $("#cName").textContent = S.name || "Aoife Byrne"; $("#cNum").textContent = S.number || "D00123456";
+    $("#cCount").textContent = done + " of " + total; $("#cTime").textContent = clock(now) + " today";
+    $("#cFile").textContent = S.fileName; $("#cReceipt").textContent = S.receipt;
+    $("#confirmCard").hidden = false; $("#removeMsg").textContent = "";
+    btn.disabled = false; btn.textContent = fileOn ? "Save and check again" : "Save my answer file again";
+  }, 700);
+});
+$("#removeBtn").addEventListener("click", () => { $("#removeMsg").textContent = "Mockup: your work would now be removed from this browser. Your answer file is not touched."; });
+
+/* ---------------- render loop hooks ---------------- */
+function renderAll() {
+  if (S.screen === 3) renderReady();
+  if (S.screen === 4) renderCell();
+}
+
+/* start */
+setKind("exam");
+applySettings();
+updateFileName();
+startLoading();
+renderReady();
+</script>
+</body>
+</html>

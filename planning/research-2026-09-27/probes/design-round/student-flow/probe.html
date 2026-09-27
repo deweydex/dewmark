@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><body><pre id=o></pre><script>
+(async()=>{const r={};r.proto=location.protocol;r.secure=window.isSecureContext;r.subtle=!!(window.crypto&&crypto.subtle);
+r.fsa='showSaveFilePicker' in window;
+try{const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('abc'));r.hash=[...new Uint8Array(h)].slice(0,4).map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){r.hashErr=String(e)}
+try{const x=await fetch('probe.html');r.fetch=x.status}catch(e){r.fetchErr=String(e).slice(0,80)}
+r.pageMargin=CSS.supports('selector(:root)');
+document.getElementById('o').textContent=JSON.stringify(r);})();
+</script>

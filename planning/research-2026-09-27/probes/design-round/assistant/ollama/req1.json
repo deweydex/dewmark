@@ -1,0 +1,10 @@
+{"model":"qwen3:0.6b","temperature":0,"seed":1,"max_tokens":400,"stream":false,
+ "reasoning_effort":"none",
+ "messages":[{"role":"system","content":"You check exam papers. Reply only with JSON matching the schema."},
+  {"role":"user","content":"<exam nonce=\"K3f9\">\nQ1 (5 marks). Name two sorting algorithms. (a) 2 marks (b) 2 marks\n</exam>\nList problems."}],
+ "response_format":{"type":"json_schema","json_schema":{"name":"dewmark_check_paper_v1","strict":true,"schema":{
+   "type":"object","additionalProperties":false,"required":["issues"],
+   "properties":{"issues":{"type":"array","maxItems":20,"items":{"type":"object","additionalProperties":false,
+     "required":["where","kind","quote","explanation"],
+     "properties":{"where":{"type":"string"},"kind":{"type":"string","enum":["ambiguous","marks_dont_add_up","other"]},
+       "quote":{"type":"string"},"explanation":{"type":"string"}}}}}}}}}

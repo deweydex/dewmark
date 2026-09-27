@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Examination: Programming and Design Principles 5N2927</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/runmode/runmode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible+Mono:wght@400;700&family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5/700.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── Theme tokens ─────────────────────────────────────────────────────── */
+:root{
+  --bg:#f2f2f2;--surface:#fff;--border:#ccc;--rule:#e6e6e6;--text:#222;--muted:#666;
+  --accent:#2c5f8a;--accent-lt:#e4eef7;--accent-dk:#1e4a70;--on-accent:#fff;
+  --error:#c0392b;--error-bg:#fff5f5;--error-bd:#f5c6cb;--success:#27ae60;--warn:#b9770e;
+  --out-bg:#fafafa;--inline-code:#ebebeb;--bar-bg:#efefef;--code-bg:#fdfdfd;
+  --echo-bg:#fff3c4;--echo-text:#5a4300;
+  --panel:272px;--hdr:48px;--radius:5px;
+  --read-font:Georgia,"Times New Roman",serif;
+  --ui-font:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --code-font:"Courier New",monospace;
+  --fs:17px;--lh:1.6;--ls:0em;--ws:0em;--measure:75ch;--code-fs:15px
+}
+[data-theme="cream"]{
+  --bg:#ebe4d2;--surface:#fbf6e9;--border:#d6c9a8;--rule:#ece3cc;--text:#2b2517;--muted:#6a5f47;
+  --accent:#2c5f8a;--accent-lt:#e3ebef;--accent-dk:#1e4a70;
+  --out-bg:#f7f1e1;--inline-code:#efe6cf;--bar-bg:#f1e9d4;--code-bg:#fffaf0
+}
+[data-theme="blue"]{
+  --bg:#d9e5ee;--surface:#edf4f9;--border:#b6c8d6;--rule:#d7e3ec;--text:#1b2631;--muted:#566574;
+  --accent:#2c5f8a;--accent-lt:#dbe8f3;--accent-dk:#1e4a70;
+  --out-bg:#e7f0f6;--inline-code:#dce7ef;--bar-bg:#e1ecf4;--code-bg:#f5f9fc
+}
+[data-theme="dark"]{
+  --bg:#1a1e23;--surface:#232930;--border:#3b444e;--rule:#2f363e;--text:#e2e6ea;--muted:#9ba6b1;
+  --accent:#86b6e0;--accent-lt:#223449;--accent-dk:#aecff0;--on-accent:#0d1b28;
+  --error:#ff8a80;--error-bg:#3a2224;--error-bd:#6b3a3e;--success:#6fd49a;--warn:#f0c060;
+  --out-bg:#1e2328;--inline-code:#2e353d;--bar-bg:#2a3038;--code-bg:#282a36;
+  --echo-bg:#4a4020;--echo-text:#ffe7a0
+}
+[data-theme="contrast"]{
+  --bg:#000;--surface:#000;--border:#fff;--rule:#777;--text:#fff;--muted:#e8e8e8;
+  --accent:#ffd400;--accent-lt:#2b2400;--accent-dk:#ffe45c;--on-accent:#000;
+  --error:#ff6b6b;--error-bg:#1a0000;--error-bd:#ff6b6b;--success:#5dff8f;--warn:#ffd400;
+  --out-bg:#000;--inline-code:#1d1d1d;--bar-bg:#111;--code-bg:#000;
+  --echo-bg:#ffd400;--echo-text:#000
+}
+
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--ui-font);background:var(--bg);color:var(--text);font-size:16px;line-height:1.5}
+.reduce-motion *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+button{font-family:var(--ui-font)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ── Name screen ──────────────────────────────────────────────────────── */
+#name-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
+  justify-content:center;overflow-y:auto;padding:24px;z-index:50}
+.name-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:34px 42px;max-width:500px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,.08);
+  font-family:var(--read-font);letter-spacing:var(--ls);word-spacing:var(--ws)}
+.nc-inst{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:var(--ui-font);margin-bottom:6px}
+.nc-college{font-size:1.45rem;font-weight:bold;color:var(--accent);margin-bottom:12px;line-height:1.25}
+.name-card hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+.nc-module{font-size:1rem;font-weight:bold;font-family:var(--ui-font);margin-bottom:3px}
+.nc-paper{font-size:.9rem;color:var(--muted);font-family:var(--ui-font);margin-bottom:20px}
+.name-card label.lbl{display:block;font-size:.9rem;margin-bottom:5px;font-family:var(--ui-font)}
+.name-card input[type=text]{width:100%;padding:9px 12px;border:1px solid var(--border);background:var(--surface);color:var(--text);
+  border-radius:var(--radius);font-size:1.05rem;font-family:var(--read-font);margin-bottom:14px}
+.name-card input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-lt)}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:.86rem;font-family:var(--ui-font);margin-bottom:12px;cursor:pointer}
+.chk input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex-shrink:0}
+.note{font-size:.82rem;color:var(--text);font-family:var(--ui-font);padding:10px 12px;background:var(--accent-lt);
+  border-radius:var(--radius);margin-bottom:16px;line-height:1.45}
+.btn-start{width:100%;padding:11px;background:var(--accent);color:var(--on-accent);border:none;
+  border-radius:var(--radius);font-size:1rem;cursor:pointer;font-weight:600}
+.btn-start:hover{background:var(--accent-dk)}
+.btn-ghost{width:100%;padding:9px;background:transparent;color:var(--accent);border:1px solid var(--accent);
+  border-radius:var(--radius);font-size:.92rem;cursor:pointer;margin-top:8px}
+.btn-ghost:hover{background:var(--accent-lt)}
+.nc-foot{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.linkish{background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:.84rem;padding:2px 0}
+.nc-py{font-size:.78rem;color:var(--muted);font-family:var(--ui-font);margin-top:14px;display:flex;gap:8px;align-items:center}
+#resume-box{border:1px solid var(--accent);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-family:var(--ui-font);font-size:.88rem}
+#resume-box .btn-start{margin-top:10px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block;flex-shrink:0}
+.dot.ok{background:var(--success)} .dot.err{background:var(--error)}
+
+/* ── App layout ───────────────────────────────────────────────────────── */
+#app{display:none;flex-direction:column;position:fixed;inset:0}
+#hdr{height:var(--hdr);background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.h-title{flex:1;font-size:.88rem;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.h-chip{font-size:.76rem;white-space:nowrap;display:flex;align-items:center;gap:6px;color:var(--muted)}
+#timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+#timer.low{color:var(--warn)} #timer.over{color:var(--error)}
+#save-status{font-size:.74rem;white-space:nowrap;min-width:70px;text-align:right}
+.hbtn{padding:6px 11px;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);
+  background:var(--surface);font-size:.8rem;cursor:pointer;white-space:nowrap}
+.hbtn:hover{background:var(--accent-lt);border-color:var(--accent)}
+.hbtn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.hbtn.pri:hover{background:var(--accent-dk)}
+.hbtn[aria-pressed="true"]{background:var(--accent-lt);border-color:var(--accent)}
+#menu-btn{display:none}
+#body-row{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* Sidebar */
+#side{width:var(--panel);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto}
+.sd-h{padding:9px 13px;font-size:.74rem;font-weight:bold;color:var(--accent);border-bottom:1px solid var(--border);
+  background:var(--accent-lt);letter-spacing:.05em;text-transform:uppercase}
+#sd-student{padding:10px 13px;border-bottom:1px solid var(--border);background:var(--bg)}
+#sd-student small{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+#sd-student b{font-size:.95rem;color:var(--accent);word-break:break-word}
+.nav-item{display:flex;align-items:center;padding:8px 13px;border-bottom:1px solid var(--rule);cursor:pointer;gap:9px;
+  text-decoration:none;color:var(--text)}
+.nav-item:hover{background:var(--accent-lt)}
+.nav-num{font-size:.74rem;font-weight:bold;color:var(--on-accent);background:var(--accent);border-radius:50%;width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-lbl{font-size:.8rem;line-height:1.25;flex:1}
+.nav-meta{font-size:.7rem;color:var(--muted);text-align:right;flex-shrink:0;line-height:1.3}
+.nav-bar{height:3px;background:var(--rule);border-radius:2px;margin-top:4px;overflow:hidden}
+.nav-bar i{display:block;height:100%;background:var(--success);width:0}
+.sd-row{padding:8px 13px;border-bottom:1px solid var(--rule);font-size:.78rem;line-height:1.4}
+.sd-row .k{font-family:var(--code-font);font-weight:bold;color:var(--accent);font-size:.76rem}
+.sd-row .d{color:var(--muted);font-size:.74rem}
+.sd-btn{margin:10px 13px;padding:7px 10px;width:calc(100% - 26px);border:1px solid var(--border);background:var(--surface);
+  color:var(--text);border-radius:var(--radius);cursor:pointer;font-size:.8rem}
+.sd-btn:hover{border-color:var(--accent);background:var(--accent-lt)}
+
+/* Main */
+#main{flex:1;overflow-y:auto;padding:24px 26px 90px;scroll-behavior:smooth}
+.sheet{max-width:var(--measure);margin:0 auto;font-size:var(--fs);line-height:var(--lh);
+  letter-spacing:var(--ls);word-spacing:var(--ws);font-family:var(--read-font)}
+
+/* Markdown */
+.md{margin-bottom:16px}
+.md h1{font-size:1.4em;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:6px;margin-bottom:12px;line-height:1.3}
+.md h2{font-size:1.2em;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:4px;margin:30px 0 12px;line-height:1.3;scroll-margin-top:12px}
+.md h3{font-size:1.02em;color:var(--text);margin:20px 0 8px}
+.md p{margin-bottom:10px}
+.md ul,.md ol{margin:6px 0 12px 24px}
+.md li{margin-bottom:5px}
+.md code{background:var(--inline-code);padding:1px 5px;border-radius:3px;font-family:var(--code-font);font-size:.9em;letter-spacing:0;word-spacing:0}
+.md hr{border:none;border-top:1px solid var(--border);margin:18px 0}
+.md table{border-collapse:collapse;margin:10px 0;font-family:var(--ui-font);font-size:.86em;width:100%}
+.md th{background:var(--accent-lt);padding:6px 10px;border:1px solid var(--border);text-align:left}
+.md td{padding:5px 10px;border:1px solid var(--border)}
+.md blockquote{border-left:4px solid var(--accent);background:var(--accent-lt);padding:8px 14px;margin:10px 0;border-radius:0 var(--radius) var(--radius) 0}
+.display-code{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin:6px 0 16px;
+  font-family:var(--code-font);font-size:var(--code-fs);line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;letter-spacing:0;word-spacing:0;counter-reset:ln}
+
+/* Numbered code lines (display blocks on screen, all code in print) */
+.pl{display:block;position:relative;padding-left:3.2em;white-space:pre-wrap;overflow-wrap:anywhere;counter-increment:ln;min-height:1.5em}
+.pl::before{content:counter(ln);position:absolute;left:0;width:2.2em;text-align:right;color:var(--muted);opacity:.8}
+
+/* Cells */
+.cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:6px 0 20px;overflow:hidden}
+.cell-bar{background:var(--bar-bg);border-bottom:1px solid var(--border);padding:5px 10px;display:flex;align-items:center;gap:8px;
+  font-family:var(--ui-font);letter-spacing:0;word-spacing:0}
+.cell-lbl{font-size:.78rem;color:var(--muted);flex:1;font-weight:600}
+.cell-stat{font-size:.72rem;color:var(--muted)}
+.cell-stat.ok{color:var(--success)} .cell-stat.err{color:var(--error)}
+.run-hint{font-size:.7rem;color:var(--muted)}
+.run-btn{padding:4px 14px;background:var(--accent);color:var(--on-accent);border:none;border-radius:var(--radius);font-size:.8rem;cursor:pointer;font-weight:600}
+.run-btn:hover{background:var(--accent-dk)}
+.run-btn:disabled{background:#999;color:#fff;cursor:not-allowed}
+.mini-btn{padding:3px 9px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--radius);font-size:.72rem;cursor:pointer}
+.mini-btn:hover{color:var(--text);border-color:var(--accent)}
+
+/* CodeMirror: grows with content, never scrolls vertically */
+.CodeMirror{height:auto!important;min-height:90px;font-family:var(--code-font);font-size:var(--code-fs);line-height:1.55;border:none}
+.CodeMirror-scroll{overflow-y:hidden!important;overflow-x:auto;min-height:90px}
+.cm-s-default.CodeMirror{background:var(--code-bg);color:var(--text)}
+.cm-s-default .CodeMirror-gutters{background:var(--bar-bg);border-right:1px solid var(--border)}
+.cm-s-default .CodeMirror-linenumber{color:var(--muted)}
+.cm-s-default .CodeMirror-cursor{border-left-color:var(--text)}
+[data-theme="dark"] .cm-s-default .cm-keyword,[data-theme="contrast"] .cm-s-default .cm-keyword{color:#c792ea}
+.CodeMirror-hints{font-family:var(--code-font);font-size:calc(var(--code-fs) - 1px);z-index:60;border-radius:var(--radius);
+  background:var(--surface);border-color:var(--border);max-height:18em}
+.CodeMirror-hint{color:var(--text);padding:2px 8px;display:flex;gap:12px;justify-content:space-between}
+li.CodeMirror-hint-active{background:var(--accent);color:var(--on-accent)}
+.hint-type{opacity:.6;font-size:.85em;font-family:var(--ui-font)}
+.sig-tip{font-family:var(--code-font);font-size:calc(var(--code-fs) - 2px);padding:5px 12px;border-top:1px dashed var(--border);
+  background:var(--accent-lt);color:var(--text);letter-spacing:0;word-spacing:0;overflow-wrap:anywhere}
+.sig-tip b{color:var(--accent-dk);text-decoration:underline}
+.sig-tip .sig-doc{display:block;font-family:var(--ui-font);font-size:.92em;color:var(--muted)}
+
+/* Output */
+.cell-out{border-top:1px solid var(--border);background:var(--out-bg);font-family:var(--code-font);font-size:calc(var(--code-fs) - 1px);letter-spacing:0;word-spacing:0}
+.cell-out:empty{display:none}
+.cell-out{padding:10px 13px}
+.stdout{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
+.stdout:empty{display:none}
+.in-echo{background:var(--echo-bg);color:var(--echo-text);padding:0 4px;border-radius:3px;font-weight:bold}
+.cell-err{background:var(--error-bg);border:1px solid var(--error-bd);border-radius:var(--radius);padding:8px 11px;margin:6px 0 2px;
+  color:var(--error);white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92em}
+.err-hint{font-family:var(--ui-font);font-size:.84rem;color:var(--text);margin:6px 0 2px;padding:6px 10px;border-left:3px solid var(--warn);background:var(--surface)}
+
+/* Written answers */
+textarea.ans{display:block;width:100%;border:none;resize:none;overflow:hidden;background:var(--surface);color:var(--text);
+  font-family:var(--read-font);font-size:1em;line-height:var(--lh);letter-spacing:var(--ls);word-spacing:var(--ws);padding:12px 14px;min-height:4.2em}
+textarea.ans:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+textarea.ans::placeholder{color:var(--muted);opacity:.8}
+.field-row{display:grid;grid-template-columns:minmax(9em,30%) 1fr;border-top:1px solid var(--rule)}
+.field-row:first-of-type{border-top:none}
+.field-row label{padding:10px 12px;font-size:.9em;font-weight:bold;background:var(--bar-bg);border-right:1px solid var(--rule);line-height:1.35}
+.field-row textarea.ans{min-height:2.6em;padding:9px 12px}
+.print-text,.print-code,.print-only{display:none}
+.wc{font-size:.7rem;color:var(--muted)}
+
+/* End banner */
+#end-banner{border-top:3px solid var(--accent);margin-top:36px;padding:26px 0 8px}
+#end-banner h2{font-size:1.2em;color:var(--accent);margin-bottom:14px}
+.step{background:var(--accent-lt);border:1px solid var(--accent);border-radius:var(--radius);padding:13px 17px;display:flex;gap:14px;
+  align-items:flex-start;margin-bottom:12px}
+.step .n{font-size:1.25em;font-weight:bold;color:var(--accent);flex-shrink:0;line-height:1.3}
+
+/* Drawer (settings + reference) */
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--surface);border-left:1px solid var(--border);
+  box-shadow:-6px 0 24px rgba(0,0,0,.15);z-index:80;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .2s}
+#drawer.open{transform:none}
+body.in-app #drawer{top:var(--hdr)}
+@media (min-width:1100px){ body.in-app.drawer-open #body-row{margin-right:min(460px,100vw)} }
+.drawer-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--accent-lt)}
+.drawer-hd h2{flex:1;font-size:1rem;color:var(--accent)}
+.drawer-x{background:none;border:1px solid var(--border);border-radius:var(--radius);width:32px;height:32px;font-size:1.2rem;cursor:pointer;color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto;padding:14px 18px 40px;display:none}
+.drawer-body.on{display:block}
+.set-group{margin-bottom:18px}
+.set-group h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;border-bottom:1px solid var(--rule);padding-bottom:4px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:9px 0;font-size:.88rem}
+.set-row label{flex:1}
+.set-row select,.set-row input[type=range]{width:52%;max-width:220px}
+.set-row select{padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:.85rem}
+.set-row input[type=range]{accent-color:var(--accent)}
+.set-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.set-val{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:bold;min-width:3.2em;text-align:right;font-size:.82rem}
+.set-note{font-size:.78rem;color:var(--muted);line-height:1.4;margin:4px 0 8px}
+.preview{border:1px dashed var(--border);border-radius:var(--radius);padding:10px 12px;font-family:var(--read-font);font-size:var(--fs);
+  line-height:var(--lh);letter-spacing:var(--ls);word-spacing:var(--ws);background:var(--bg);margin-top:6px}
+.ref-search{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);font-size:.95rem;margin-bottom:12px;background:var(--surface);color:var(--text)}
+.ref-sec{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:9px;background:var(--surface)}
+.ref-sec summary{padding:9px 12px;cursor:pointer;font-weight:600;color:var(--accent);font-size:.94rem;list-style-position:inside}
+.ref-sec[open] summary{border-bottom:1px solid var(--rule)}
+.ref-body{padding:10px 14px 12px;font-family:var(--read-font);font-size:calc(var(--fs) - 2px);line-height:var(--lh);letter-spacing:var(--ls);word-spacing:var(--ws)}
+.ref-body p{margin-bottom:8px}
+.ref-body ul{margin:4px 0 10px 20px}
+.ref-body li{margin-bottom:3px}
+.ref-body code{background:var(--inline-code);padding:0 4px;border-radius:3px;font-family:var(--code-font);font-size:.92em}
+.ref-body table{border-collapse:collapse;width:100%;font-size:.9em;margin:6px 0 10px;font-family:var(--ui-font)}
+.ref-body th,.ref-body td{border:1px solid var(--border);padding:4px 7px;text-align:left;vertical-align:top}
+.ref-body th{background:var(--accent-lt)}
+.ref-code-wrap{position:relative;margin:6px 0 10px}
+.ref-code{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;font-family:var(--code-font);
+  font-size:calc(var(--code-fs) - 1px);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;letter-spacing:0;word-spacing:0}
+.copy-btn{position:absolute;top:5px;right:5px;font-size:.7rem;padding:2px 8px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--muted);cursor:pointer}
+.copy-btn:hover{color:var(--text);border-color:var(--accent)}
+.ref-empty{color:var(--muted);font-style:italic;font-size:.9rem}
+
+/* Syntax colours for static code (reference, display blocks, print) */
+.hl .cm-keyword{color:#708;font-weight:bold}.hl .cm-builtin{color:#30a}.hl .cm-string{color:#a11}
+.hl .cm-number{color:#164}.hl .cm-comment{color:#6a6a6a;font-style:italic}.hl .cm-def{color:#00f}
+.hl .cm-operator{color:#555}.hl .cm-variable-2{color:#05a}.hl .cm-meta{color:#555}
+[data-theme="dark"] .hl .cm-keyword{color:#ff79c6}[data-theme="dark"] .hl .cm-builtin{color:#8be9fd}
+[data-theme="dark"] .hl .cm-string{color:#f1fa8c}[data-theme="dark"] .hl .cm-number{color:#bd93f9}
+[data-theme="dark"] .hl .cm-comment{color:#8a94b8}[data-theme="dark"] .hl .cm-def{color:#50fa7b}
+[data-theme="dark"] .hl .cm-operator,[data-theme="dark"] .hl .cm-meta{color:#ddd}
+[data-theme="contrast"] .hl span{color:#fff!important}
+[data-theme="contrast"] .hl .cm-keyword{color:#ffd400!important}[data-theme="contrast"] .hl .cm-string{color:#7fffd4!important}
+[data-theme="contrast"] .hl .cm-comment{color:#bbb!important}
+
+/* Reading ruler */
+#ruler{position:fixed;left:0;right:0;height:calc(var(--fs) * var(--lh) + 8px);pointer-events:none;z-index:40;display:none;
+  background:rgba(255,220,80,.18);border-top:2px solid rgba(44,95,138,.45);border-bottom:2px solid rgba(44,95,138,.45)}
+#ruler.on{display:block}
+
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 18px;border-radius:20px;
+  font-size:.82rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:120}
+#toast.show{opacity:1}
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:70;display:none}
+#scrim.on{display:block}
+
+@media (max-width:900px){
+  #side{position:absolute;left:0;top:0;bottom:0;z-index:30;transform:translateX(-102%);transition:transform .2s;box-shadow:4px 0 16px rgba(0,0,0,.15)}
+  #side.open{transform:none}
+  #menu-btn{display:inline-block}
+  .run-hint,.h-student,#btn-ipynb{display:none}
+  #main{padding:16px 12px 80px}
+}
+@media (max-width:640px){ .hbtn .long,.h-title,#py-txt,#save-status{display:none} #hdr{overflow-x:auto} }
+
+/* ── Print / PDF ──────────────────────────────────────────────────────── */
+@media print{
+  :root,[data-theme]{
+    --bg:#fff;--surface:#fff;--border:#999;--rule:#ccc;--text:#000;--muted:#444;--accent:#1e4a70;--accent-lt:#eef3f8;
+    --out-bg:#fafafa;--inline-code:#eee;--bar-bg:#f0f0f0;--code-bg:#fff;--echo-bg:#fff0b0;--echo-text:#000;--error:#a00;--error-bg:#fff;
+    --fs:11pt;--lh:1.45;--ls:0em;--ws:0em;--measure:none;--code-fs:9.5pt;
+    --read-font:Georgia,"Times New Roman",serif;--code-font:"Courier New",monospace
+  }
+  @page{margin:16mm 14mm}
+  html,body{height:auto;overflow:visible;background:#fff}
+  #name-screen,#side,#hdr,#drawer,#scrim,#ruler,#toast,.run-btn,.run-hint,.mini-btn,.sig-tip,.CodeMirror,.CodeMirror-hints,textarea.ans,#end-banner .steps{display:none!important}
+  #app{display:block!important;position:static;height:auto}
+  #app,#body-row,#main,.sheet{width:auto!important;margin:0!important}
+  #body-row{display:block;overflow:visible}
+  #main{overflow:visible;padding:0}
+  .sheet{max-width:none}
+  .print-only{display:block}
+  .print-text{display:block;white-space:pre-wrap;overflow-wrap:anywhere;padding:8px 12px;min-height:2.2em;font-family:var(--read-font)}
+  .print-text.empty{color:#888;font-style:italic}
+  .print-code{display:block;margin:0;padding:8px 10px 8px 0;font-family:var(--code-font);font-size:var(--code-fs);line-height:1.45;counter-reset:ln}
+  .cell{border:1px solid #999;break-inside:avoid}
+  .cell-bar,.field-row label{break-after:avoid}
+  .field-row{break-inside:avoid}
+  .cell-out{background:#fafafa;break-inside:avoid}
+  .md h2.q-head{break-before:page;margin-top:0}
+  .md h2.first-q{break-before:auto}
+  .md h3{break-after:avoid}
+  .display-code{break-inside:avoid}
+  #print-head{display:block;border:1px solid #999;padding:8px 12px;margin-bottom:14px;font-family:var(--ui-font);font-size:9.5pt}
+  #print-head b{font-size:11pt}
+  a{color:inherit;text-decoration:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Name screen ─────────────────────────────────────────────────────── -->
+<div id="name-screen">
+  <div class="name-card" role="dialog" aria-labelledby="nc-module">
+    <p class="nc-inst" id="nc-inst"></p>
+    <p class="nc-college" id="nc-college"></p>
+    <hr>
+    <p class="nc-module" id="nc-module"></p>
+    <p class="nc-paper" id="nc-paper"></p>
+
+    <div id="resume-box" hidden>
+      <div>This browser has saved work for <b id="resume-name"></b>, last saved <span id="resume-time"></span>.</div>
+      <button class="btn-start" id="btn-resume">Continue where I left off</button>
+      <button class="btn-ghost" id="btn-fresh">Start this paper again</button>
+    </div>
+
+    <div id="fresh-box">
+      <label class="lbl" for="sname">Your full name</label>
+      <input type="text" id="sname" placeholder="e.g. Aoife Byrne" autocomplete="off">
+      <label class="chk" id="use-file-wrap"><input type="checkbox" id="use-file" checked>
+        <span>Save my work to a file on this computer as I go. You will choose where to save it when you click Begin.</span></label>
+      <p class="note" id="save-note"></p>
+      <button class="btn-start" id="btn-begin">Begin</button>
+    </div>
+    <div class="nc-foot">
+      <button class="linkish" id="nc-settings">Reading and display settings</button>
+      <button class="linkish" id="nc-load">Open a saved .json file</button>
+    </div>
+    <p class="nc-py" aria-live="polite"><span class="dot" id="nc-dot"></span><span id="nc-py">Python is loading in the background. You can start reading while it loads.</span></p>
+  </div>
+</div>
+
+<!-- ── App ─────────────────────────────────────────────────────────────── -->
+<div id="app">
+  <div id="hdr">
+    <button class="hbtn" id="menu-btn" aria-label="Show questions menu">Menu</button>
+    <span class="h-title" id="h-title"></span>
+    <span class="h-chip h-student" id="h-student"></span>
+    <span class="h-chip" id="timer-chip" title="Time remaining"><span id="timer"></span></span>
+    <span class="h-chip" id="py-chip" title="Python status"><span class="dot" id="py-dot"></span><span id="py-txt">Python loading</span></span>
+    <span id="save-status" aria-live="polite"></span>
+    <button class="hbtn" id="btn-ref" aria-pressed="false">Python <span class="long">reference</span></button>
+    <button class="hbtn" id="btn-settings" aria-pressed="false">Settings</button>
+    <button class="hbtn" id="btn-save" title="Save your work as a .json file">Save</button>
+    <button class="hbtn" id="btn-ipynb" title="Download as a Jupyter notebook">Export .ipynb</button>
+    <button class="hbtn pri" id="btn-print">Print / PDF</button>
+  </div>
+  <div id="body-row">
+    <nav id="side" aria-label="Exam navigation">
+      <div id="sd-student"><small>Student</small><b id="sd-name"></b></div>
+      <div class="sd-h">Questions</div>
+      <div id="nav"></div>
+      <div class="sd-h">Your work</div>
+      <div class="sd-row" id="sd-save-info"></div>
+      <button class="sd-btn" id="sd-load">Open a saved .json file</button>
+      <div class="sd-h">Keyboard shortcuts</div>
+      <div class="sd-row"><span class="k">Ctrl+Enter</span> <span class="d">(Cmd+Enter on a Mac) runs the cell you are in</span></div>
+      <div class="sd-row"><span class="k">Tab</span> / <span class="k">Shift+Tab</span> <span class="d">indents or un-indents lines</span></div>
+      <div class="sd-row"><span class="k">Ctrl+/</span> <span class="d">turns the selected lines into comments, or back</span></div>
+      <div class="sd-row" id="sd-complete-row"><span class="k">Ctrl+Space</span> <span class="d">shows code suggestions</span></div>
+    </nav>
+    <main id="main"><div class="sheet" id="sheet"></div></main>
+  </div>
+</div>
+
+<!-- ── Drawer ──────────────────────────────────────────────────────────── -->
+<div id="scrim"></div>
+<aside id="drawer" aria-hidden="true" aria-labelledby="drawer-title">
+  <div class="drawer-hd"><h2 id="drawer-title">Settings</h2><button class="drawer-x" id="drawer-x" aria-label="Close panel">&times;</button></div>
+
+  <div class="drawer-body" id="pane-settings">
+    <div class="set-group">
+      <h3>Reading</h3>
+      <div class="set-row"><label for="s-font">Font</label>
+        <select id="s-font">
+          <option value="default">Georgia (default)</option>
+          <option value="sans">System sans-serif</option>
+          <option value="atkinson">Atkinson Hyperlegible</option>
+          <option value="lexend">Lexend</option>
+          <option value="dyslexic">OpenDyslexic</option>
+        </select></div>
+      <div class="set-row"><label for="s-size">Text size</label><input type="range" id="s-size" min="14" max="28" step="1"><span class="set-val" id="v-size"></span></div>
+      <div class="set-row"><label for="s-lh">Line spacing</label><input type="range" id="s-lh" min="1.3" max="2.4" step="0.1"><span class="set-val" id="v-lh"></span></div>
+      <div class="set-row"><label for="s-spacing">Letter and word spacing</label>
+        <select id="s-spacing"><option value="normal">Normal</option><option value="wide">Wide</option><option value="wider">Wider</option></select></div>
+      <div class="set-row"><label for="s-width">Text width</label>
+        <select id="s-width"><option value="narrow">Narrow</option><option value="medium">Medium</option><option value="wide">Wide</option><option value="full">Full screen</option></select></div>
+      <div class="set-row"><label for="s-theme">Colours</label>
+        <select id="s-theme"><option value="light">Light</option><option value="cream">Cream paper</option><option value="blue">Blue tint</option><option value="dark">Dark</option><option value="contrast">High contrast</option></select></div>
+      <div class="set-row"><label for="s-ruler">Reading ruler (a band that follows your mouse)</label><input type="checkbox" id="s-ruler"></div>
+      <div class="preview" id="s-preview">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</div>
+    </div>
+
+    <div class="set-group">
+      <h3>Code editor</h3>
+      <div class="set-row"><label for="s-cfont">Code font</label>
+        <select id="s-cfont"><option value="courier">Courier New (default)</option><option value="system">System monospace</option><option value="atkinson">Atkinson Hyperlegible Mono</option></select></div>
+      <div class="set-row"><label for="s-csize">Code size</label><input type="range" id="s-csize" min="12" max="26" step="1"><span class="set-val" id="v-csize"></span></div>
+      <div class="set-row"><label for="s-ctheme">Code colours</label>
+        <select id="s-ctheme"><option value="auto">Match the page</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+      <div class="set-row"><label for="s-wrap">Wrap long lines of code</label><input type="checkbox" id="s-wrap"></div>
+      <div class="set-row"><label for="s-brackets">Close brackets and quotes for me</label><input type="checkbox" id="s-brackets"></div>
+    </div>
+
+    <div class="set-group" id="grp-jedi">
+      <h3>Code suggestions (Jedi)</h3>
+      <div class="set-row"><label for="s-jedi">Turn on code suggestions</label><input type="checkbox" id="s-jedi"></div>
+      <div class="set-row"><label for="s-popup">Suggest while I type</label><input type="checkbox" id="s-popup"></div>
+      <div class="set-row"><label for="s-sig">Show function hints under the cell</label><input type="checkbox" id="s-sig"></div>
+      <p class="set-note" id="jedi-note">Suggestions complete names of variables, functions and methods. Press Ctrl+Space at any time to ask for them. The first suggestion can take a few seconds while Jedi loads.</p>
+    </div>
+
+    <div class="set-group">
+      <h3>Exam</h3>
+      <div class="set-row"><label for="s-timer">Show time remaining</label><input type="checkbox" id="s-timer"></div>
+      <div class="set-row"><label for="s-motion">Reduce motion</label><input type="checkbox" id="s-motion"></div>
+      <p class="set-note">Your settings are stored in this browser and apply to every paper. They do not change the printed PDF, which always uses a standard layout for the assessor.</p>
+      <button class="btn-ghost" id="s-reset">Reset all settings</button>
+    </div>
+  </div>
+
+  <div class="drawer-body" id="pane-ref">
+    <input type="search" class="ref-search" id="ref-q" placeholder="Search the reference, for example: slice, while, return" aria-label="Search the Python reference">
+    <div id="ref-list">
+<details class="ref-sec"><summary>This exam tool</summary><div class="ref-body">
+<table>
+<tr><th>Action</th><th>How</th></tr>
+<tr><td>Run a cell</td><td><b>Run</b>, or Ctrl+Enter (Cmd+Enter on a Mac)</td></tr>
+<tr><td>Answer <code>input()</code></td><td>Type in the box at the top of the screen and press Enter</td></tr>
+<tr><td>Code suggestions</td><td>Ctrl+Space</td></tr>
+<tr><td>Comment lines on or off</td><td>Ctrl+/</td></tr>
+<tr><td>Stopped after 10 seconds</td><td>The tool stops code that runs too long</td></tr>
+</table>
+<p>Cells share variables, so run earlier cells before later ones that depend on them.</p>
+</div></details>
+
+<details class="ref-sec"><summary>Values, types and conversion</summary><div class="ref-body">
+<table>
+<tr><th>Type</th><th>Example</th><th>Convert with</th></tr>
+<tr><td><code>int</code></td><td><code>42</code></td><td><code>int("42")</code></td></tr>
+<tr><td><code>float</code></td><td><code>3.5</code></td><td><code>float("3.5")</code></td></tr>
+<tr><td><code>str</code></td><td><code>"hi"</code></td><td><code>str(42)</code></td></tr>
+<tr><td><code>bool</code></td><td><code>True</code>, <code>False</code></td><td><code>bool(1)</code></td></tr>
+<tr><td><code>list</code></td><td><code>[1, 2, 3]</code></td><td><code>list("abc")</code></td></tr>
+</table>
+<pre class="ref-code">
+colour = "teal"        # assignment
+type(colour)           # &lt;class 'str'&gt;
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>Operators</summary><div class="ref-body">
+<table>
+<tr><th>Arithmetic</th><th>Comparison</th><th>Logic</th></tr>
+<tr><td><code>+ - * /</code><br><code>//</code> floor division<br><code>%</code> modulo<br><code>**</code> power</td>
+<td><code>==</code> <code>!=</code><br><code>&lt;</code> <code>&gt;</code><br><code>&lt;=</code> <code>&gt;=</code></td>
+<td><code>and</code><br><code>or</code><br><code>not</code><br><code>in</code></td></tr>
+</table>
+<pre class="ref-code">
+x += 1        # same as x = x + 1  (also -=, *=, /=)
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>Strings</summary><div class="ref-body">
+<pre class="ref-code">
+s = "Galway"
+s[0]         # first character
+s[-1]        # last character
+s[1:4]       # slice: positions 1, 2, 3
+s[:3]
+s[3:]
+s[::-1]      # reversed
+len(s)
+s + "!"
+s * 2
+"a" in s
+f"{s} has {len(s)} letters"
+</pre>
+<table>
+<tr><th colspan="2">String methods</th></tr>
+<tr><td><code>s.upper()</code></td><td><code>s.lower()</code></td></tr>
+<tr><td><code>s.title()</code></td><td><code>s.strip()</code></td></tr>
+<tr><td><code>s.split()</code></td><td><code>s.replace(old, new)</code></td></tr>
+<tr><td><code>s.isdigit()</code></td><td><code>s.isalpha()</code></td></tr>
+<tr><td><code>s.isupper()</code></td><td><code>s.islower()</code></td></tr>
+<tr><td><code>s.startswith(x)</code></td><td><code>s.endswith(x)</code></td></tr>
+</table>
+</div></details>
+
+<details class="ref-sec"><summary>Input and output</summary><div class="ref-body">
+<pre class="ref-code">
+reply = input("Prompt: ")     # always returns a str
+print(a, b)                   # separated by a space
+print(a, b, sep=", ")
+print("text", end="")
+</pre>
+<pre class="ref-code">
+try:
+    ...
+except ValueError:
+    ...
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>if, elif, else</summary><div class="ref-body">
+<pre class="ref-code">
+if condition:
+    ...
+elif other_condition:
+    ...
+else:
+    ...
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>Lists and range</summary><div class="ref-body">
+<pre class="ref-code">
+items = ["a", "b", "c"]
+items[0]
+items[-1]
+items[1:3]
+len(items)
+</pre>
+<table>
+<tr><th colspan="2">List methods and functions</th></tr>
+<tr><td><code>items.append(x)</code></td><td><code>items.insert(i, x)</code></td></tr>
+<tr><td><code>items.remove(x)</code></td><td><code>items.pop()</code></td></tr>
+<tr><td><code>sum(items)</code></td><td><code>max(items)</code> <code>min(items)</code></td></tr>
+<tr><td><code>sorted(items)</code></td><td><code>x in items</code></td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Gives</th></tr>
+<tr><td><code>range(4)</code></td><td>0, 1, 2, 3</td></tr>
+<tr><td><code>range(2, 5)</code></td><td>2, 3, 4</td></tr>
+<tr><td><code>range(0, 9, 4)</code></td><td>0, 4, 8</td></tr>
+</table>
+</div></details>
+
+<details class="ref-sec"><summary>Loops</summary><div class="ref-body">
+<pre class="ref-code">
+for item in sequence:
+    ...
+
+while condition:
+    ...
+
+break       # leave the loop
+continue    # skip to the next repetition
+</pre>
+<pre class="ref-code">
+[expression for item in sequence]    # list comprehension
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>Functions</summary><div class="ref-body">
+<pre class="ref-code">
+def name(param: type, other: type = default) -> type:
+    """Docstring."""
+    ...
+    return value
+
+name(argument)
+</pre>
+<pre class="ref-code">
+assert expression    # error if expression is False
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>Comments</summary><div class="ref-body">
+<pre class="ref-code">
+# a comment on its own line
+x = 1  # a comment after code
+</pre>
+</div></details>
+
+<details class="ref-sec"><summary>Error names</summary><div class="ref-body">
+<table>
+<tr><th>Error</th><th>Usual cause</th></tr>
+<tr><td><code>SyntaxError</code></td><td>missing colon, bracket or quote</td></tr>
+<tr><td><code>IndentationError</code></td><td>uneven indentation</td></tr>
+<tr><td><code>NameError</code></td><td>unknown name</td></tr>
+<tr><td><code>TypeError</code></td><td>wrong type for the operation</td></tr>
+<tr><td><code>ValueError</code></td><td>right type, wrong content</td></tr>
+<tr><td><code>IndexError</code></td><td>position out of range</td></tr>
+<tr><td><code>ZeroDivisionError</code></td><td>division by zero</td></tr>
+<tr><td><code>AttributeError</code></td><td>method does not exist for that type</td></tr>
+</table>
+</div></details>
+
+    </div>
+    <p class="ref-empty" id="ref-none" hidden>Nothing matches that search. Try a shorter word.</p>
+  </div>
+</aside>
+
+<div id="ruler" aria-hidden="true"></div>
+<div id="toast" role="status"></div>
+<input type="file" id="file-in" accept=".json,application/json" hidden>
+
+<script type="application/json" id="exam-src">"---\nexam_id: pdp-5n2927-sample\ntitle: Sample Examination\nmodule: Programming and Design Principles 5N2927\nsession: 2025\u20132026\ninstitution: Dublin and D\u00fan Laoghaire ETB\ncollege: Dublin College Dundrum\nkind: sample\ntotal_marks: 60\nduration_minutes: 120\nallow_completion: true\nshow_reference: true\nreference_theory: false\ntime_limit_seconds: 10\nerror_hints: true\n---\n\n# Programming and Design Principles 5N2927: Sample Examination\n\n**Weighting:** 30% of the module (60 marks, divided by 2).  **Time allowed:** 2 hours.\n\nThis sample paper has the same structure, question types and marks as the final examination. Use it to get comfortable with the exam tool and to check which topics you need to revise.\n\n## Instructions to candidates\n\n1. Answer all four questions. Each question is worth 15 marks, and the paper is marked out of 60.\n2. Write code answers in the code cells. Click **Run**, or press **Ctrl+Enter** (Cmd+Enter on a Mac), to run a cell. Add comments that explain what your code does.\n3. Write written answers in the white answer boxes. The boxes grow as you type.\n4. When a program asks for input, a small box appears at the top of the screen. Type your answer there and press Enter.\n5. If your code runs for longer than 10 seconds, the tool stops it. This usually means that a loop never ends.\n6. Your work saves automatically. Press **Save** in the toolbar as well from time to time.\n7. The **Python reference** button opens a guide to the Python you have learned. The **Settings** button changes the font, text size, colours and code editor.\n8. When you finish, follow the three steps at the end of the paper.\n\n### Learning outcomes assessed\n\nThis paper assesses the following learning outcomes of module 5N2927.\n\n- (1) Demonstrate an understanding of the historical development of computer programming.\n- (3) Differentiate between programming languages by identifying their distinguishing characteristics.\n- (6) Summarise a broad range of structured programming and design concepts to include pseudo-code, storage and control structures (selection and iteration).\n- (7) Develop a range of documented computer programs to solve a variety of familiar and unfamiliar specified problems.\n- (8) Utilise a selection of modularisation concepts such as functions, procedures, variable scope and parameter passing.\n\n---\n\n## Question 1: Programming Languages and Variables (15 marks)\n\n### 1A: Programming languages (3 marks)\n\n**(i)** Name three high-level programming languages.\n\n```answer 1A (i)\n```\n\n**(ii)** Explain the difference between a compiler and an interpreter. Is Python usually compiled or interpreted?\n\n```answer 1A (ii)\n```\n\n**(iii)** Put the following in order, from the oldest to the newest: Python, machine code, FORTRAN, assembly language.\n\n```answer 1A (iii)\n```\n\n### 1B: Variable names (3 marks)\n\nWhich of the following are permitted as variable names in Python? Rewrite each one that is not permitted so that it becomes a permitted name.\n\n(i) `total score`\n(ii) `total_score`\n(iii) `3rd_place`\n(iv) `class`\n(v) `_count`\n(vi) `price-each`\n\n```answer 1B\nPermitted:\n\nNot permitted:\n\nMy fixed versions:\n```\n\nYou can use this cell to test your fixed names. It is not marked.\n\n```python 1B: test your names (optional)\n# Try creating each fixed variable here, for example:\n# my_name = 1\n```\n\n### 1C: Declaring variables (3 marks)\n\nWrite code to declare the following variables.\n\n(i) `a`, initialised to 17\n(ii) `b`, initialised to 5\n(iii) `total`, initialised to the sum of `a` and `b`\n(iv) `gap`, initialised to the difference between `a` and `b`\n(v) `whole_share`, initialised to the floor division (whole-number division) of `a` by `b`\n(vi) `leftover`, initialised to `a` modulo `b` (the remainder when `a` is divided by `b`)\n\nPrint each variable to show that your code works.\n\n```python 1C\n# Write your code to declare the variables here\n\n# (i)\n\n# (ii)\n\n# (iii)\n\n# (iv)\n\n# (v)\n\n# (vi)\n\n```\n\n### 1D: Reading code (6 marks)\n\nExplain what each line of the following code does, starting with line 4. Write each explanation as a comment at the end of its line. You can run the cell to check what it prints.\n\n```python 1D\nword = \"loop\"  # write your comments at the end of each line, like this one\n# e.g. word is a string variable that stores the value \"loop\"\n\nword = word * 3\nword = word.upper()\nsize = len(word)\nletters = list(word)\nprint(letters[5])\nlast = word[-1]\n```\n\n## Question 2: Expressions and If-Statements (15 marks)\n\n### 2A: Cinema ticket program (10 marks)\n\nA community cinema charges different prices for different ages. Write a program in the next cell that does the following.\n\n1. Prints an instruction asking the user to enter their age in years.\n2. Accepts input from the user and stores that input in a variable named `age_text`.\n3. If the input is not a whole number, tells the user that they did not enter a whole number.\n4. If the age is under 18, tells the user that they need a junior ticket, which costs \u20ac6.\n5. If the age is from 18 to 64, tells the user that they need an adult ticket, which costs \u20ac10.\n6. If the age is 65 or over, tells the user that they need a senior ticket, which costs \u20ac7.\n\nYou do not need to write a function. A script is enough. Run your program several times to test each case.\n\n```python 2A\n# Write your code here\n\n```\n\n### 2B: Choosing values (5 marks)\n\nChoose values for `x`, `y` and `z` so that every one of the following expressions evaluates to `True`. Demonstrate your answer in the code cell below.\n\n(i) `x + y < z`\n(ii) `y - x == 2`\n(iii) `x % 2 == 1`\n(iv) `str(x) + str(y) == str(z)`\n\n```python 2B\n# Uncomment the next three lines and replace each ? with your value\n# x = ?\n# y = ?\n# z = ?\n\n# Print each expression to show that it is True\n# print(x + y < z)\n# print(y - x == 2)\n# print(x % 2 == 1)\n# print(str(x) + str(y) == str(z))\n```\n\n## Question 3: Loops and Lists (15 marks)\n\n### 3A: Working with a list (8 marks)\n\nWrite code that does the following.\n\n(i) Declares a list named `numbers` that contains the integers from 10 through 19.\n(ii) Declares an integer `first` that takes the first value of `numbers`.\n(iii) Declares a list `middle` that slices `numbers` to store the numbers 13, 14, 15 and 16.\n(iv) Asks the user for a position, stores it as an integer in `position`, and then prints the element of `numbers` at that position.\n\n```python 3A\n# Write your code here\n\n# (i)\n\n# (ii)\n\n# (iii)\n\n# (iv)\n\n```\n\n### 3B: Infinite loops (2 marks)\n\nWhat is an infinite loop? Describe one way that a programmer can make sure a `while` loop ends.\n\n```answer 3B\n```\n\n### 3C: Guessing game (5 marks)\n\nWrite a program that keeps asking the user to guess the secret word `\"python\"` until they type it correctly. After each wrong guess, print `\"Not quite, try again!\"`. When the user guesses correctly, print how many guesses they needed.\n\n```python 3C\n# Write your code here\n\n```\n\n## Question 4: Functions (15 marks)\n\n### 4A: Parts of a function (6 marks)\n\nStudy the following function. For each term below, give its name or value in this function, and explain what the term means.\n\n```text\ndef shout_first_word(sentence: str) -> str:\n    words = sentence.split()\n    first = words[0]\n    return first.upper() + \"!\"\n\nprint(shout_first_word(\"hello there friend\"))\n```\n\n```fields 4A\nFunction name\nParameter(s)\nVariable declaration(s)\nReturn statement\nFunction call\nWhat would happen if the last line (the function call) were removed?\n```\n\n### 4B: Writing functions (9 marks)\n\nWrite the following functions with clear comments, and write tests to show that each function works. You can assume that every input has the correct type.\n\n**(i) Longer word (4 marks).** Write a function named `longer_word` that takes two strings as arguments and returns whichever string is longer. If both strings have the same length, it returns the first string.\n\n```python 4B (i): your function\n# Write your function here\n\n```\n\n```python 4B (i): your tests\n# Call your function and write your tests here\n\n```\n\n**(ii) Counting a letter (5 marks).** Write a function named `count_letter` with two arguments, `text` and `letter`. It must use a loop to count how many times `letter` appears in `text`, and return the count. Do not use the built-in `.count()` method.\n\n```python 4B (ii): your function\n# Write your function here\n\n```\n\n```python 4B (ii): your tests\n# Call your function and write your tests here\n\n```\n"</script>
+<script>
+"use strict";
+// ═══════════════════════════════════════════════════════════════════════════
+//  Programming and Design Principles: browser exam tool
+//  The exam paper is the Markdown in #exam-src. Fence types:
+//    ```python            code cell (body = starting code)
+//    ```python setup      hidden code that runs once when Python is ready
+//    ```answer LABEL      written answer box (body = starting text)
+//    ```fields LABEL      one short answer box per line of the body
+//    ```text / ```py      code shown to the student, not editable
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SRC  = JSON.parse(document.getElementById("exam-src").textContent);
+const META = parseFrontmatter(SRC);
+const CONFIG = {
+  kind:            META.kind || "exam",
+  duration:        parseInt(META.duration_minutes || "120", 10),
+  allowCompletion: META.allow_completion !== "false",
+  showReference:   META.show_reference !== "false",
+  referenceTheory: META.reference_theory === "true",
+  timeLimit:       parseFloat(META.time_limit_seconds || "10"),
+  errorHints:      META.error_hints !== "false",
+};
+const EXAM_ID      = META.exam_id || "exam";
+const STORE_KEY    = "pdp-exam:" + EXAM_ID;
+const SETTINGS_KEY = "pdp-exam-settings";
+
+// ── Settings ──────────────────────────────────────────────────────────────
+const DEFAULTS = { font:"default", size:17, lineHeight:1.6, spacing:"normal", width:"medium", theme:"light",
+  ruler:false, codeFont:"courier", codeSize:15, codeTheme:"auto", wrap:true, closeBrackets:true,
+  jedi:true, autoPopup:true, sigHints:true, timer:true, reduceMotion:false };
+const FONTS = {
+  default:'Georgia,"Times New Roman",serif',
+  sans:'system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif',
+  atkinson:'"Atkinson Hyperlegible",system-ui,sans-serif',
+  lexend:'"Lexend",system-ui,sans-serif',
+  dyslexic:'"OpenDyslexic","Comic Sans MS",sans-serif'
+};
+const CODE_FONTS = {
+  courier:'"Courier New",monospace',
+  system:'ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace',
+  atkinson:'"Atkinson Hyperlegible Mono",ui-monospace,monospace'
+};
+const SPACING = { normal:["0em","0em"], wide:["0.035em","0.1em"], wider:["0.07em","0.2em"] };
+const WIDTHS  = { narrow:"60ch", medium:"75ch", wide:"95ch", full:"none" };
+let settings = loadSettings();
+
+function loadSettings(){
+  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")); }
+  catch(e){ return Object.assign({}, DEFAULTS); }
+}
+function storeSettings(){ try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch(e){} }
+
+function applySettings(){
+  const r = document.documentElement, st = r.style;
+  r.dataset.theme = settings.theme;
+  st.setProperty("--read-font", FONTS[settings.font] || FONTS.default);
+  st.setProperty("--fs", settings.size + "px");
+  st.setProperty("--lh", settings.lineHeight);
+  const sp = SPACING[settings.spacing] || SPACING.normal;
+  st.setProperty("--ls", sp[0]); st.setProperty("--ws", sp[1]);
+  st.setProperty("--measure", WIDTHS[settings.width] || WIDTHS.medium);
+  st.setProperty("--code-font", CODE_FONTS[settings.codeFont] || CODE_FONTS.courier);
+  st.setProperty("--code-fs", settings.codeSize + "px");
+  r.classList.toggle("reduce-motion", settings.reduceMotion);
+  document.getElementById("ruler").classList.toggle("on", settings.ruler);
+  document.getElementById("timer-chip").style.display = settings.timer ? "" : "none";
+  const jediOn = CONFIG.allowCompletion && settings.jedi;
+  document.getElementById("sd-complete-row").style.display = jediOn ? "" : "none";
+  for (const id in editors) {
+    const cm = editors[id];
+    cm.setOption("lineWrapping", settings.wrap);
+    cm.setOption("theme", codeThemeName());
+    cm.setOption("autoCloseBrackets", settings.closeBrackets);
+  }
+  if (jediOn && pyReady) ensureJedi();
+  refreshLayout();
+}
+function codeThemeName(){
+  if (settings.codeTheme === "light") return "default";
+  if (settings.codeTheme === "dark") return "dracula";
+  return (settings.theme === "dark" || settings.theme === "contrast") ? "dracula" : "default";
+}
+let layoutTimer = null;
+function refreshLayout(){
+  clearTimeout(layoutTimer);
+  layoutTimer = setTimeout(() => {
+    for (const id in editors) editors[id].refresh();
+    document.querySelectorAll("textarea.ans").forEach(autogrow);
+  }, 30);
+}
+
+function bindSettingsForm(){
+  const bind = (id, key, kind, fmt) => {
+    const el = document.getElementById(id), out = document.getElementById("v-" + id.slice(2));
+    const show = () => { if (out) out.textContent = fmt ? fmt(settings[key]) : settings[key]; };
+    if (kind === "check") el.checked = !!settings[key]; else el.value = settings[key];
+    show();
+    el.addEventListener(kind === "range" ? "input" : "change", () => {
+      settings[key] = kind === "check" ? el.checked : kind === "range" ? parseFloat(el.value) : el.value;
+      show(); storeSettings(); applySettings();
+    });
+  };
+  bind("s-font","font"); bind("s-size","size","range",v=>v+"px"); bind("s-lh","lineHeight","range",v=>(+v).toFixed(1));
+  bind("s-spacing","spacing"); bind("s-width","width"); bind("s-theme","theme"); bind("s-ruler","ruler","check");
+  bind("s-cfont","codeFont"); bind("s-csize","codeSize","range",v=>v+"px"); bind("s-ctheme","codeTheme");
+  bind("s-wrap","wrap","check"); bind("s-brackets","closeBrackets","check");
+  bind("s-jedi","jedi","check"); bind("s-popup","autoPopup","check"); bind("s-sig","sigHints","check");
+  bind("s-timer","timer","check"); bind("s-motion","reduceMotion","check");
+  document.getElementById("s-reset").onclick = () => {
+    settings = Object.assign({}, DEFAULTS); storeSettings(); bindSettingsForm(); applySettings(); toast("Settings reset");
+  };
+  if (!CONFIG.allowCompletion) {
+    document.getElementById("grp-jedi").innerHTML =
+      '<h3>Code suggestions</h3><p class="set-note">Code suggestions are switched off for this paper.</p>';
+  }
+}
+
+// ── Drawer ────────────────────────────────────────────────────────────────
+function openDrawer(which){
+  const d = document.getElementById("drawer");
+  const already = d.classList.contains("open") && d.dataset.pane === which;
+  if (already) { closeDrawer(); return; }
+  d.dataset.pane = which;
+  document.getElementById("pane-settings").classList.toggle("on", which === "settings");
+  document.getElementById("pane-ref").classList.toggle("on", which === "ref");
+  document.getElementById("drawer-title").textContent = which === "settings" ? "Settings" : "Python reference";
+  document.getElementById("btn-settings").setAttribute("aria-pressed", which === "settings");
+  document.getElementById("btn-ref").setAttribute("aria-pressed", which === "ref");
+  d.classList.add("open"); d.setAttribute("aria-hidden","false");
+  document.body.classList.add("drawer-open"); refreshLayout();
+  if (window.innerWidth < 1100) document.getElementById("scrim").classList.add("on");
+  setTimeout(() => (which === "ref" ? document.getElementById("ref-q") : document.getElementById("s-font")).focus(), 60);
+}
+function closeDrawer(){
+  const d = document.getElementById("drawer");
+  d.classList.remove("open"); d.setAttribute("aria-hidden","true");
+  document.body.classList.remove("drawer-open"); refreshLayout();
+  document.getElementById("scrim").classList.remove("on");
+  document.getElementById("btn-settings").setAttribute("aria-pressed","false");
+  document.getElementById("btn-ref").setAttribute("aria-pressed","false");
+}
+
+// ── Python reference ──────────────────────────────────────────────────────
+function prepareReference(){
+  document.querySelectorAll("#ref-list pre.ref-code").forEach(pre => {
+    const src = pre.textContent.replace(/^\n/, "").replace(/\s+$/, "");
+    pre.classList.add("hl");
+    pre.innerHTML = highlight(src, false);
+    const wrap = document.createElement("div"); wrap.className = "ref-code-wrap";
+    pre.replaceWith(wrap); wrap.appendChild(pre);
+    const b = document.createElement("button"); b.className = "copy-btn"; b.textContent = "Copy";
+    b.onclick = () => copyText(src, b);
+    wrap.appendChild(b);
+  });
+  const q = document.getElementById("ref-q");
+  q.addEventListener("input", () => {
+    const term = q.value.trim().toLowerCase();
+    let shown = 0;
+    document.querySelectorAll("#ref-list details").forEach(d => {
+      const hit = !term || d.textContent.toLowerCase().includes(term);
+      d.hidden = !hit; if (hit) shown++;
+      d.open = !!term && hit;
+    });
+    document.getElementById("ref-none").hidden = shown > 0;
+  });
+}
+function copyText(text, btn){
+  const done = () => { if (btn) { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1400); } toast("Copied"); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => window.prompt("Copy this:", text));
+  else window.prompt("Copy this:", text);
+}
+
+// ── Exam state ────────────────────────────────────────────────────────────
+let blocks = [];            // parsed paper
+let editors = {};           // id -> CodeMirror
+let S = { name:"", startedAt:null, values:{}, outputs:{} };
+let fileHandle = null, isRunning = false, dirty = false;
+let pyodide = null, pyReady = false, kit = null;
+let jediState = "off";      // off | loading | ready | error
+
+// ── Startup ───────────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+  applySettings();
+  bindSettingsForm();
+  prepareReference();
+  if (!CONFIG.showReference) document.getElementById("btn-ref").style.display = "none";
+  if (!CONFIG.referenceTheory) document.querySelectorAll("#ref-list [data-theory]").forEach(d => d.remove());
+
+  document.title = [META.title, META.module].filter(Boolean).join(": ");
+  document.getElementById("nc-inst").textContent    = META.institution || "";
+  document.getElementById("nc-college").textContent = META.college || "";
+  document.getElementById("nc-module").textContent  = META.module || "";
+  document.getElementById("nc-paper").textContent   = `${META.title || "Examination"}, ${formatDuration(CONFIG.duration)}`;
+
+  const canFile = "showSaveFilePicker" in window;
+  if (!canFile) document.getElementById("use-file-wrap").style.display = "none";
+  document.getElementById("save-note").innerHTML = canFile
+    ? "Your work is also saved in this browser every few seconds. Press <b>Save</b> in the toolbar at any time to write your file again."
+    : "Your work is saved in this browser every few seconds. Press <b>Save</b> in the toolbar regularly to download a copy of your work as a file.";
+
+  const saved = readStore();
+  if (saved && saved.name) {
+    document.getElementById("resume-box").hidden = false;
+    document.getElementById("fresh-box").hidden = true;
+    document.getElementById("resume-name").textContent = saved.name;
+    document.getElementById("resume-time").textContent = saved.savedAt ? new Date(saved.savedAt).toLocaleString() : "earlier";
+  }
+  document.getElementById("btn-begin").onclick  = () => beginExam(false);
+  document.getElementById("btn-resume").onclick = () => beginExam(true);
+  document.getElementById("btn-fresh").onclick  = () => {
+    if (!confirm("Start this paper again? The work saved in this browser for this paper will be cleared. Any .json file you saved stays on your computer.")) return;
+    try { localStorage.removeItem(STORE_KEY); } catch(e){}
+    document.getElementById("resume-box").hidden = true;
+    document.getElementById("fresh-box").hidden = false;
+    document.getElementById("sname").focus();
+  };
+  document.getElementById("sname").addEventListener("keydown", e => { if (e.key === "Enter") beginExam(false); });
+  document.getElementById("nc-settings").onclick = () => openDrawer("settings");
+  document.getElementById("nc-load").onclick = pickLoadFile;
+  document.getElementById("sd-load").onclick = pickLoadFile;
+  document.getElementById("file-in").addEventListener("change", onLoadFile);
+
+  document.getElementById("btn-settings").onclick = () => openDrawer("settings");
+  document.getElementById("btn-ref").onclick = () => openDrawer("ref");
+  document.getElementById("drawer-x").onclick = closeDrawer;
+  document.getElementById("scrim").onclick = () => { closeDrawer(); document.getElementById("side").classList.remove("open"); };
+  document.getElementById("btn-save").onclick = saveNow;
+  document.getElementById("btn-ipynb").onclick = exportIpynb;
+  document.getElementById("btn-print").onclick = () => { preparePrint(); window.print(); };
+  document.getElementById("menu-btn").onclick = () => {
+    document.getElementById("side").classList.toggle("open");
+    document.getElementById("scrim").classList.toggle("on", document.getElementById("side").classList.contains("open"));
+  };
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.getElementById("drawer").classList.contains("open")) closeDrawer();
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && S.name) { e.preventDefault(); saveNow(); }
+  });
+  document.addEventListener("mousemove", e => {
+    if (!settings.ruler) return;
+    const r = document.getElementById("ruler");
+    r.style.top = (e.clientY - r.offsetHeight / 2) + "px";
+  });
+  window.addEventListener("beforeprint", preparePrint);
+  window.addEventListener("resize", refreshLayout);
+  window.addEventListener("beforeunload", e => { if (S.name && dirty) { writeStore(); e.preventDefault(); e.returnValue = ""; } });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshLayout);
+
+  blocks = parseExam(SRC);
+  initPython();
+});
+
+function formatDuration(min){
+  if (min % 60 === 0) return `${min/60} hour${min === 60 ? "" : "s"}`;
+  return `${min} minutes`;
+}
+
+// ── Python (Pyodide) ──────────────────────────────────────────────────────
+const KIT_PY = String.raw`
+"""Helpers for the exam tool. Students never import this module directly."""
+import builtins, sys, time
+import js
+
+class InputCancelled(Exception):
+    """Raised when the student closes the input box without typing anything."""
+
+_deadline = [0.0]
+_limit = [10.0]
+
+def _tracer(frame, event, arg):
+    # Called by Python on every line while student code runs.
+    if time.monotonic() > _deadline[0]:
+        raise TimeoutError(
+            "Your code ran for more than %g seconds, so the exam tool stopped it. "
+            "This usually means a loop never ends." % _limit[0])
+    return _tracer
+
+def arm(limit):
+    _limit[0] = float(limit)
+    _deadline[0] = time.monotonic() + float(limit)
+    if limit > 0:
+        sys.settrace(_tracer)
+
+def disarm():
+    sys.settrace(None)
+
+def _exam_input(prompt=""):
+    try:
+        sys.stdout.flush()
+    except Exception:
+        pass
+    text = str(prompt)
+    started = time.monotonic()
+    value = js.examAsk(text)
+    _deadline[0] += time.monotonic() - started   # time spent typing does not count
+    if value is None:
+        raise InputCancelled("You closed the input box, so the program stopped.")
+    value = str(value)
+    js.examEchoInput(text, value)
+    return value
+
+def install():
+    builtins.input = _exam_input
+    builtins.InputCancelled = InputCancelled
+
+def complete(code, line, col):
+    import json, jedi, __main__
+    try:
+        comps = jedi.Interpreter(code, [__main__.__dict__]).complete(line, col)
+    except Exception:
+        return "[]"
+    out = []
+    for c in comps:
+        if c.name.startswith("_exam") or c.name == "InputCancelled":
+            continue
+        out.append([c.name, c.type])
+        if len(out) >= 80:
+            break
+    return json.dumps(out)
+
+def signature(code, line, col):
+    import json, jedi, __main__
+    try:
+        sigs = jedi.Interpreter(code, [__main__.__dict__]).get_signatures(line, col)
+    except Exception:
+        return ""
+    if not sigs:
+        return ""
+    s = sigs[0]
+    doc = ""
+    try:
+        lines = [l for l in s.docstring(raw=True).strip().splitlines() if l.strip()]
+        doc = lines[0] if lines else ""
+    except Exception:
+        pass
+    return json.dumps({"name": s.name, "params": [p.to_string() for p in s.params],
+                       "index": s.index, "doc": doc[:160]})
+`;
+
+async function initPython(){
+  setPy("loading", "Python is loading in the background. You can start reading while it loads.");
+  try {
+    pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/" });
+    const dec = new TextDecoder();
+    const writer = cls => ({ write: buf => { appendOut(dec.decode(buf, { stream:true }), cls); return buf.length; } });
+    pyodide.setStdout(writer(""));
+    pyodide.setStderr(writer("stderr"));
+    pyodide.FS.writeFile("/lib/python3.12/site-packages/_examkit.py", KIT_PY);
+    kit = pyodide.pyimport("_examkit");
+    kit.install();
+    pyReady = true;
+    setPy("ready", "Python is ready.");
+    document.querySelectorAll(".run-btn").forEach(b => { b.disabled = false; b.textContent = "Run"; });
+    await runSetupBlocks();
+    if (CONFIG.allowCompletion && settings.jedi) ensureJedi();
+  } catch(e) {
+    console.error(e);
+    setPy("error", "Python could not load. Check your internet connection and refresh the page. Your saved work is kept.");
+  }
+}
+function setPy(state, msg){
+  const dotCls = "dot" + (state === "ready" ? " ok" : state === "error" ? " err" : "");
+  document.getElementById("nc-dot").className = dotCls;
+  document.getElementById("py-dot").className = dotCls;
+  document.getElementById("nc-py").textContent = msg;
+  document.getElementById("py-txt").textContent =
+    state === "ready" ? (jediState === "loading" ? "Python ready, suggestions loading" : "Python ready")
+    : state === "error" ? "Python failed to load" : "Python loading";
+}
+async function ensureJedi(){
+  if (jediState !== "off" || !pyReady) return;
+  jediState = "loading"; setPy("ready", "Python is ready.");
+  try {
+    await pyodide.loadPackage(["jedi"], { messageCallback: () => {} });
+    kit.complete("pri", 1, 3);          // warm up so the first real request is quick
+    jediState = "ready";
+  } catch(e) { console.warn("Jedi failed", e); jediState = "error"; }
+  setPy("ready", "Python is ready.");
+}
+async function runSetupBlocks(){
+  for (const b of blocks) {
+    if (b.type !== "setup") continue;
+    try { await pyodide.runPythonAsync(b.content); } catch(e) { console.warn("Setup failed", e); }
+  }
+}
+
+// Output routing: Python's print() lands in the current cell's output.
+let curOut = null;
+function appendOut(text, cls){
+  if (!curOut) { if (text.trim()) console.log(text); return; }
+  if (cls) { const s = document.createElement("span"); s.className = cls; s.textContent = text; curOut.appendChild(s); }
+  else curOut.appendChild(document.createTextNode(text));
+}
+window.examAsk = function(promptText){
+  let context = "";
+  if (curOut) {
+    const lines = curOut.textContent.split("\n").filter(l => l.trim());
+    context = lines.slice(-4).join("\n");
+  }
+  const msg = (context ? context + "\n\n" : "") + (promptText || "Your program is waiting for you to type something:");
+  const v = window.prompt(msg, "");
+  return v === null ? null : v;
+};
+window.examEchoInput = function(promptText, value){
+  if (!curOut) return;
+  if (promptText) curOut.appendChild(document.createTextNode(promptText));
+  const s = document.createElement("span"); s.className = "in-echo"; s.textContent = value;
+  curOut.appendChild(s); curOut.appendChild(document.createTextNode("\n"));
+};
+
+// ── Running a cell ────────────────────────────────────────────────────────
+const ERROR_HINTS = {
+  SyntaxError: "Python could not read this line. Look for a missing colon, bracket or quotation mark on or just before the line shown.",
+  IndentationError: "The lines inside an if, loop or function must be indented by the same amount. Four spaces is the usual choice.",
+  TabError: "This cell mixes tabs and spaces. Use the Tab key in the editor, which always inserts four spaces.",
+  NameError: "Python does not recognise a name. Check the spelling and capital letters, and check that you ran the cell that creates it.",
+  TypeError: "An operation received the wrong type of value, for example a number added to a string. The functions int(), float() and str() convert between types.",
+  ValueError: "The value had the right type but the wrong content, for example int(\"hello\").",
+  IndexError: "You asked for a position that does not exist. The first position is 0 and the last is len(...) - 1.",
+  ZeroDivisionError: "A number was divided by zero.",
+  AttributeError: "This kind of value does not have that method or attribute. Check the spelling, and check the type with type(...).",
+  KeyError: "The dictionary does not contain that key.",
+  TimeoutError: "Look for a while loop whose condition never becomes False, or a loop that never reaches break.",
+  RecursionError: "A function keeps calling itself without stopping."
+};
+
+async function runCell(id){
+  if (isRunning) return;
+  if (!pyReady) { toast("Python is still loading. Try again in a moment."); return; }
+  const cm = editors[id]; if (!cm) return;
+  isRunning = true;
+  const code = cm.getValue();
+  S.values[id] = code;
+  const outEl = document.getElementById("out-" + id), btn = document.getElementById("run-" + id), stat = document.getElementById("stat-" + id);
+  btn.disabled = true; btn.textContent = "Running";
+  stat.textContent = ""; stat.className = "cell-stat";
+  outEl.innerHTML = "";
+  curOut = document.createElement("pre"); curOut.className = "stdout"; outEl.appendChild(curOut);
+  await new Promise(r => setTimeout(r, 20));      // let the browser paint "Running"
+  let hasError = false;
+  kit.arm(CONFIG.timeLimit);
+  try {
+    await pyodide.runPythonAsync(code, { filename: "<your code>" });
+  } catch(e) {
+    hasError = true;
+    kit.disarm();
+    showError(outEl, String(e.message || e));
+  } finally {
+    kit.disarm();
+    try { pyodide.runPython("import sys\nsys.stdout.flush()", { globals: pyodide.toPy({}) }); } catch(_){}
+  }
+  curOut = null;
+  S.outputs[id] = { html: outEl.innerHTML, text: outEl.innerText, hasError, lastRun: new Date().toISOString() };
+  stat.textContent = hasError ? "Error" : "Ran " + new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  stat.className = "cell-stat " + (hasError ? "err" : "ok");
+  btn.disabled = false; btn.textContent = "Run";
+  isRunning = false;
+  markDirty(true);
+}
+
+function showError(outEl, msg){
+  const lines = msg.replace(/\s+$/, "").split("\n");
+  const kept = []; let keep = false, anyFrame = false;
+  for (const line of lines) {
+    if (line.startsWith("Traceback")) continue;
+    if (/^\s{2}File "/.test(line)) { keep = line.includes('"<your code>"'); if (keep) { kept.push(line); anyFrame = true; } continue; }
+    if (/^\s{4}/.test(line)) { if (keep) kept.push(line); continue; }
+    keep = false; kept.push(line);
+  }
+  const clean = (anyFrame ? "Traceback (most recent call last):\n" : "") + kept.join("\n")
+    .replace(/File "<your code>", line (\d+), in <module>/g, "Line $1 of your code")
+    .replace(/File "<your code>", line (\d+), in (\w+)/g, "Line $1 of your code, inside the function $2")
+    .replace(/File "<your code>", line (\d+)/g, "Line $1 of your code");
+  const pre = document.createElement("pre"); pre.className = "cell-err"; pre.textContent = clean;
+  outEl.appendChild(pre);
+  const last = kept.filter(l => l.trim()).pop() || "";
+  const m = last.match(/^(\w+)(:|$)/);
+  if (CONFIG.errorHints && m && ERROR_HINTS[m[1]]) {
+    const h = document.createElement("div"); h.className = "err-hint"; h.textContent = "Hint: " + ERROR_HINTS[m[1]];
+    outEl.appendChild(h);
+  }
+}
+
+// ── Code suggestions (Jedi) ───────────────────────────────────────────────
+function jediHint(cm){
+  if (jediState !== "ready" || isRunning) return null;
+  const cur = cm.getCursor(), line = cm.getLine(cur.line);
+  let start = cur.ch; while (start > 0 && /[\w]/.test(line[start - 1])) start--;
+  const typed = line.slice(start, cur.ch);
+  let list = [];
+  try { list = JSON.parse(kit.complete(cm.getValue(), cur.line + 1, cur.ch)); } catch(e) { return null; }
+  if (!typed.startsWith("_")) list = list.filter(([n]) => !n.startsWith("_"));
+  if (!list.length || (list.length === 1 && list[0][0] === typed)) return null;   // nothing new to offer
+  return {
+    from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, cur.ch),
+    list: list.map(([name, type]) => ({ text: name, render: (el) => {
+      el.innerHTML = `<span>${esc(name)}</span><span class="hint-type">${esc(type)}</span>`; } }))
+  };
+}
+function jediEnabled(){ return CONFIG.allowCompletion && settings.jedi; }
+function showHints(cm){
+  if (!jediEnabled()) return;
+  if (jediState !== "ready") { ensureJedi(); toast("Code suggestions are loading. Try again in a few seconds."); return; }
+  cm.showHint({ hint: jediHint, completeSingle: false });
+}
+function wireSuggestions(cm, id){
+  let popT = null, sigT = null;
+  cm.on("inputRead", (cm, change) => {
+    if (!jediEnabled() || !settings.autoPopup || jediState !== "ready") return;
+    const ch = change.text.join("");
+    clearTimeout(popT);
+    if (!/^[\w.]$/.test(ch)) return;
+    popT = setTimeout(() => {
+      if (cm.state.completionActive) return;
+      const cur = cm.getCursor(), line = cm.getLine(cur.line).slice(0, cur.ch);
+      if (/#/.test(line) || /(["']).*$/.test(line.replace(/(["'])(?:(?!\1).)*\1/g, ""))) return;  // not in comments or strings
+      const word = (line.match(/[\w]+$/) || [""])[0];
+      if (line.endsWith(".") || word.length >= 2) cm.showHint({ hint: jediHint, completeSingle: false });
+    }, 180);
+  });
+  const tip = document.getElementById("sig-" + id);
+  cm.on("cursorActivity", () => {
+    clearTimeout(sigT);
+    if (!jediEnabled() || !settings.sigHints || jediState !== "ready") { tip.hidden = true; return; }
+    sigT = setTimeout(() => {
+      if (isRunning) return;
+      const cur = cm.getCursor();
+      let data = null;
+      try { const s = kit.signature(cm.getValue(), cur.line + 1, cur.ch); data = s ? JSON.parse(s) : null; } catch(e) {}
+      if (!data) { tip.hidden = true; return; }
+      const ps = data.params.map((p, i) => i === data.index ? `<b>${esc(p)}</b>` : esc(p)).join(", ");
+      tip.innerHTML = `${esc(data.name)}(${ps})` + (data.doc ? `<span class="sig-doc">${esc(data.doc)}</span>` : "");
+      tip.hidden = false;
+    }, 250);
+  });
+  cm.on("blur", () => setTimeout(() => { tip.hidden = true; }, 200));
+}
+
+// ── Paper parsing ─────────────────────────────────────────────────────────
+function parseFrontmatter(text){
+  const m = text.match(/^---\n([\s\S]*?)\n---\n/); if (!m) return {};
+  const o = {};
+  m[1].split("\n").forEach(line => { const i = line.indexOf(":"); if (i > 0) o[line.slice(0, i).trim()] = line.slice(i + 1).trim(); });
+  return o;
+}
+function parseExam(text){
+  const body = text.replace(/^---\n[\s\S]*?\n---\n/, "");
+  const out = [], fence = /^```([^\n]*)\n([\s\S]*?)^```[ \t]*$/gm;
+  let last = 0, heading = "", q = 0, n = 0, m;
+  const scanProse = prose => {
+    for (const h of prose.matchAll(/^(#{2,3})\s+(.+)$/gm)) {
+      if (h[1] === "##") { const mm = h[2].match(/^Question\s+(\d+)/i); q = mm ? +mm[1] : 0; }
+      heading = h[2].trim();
+    }
+  };
+  while ((m = fence.exec(body)) !== null) {
+    if (m.index > last) { const prose = body.slice(last, m.index); scanProse(prose); out.push({ type:"markdown", content:prose }); }
+    const info = m[1].trim(), kind = info.split(/\s+/)[0], arg = info.slice(kind.length).trim();
+    const src = m[2].replace(/\n$/, "");
+    const shortHead = heading.replace(/\s*\(.*?\)\s*$/, "");
+    if (kind === "python" && arg === "setup") out.push({ type:"setup", content:src });
+    else if (kind === "python") out.push({ type:"code", id:"b" + (n++), q, label: arg || shortHead, content:src });
+    else if (kind === "answer") out.push({ type:"answer", id:"b" + (n++), q, label: arg || shortHead, content:src });
+    else if (kind === "fields") out.push({ type:"fields", id:"b" + (n++), q, label: arg || shortHead,
+      labels: src.split("\n").map(s => s.trim()).filter(Boolean) });
+    else out.push({ type:"display", lang: kind || "text", content:src });
+    last = m.index + m[0].length;
+  }
+  if (last < body.length) { const prose = body.slice(last); scanProse(prose); out.push({ type:"markdown", content:prose }); }
+  return out;
+}
+
+// Minimal Markdown: headings, bold, italics, inline code, lists, tables, quotes, rules.
+function mdToHtml(md){
+  const codes = [];
+  let h = md.replace(/`([^`\n]+)`/g, (_, c) => { codes.push(esc(c)); return `\u0000${codes.length - 1}\u0000`; });
+  h = h.replace(/^---$/gm, "<hr>");
+  for (let i = 6; i >= 1; i--) h = h.replace(new RegExp(`^${"#".repeat(i)}\\s+(.+)$`, "gm"), `<h${i}>$1</h${i}>`);
+  h = h.replace(/((?:^\|.+\|[ \t]*\n?)+)/gm, block => {
+    const rows = block.trim().split("\n").filter(r => !/^\|[-| :]+\|\s*$/.test(r));
+    return "<table>" + rows.map((r, i) => { const t = i === 0 ? "th" : "td";
+      return "<tr>" + r.split("|").slice(1, -1).map(c => `<${t}>${c.trim()}</${t}>`).join("") + "</tr>"; }).join("") + "</table>\n\n";
+  });
+  h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  h = h.replace(/(^|[^\w*])\*([^*\n]+)\*(?!\w)/g, "$1<em>$2</em>");
+  h = h.replace(/((?:^> .*\n?)+)/gm, b => "<blockquote>" + b.trim().split("\n").map(l => l.replace(/^> ?/, "")).join("<br>") + "</blockquote>\n\n");
+  h = h.replace(/((?:^[-*] .+\n?)+)/gm, b => "<ul>" + b.trim().split("\n").map(l => `<li>${l.replace(/^[-*] /, "")}</li>`).join("") + "</ul>\n\n");
+  h = h.replace(/((?:^\d+\. .+\n?)+)/gm, b => "<ol>" + b.trim().split("\n").map(l => `<li>${l.replace(/^\d+\. /, "")}</li>`).join("") + "</ol>\n\n");
+  h = h.split(/\n{2,}/).map(b => { b = b.trim(); if (!b || /^<(h\d|ul|ol|table|hr|blockquote)/.test(b)) return b;
+    return `<p>${b.replace(/\n/g, "<br>")}</p>`; }).join("\n");
+  return h.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${codes[+i]}</code>`);
+}
+function highlight(code, numbered){
+  const lines = [[]];
+  CodeMirror.runMode(code, "python", (text, style) => {
+    if (text === "\n") { lines.push([]); return; }
+    const t = esc(text);
+    lines[lines.length - 1].push(style ? `<span class="${style.split(" ").map(s => "cm-" + s).join(" ")}">${t}</span>` : t);
+  });
+  if (numbered) return lines.map(l => `<span class="pl">${l.join("") || " "}</span>`).join("");
+  return lines.map(l => l.join("")).join("\n");
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────
+function renderExam(){
+  const sheet = document.getElementById("sheet");
+  sheet.innerHTML = `<div id="print-head" class="print-only"></div>`;
+  editors = {};
+  let firstQ = true;
+  for (const b of blocks) {
+    if (b.type === "setup") continue;
+    if (b.type === "markdown") {
+      const d = document.createElement("div"); d.className = "md"; d.innerHTML = mdToHtml(b.content);
+      d.querySelectorAll("h2").forEach(h => { if (/^Question\s+\d/i.test(h.textContent)) {
+        h.id = "q-" + h.textContent.match(/\d+/)[0]; h.classList.add("q-head"); if (firstQ) { h.classList.add("first-q"); firstQ = false; } } });
+      sheet.appendChild(d); continue;
+    }
+    if (b.type === "display") {
+      const pre = document.createElement("pre"); pre.className = "display-code hl";
+      pre.innerHTML = /^(py|python|text)$/.test(b.lang) ? highlight(b.content, true) : esc(b.content);
+      sheet.appendChild(pre); continue;
+    }
+    const wrap = document.createElement("div"); wrap.className = "cell " + b.type + "-cell"; wrap.id = "cell-" + b.id;
+    if (b.type === "code") {
+      wrap.innerHTML = `
+        <div class="cell-bar">
+          <span class="cell-lbl">${esc(b.label || "Code")}</span>
+          <span class="cell-stat" id="stat-${b.id}"></span>
+          <span class="run-hint">Ctrl+Enter to run</span>
+          <button class="mini-btn" data-reset="${b.id}" title="Put back the starting code">Reset</button>
+          <button class="run-btn" id="run-${b.id}" ${pyReady ? "" : "disabled"}>${pyReady ? "Run" : "Loading"}</button>
+        </div>
+        <div id="cm-${b.id}"></div>
+        <div class="sig-tip" id="sig-${b.id}" hidden></div>
+        <pre class="print-code hl" id="pc-${b.id}"></pre>
+        <div class="cell-out" id="out-${b.id}" aria-live="polite"></div>`;
+      sheet.appendChild(wrap);
+      const value = S.values[b.id] != null ? S.values[b.id] : b.content;
+      const cm = CodeMirror(document.getElementById("cm-" + b.id), {
+        value, mode:"python", theme: codeThemeName(), lineNumbers:true, indentUnit:4, tabSize:4, indentWithTabs:false,
+        lineWrapping: settings.wrap, viewportMargin: Infinity, matchBrackets:true, autoCloseBrackets: settings.closeBrackets,
+        extraKeys: {
+          "Tab": cm => cm.somethingSelected() ? cm.execCommand("indentMore") : cm.execCommand("insertSoftTab"),
+          "Shift-Tab": cm => cm.execCommand("indentLess"),
+          "Ctrl-Enter": () => runCell(b.id), "Cmd-Enter": () => runCell(b.id),
+          "Ctrl-Space": cm => showHints(cm), "Ctrl-/": "toggleComment", "Cmd-/": "toggleComment"
+        }
+      });
+      cm.getWrapperElement().setAttribute("aria-label", "Code editor: " + (b.label || "code"));
+      cm.on("change", () => { S.values[b.id] = cm.getValue(); markDirty(); });
+      editors[b.id] = cm;
+      wireSuggestions(cm, b.id);
+      wrap.querySelector(".run-btn").onclick = () => runCell(b.id);
+      wrap.querySelector("[data-reset]").onclick = () => {
+        if (!confirm("Put back the starting code for this cell? Your code in this cell will be replaced.")) return;
+        cm.setValue(b.content); document.getElementById("out-" + b.id).innerHTML = ""; delete S.outputs[b.id]; markDirty();
+      };
+      const o = S.outputs[b.id];
+      if (o) { document.getElementById("out-" + b.id).innerHTML = o.html || "";
+        const st = document.getElementById("stat-" + b.id); st.textContent = o.hasError ? "Error" : "Ran earlier"; st.className = "cell-stat " + (o.hasError ? "err" : "ok"); }
+    } else if (b.type === "answer") {
+      wrap.innerHTML = `
+        <div class="cell-bar"><span class="cell-lbl">${esc(b.label || "Your answer")}</span><span class="wc" id="wc-${b.id}"></span></div>
+        <textarea class="ans" id="ta-${b.id}" rows="3" placeholder="Type your answer here." aria-label="Answer ${esc(b.label || "")}"></textarea>
+        <div class="print-text" id="pt-${b.id}"></div>`;
+      sheet.appendChild(wrap);
+      const ta = wrap.querySelector("textarea");
+      ta.value = S.values[b.id] != null ? S.values[b.id] : b.content;
+      const upd = () => { S.values[b.id] = ta.value; autogrow(ta); wordCount(b.id, ta.value.trim() === b.content.trim() ? "" : ta.value); };
+      ta.addEventListener("input", () => { upd(); markDirty(); });
+      upd();
+    } else if (b.type === "fields") {
+      const vals = Array.isArray(S.values[b.id]) ? S.values[b.id] : b.labels.map(() => "");
+      wrap.innerHTML = `<div class="cell-bar"><span class="cell-lbl">${esc(b.label || "Your answers")}</span></div>` +
+        b.labels.map((l, i) => `<div class="field-row"><label for="f-${b.id}-${i}">${mdInline(l)}</label>
+          <div><textarea class="ans" id="f-${b.id}-${i}" rows="1"></textarea><div class="print-text" id="pf-${b.id}-${i}"></div></div></div>`).join("");
+      sheet.appendChild(wrap);
+      b.labels.forEach((l, i) => {
+        const ta = document.getElementById(`f-${b.id}-${i}`);
+        ta.value = vals[i] || "";
+        ta.addEventListener("input", () => { const arr = b.labels.map((_, j) => document.getElementById(`f-${b.id}-${j}`).value);
+          S.values[b.id] = arr; autogrow(ta); markDirty(); });
+        autogrow(ta);
+      });
+    }
+  }
+  sheet.appendChild(endBanner());
+  buildNav();
+  refreshLayout();
+}
+function mdInline(s){ return mdToHtml(s).replace(/^<p>|<\/p>$/g, ""); }
+function autogrow(ta){ if (!ta.offsetParent) return; ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 2) + "px"; }
+function wordCount(id, text){
+  const n = (text.trim().match(/\S+/g) || []).length;
+  const el = document.getElementById("wc-" + id); if (el) el.textContent = n ? `${n} word${n === 1 ? "" : "s"}` : "";
+}
+function endBanner(){
+  const d = document.createElement("div"); d.id = "end-banner";
+  const real = CONFIG.kind === "exam";
+  d.innerHTML = `
+    <h2>End of ${real ? "examination" : "paper"}</h2>
+    <p style="margin-bottom:16px">${real
+      ? "You have reached the end of the exam. Before you finish, complete all three steps below."
+      : "You have reached the end of this " + (CONFIG.kind === "sample" ? "sample" : "practice") + " paper. The three steps below are the steps you will follow in the real exam, so it is worth practising them now."}</p>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><strong>Print a PDF for the assessor.</strong> Click <strong>Print / PDF</strong> in the toolbar. In the print window, set the destination to <em>Save as PDF</em> and save the file. The PDF shows all of your code, outputs and written answers in full.</div></div>
+      <div class="step"><span class="n">2</span><div><strong>Save your submission file (.json).</strong> Click <strong>Save</strong> in the toolbar. The .json file holds all of your work, and this tool can open it again later.</div></div>
+      <div class="step"><span class="n">3</span><div><strong>${real ? "Upload to Moodle and confirm with your invigilator." : "Keep your files."}</strong> ${real
+        ? "Upload your .json file and your PDF to the exam submission link on Moodle. Then raise your hand so your invigilator can confirm your submission before you close your computer."
+        : "Keep your PDF and .json file so you can review them with your lecturer. The <strong>Export .ipynb</strong> button also creates a Jupyter notebook version of your answers."}</div></div>
+    </div>`;
+  return d;
+}
+
+// ── Navigation and progress ───────────────────────────────────────────────
+function questionList(){
+  const qs = [];
+  const re = /^##\s+Question\s+(\d+)\s*[:.]?\s*(.*?)\s*\((\d+)\s*marks?\)\s*$/gim;
+  for (const m of SRC.matchAll(re)) qs.push({ num:+m[1], label:m[2].trim(), marks:+m[3] });
+  return qs;
+}
+function attempted(b){
+  const v = S.values[b.id];
+  if (b.type === "fields") return Array.isArray(v) && v.some(x => x && x.trim());
+  if (v == null) return false;
+  return v.trim() !== "" && v.replace(/\s+/g, "") !== (b.content || "").replace(/\s+/g, "");
+}
+function buildNav(){
+  const nav = document.getElementById("nav"); nav.innerHTML = "";
+  questionList().forEach(q => {
+    const mine = blocks.filter(b => b.q === q.num && b.id && !/optional/i.test(b.label || ""));
+    const done = mine.filter(attempted).length;
+    const a = document.createElement("a"); a.className = "nav-item"; a.href = "#q-" + q.num;
+    a.innerHTML = `<span class="nav-num">${q.num}</span>
+      <span class="nav-lbl">${esc(q.label)}<div class="nav-bar"><i style="width:${mine.length ? Math.round(100 * done / mine.length) : 0}%"></i></div></span>
+      <span class="nav-meta">${q.marks} marks<br>${done}/${mine.length} started</span>`;
+    a.onclick = e => { e.preventDefault(); const h = document.getElementById("q-" + q.num);
+      if (h) scrollMainTo(h);
+      document.getElementById("side").classList.remove("open"); document.getElementById("scrim").classList.remove("on"); };
+    nav.appendChild(a);
+  });
+}
+
+// ── Begin / resume ────────────────────────────────────────────────────────
+async function beginExam(resume){
+  if (resume) {
+    const saved = readStore(); if (!saved) return beginExam(false);
+    S = { name:saved.name, startedAt:saved.startedAt || Date.now(), values:saved.values || {}, outputs:saved.outputs || {} };
+    await maybePickFile();
+  } else {
+    const name = document.getElementById("sname").value.trim();
+    if (!name) { alert("Please enter your full name."); document.getElementById("sname").focus(); return; }
+    S = { name, startedAt: Date.now(), values:{}, outputs:{} };
+    await maybePickFile();
+  }
+  startApp();
+}
+async function maybePickFile(){
+  const want = document.getElementById("use-file").checked;
+  if (!want || !("showSaveFilePicker" in window)) return;
+  try {
+    fileHandle = await window.showSaveFilePicker({ suggestedName: fileName("json"),
+      types: [{ description:"Exam work (.json)", accept:{ "application/json":[".json"] } }] });
+  } catch(e) { fileHandle = null; }
+}
+function startApp(){
+  closeDrawer();
+  document.getElementById("name-screen").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  document.body.classList.add("in-app");
+  document.getElementById("h-title").textContent = [META.module, META.title].filter(Boolean).join(": ");
+  document.getElementById("h-student").textContent = S.name;
+  document.getElementById("sd-name").textContent = S.name;
+  renderExam();
+  updateSaveInfo();
+  writeStore();
+  if (fileHandle) writeFile();
+  setInterval(tickTimer, 1000); tickTimer();
+  setInterval(() => { if (dirty) flushSaves(); }, 15000);
+}
+function tickTimer(){
+  const el = document.getElementById("timer");
+  const end = S.startedAt + CONFIG.duration * 60000, left = Math.round((end - Date.now()) / 1000);
+  const f = s => { s = Math.abs(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+    return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(x).padStart(2, "0"); };
+  el.textContent = left >= 0 ? f(left) + " left" : "Time is up (+" + f(left) + ")";
+  el.className = left < 0 ? "over" : left < 600 ? "low" : "";
+}
+
+// ── Saving ────────────────────────────────────────────────────────────────
+let saveT = null;
+function markDirty(immediate){
+  dirty = true; setSave("pending");
+  clearTimeout(saveT);
+  saveT = setTimeout(flushSaves, immediate ? 50 : 1500);
+  clearTimeout(markDirty.navT); markDirty.navT = setTimeout(buildNav, 600);
+}
+async function flushSaves(){
+  writeStore();
+  if (fileHandle) await writeFile(); else setSave("browser");
+  dirty = false;
+}
+function readStore(){ try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch(e){ return null; } }
+function writeStore(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(Object.assign({ savedAt: Date.now() }, S))); }
+  catch(e){ console.warn("Browser save failed", e); }
+}
+async function writeFile(){
+  try { const w = await fileHandle.createWritable(); await w.write(JSON.stringify(buildJSON(), null, 2)); await w.close(); setSave("file"); }
+  catch(e){ console.warn(e); setSave("error"); }
+}
+async function saveNow(){
+  if (!S.name) return;
+  writeStore();
+  if (fileHandle) { await writeFile(); toast("Saved to " + (fileHandle.name || "your file")); }
+  else { download(fileName("json"), JSON.stringify(buildJSON(), null, 2), "application/json"); setSave("download"); toast("Downloaded " + fileName("json")); }
+  dirty = false;
+}
+function setSave(s){
+  const el = document.getElementById("save-status");
+  const t = new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  const map = { pending:["Saving",  "var(--muted)"], browser:["Saved in browser " + t, "var(--success)"],
+    file:["Saved to file " + t, "var(--success)"], download:["Downloaded " + t, "var(--success)"], error:["File save failed", "var(--error)"] };
+  const [txt, col] = map[s] || ["", ""]; el.textContent = txt; el.style.color = col;
+}
+function updateSaveInfo(){
+  document.getElementById("sd-save-info").innerHTML = fileHandle
+    ? `Your work saves automatically to <b>${esc(fileHandle.name || "your file")}</b> and to this browser.`
+    : `Your work saves automatically to this browser. Press <b>Save</b> to download a .json copy as well.`;
+}
+function fileName(ext){
+  const safe = (S.name || "student").replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "").toLowerCase();
+  return `${EXAM_ID}_${safe}_${new Date().toISOString().slice(0, 10)}.${ext}`;
+}
+function buildJSON(){
+  const cells = blocks.filter(b => b.id).map(b => {
+    const o = S.outputs[b.id] || {};
+    const base = { id:b.id, type:b.type, question:b.q, label:b.label || "" };
+    if (b.type === "code") return Object.assign(base, { student_code: S.values[b.id] != null ? S.values[b.id] : b.content,
+      output_text:o.text || "", output_html:o.html || "", has_error:!!o.hasError, last_run:o.lastRun || null });
+    if (b.type === "answer") return Object.assign(base, { answer_text: S.values[b.id] != null ? S.values[b.id] : b.content });
+    return Object.assign(base, { fields: b.labels.map((l, i) => ({ label:l, answer:(S.values[b.id] || [])[i] || "" })) });
+  });
+  return { format:"pdp-exam/1", exam_id:EXAM_ID, exam_title:META.title || "", module:META.module || "", session:META.session || "",
+    student_name:S.name, started_at: S.startedAt ? new Date(S.startedAt).toISOString() : null,
+    exported_at:new Date().toISOString(), cells };
+}
+function download(name, text, type){
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+// Opening a saved .json file
+function pickLoadFile(){ document.getElementById("file-in").value = ""; document.getElementById("file-in").click(); }
+async function onLoadFile(e){
+  const f = e.target.files[0]; if (!f) return;
+  let data; try { data = JSON.parse(await f.text()); } catch(err){ alert("That file could not be read. Choose a .json file saved by this exam tool."); return; }
+  if (!data || !Array.isArray(data.cells)) { alert("That file was not saved by this exam tool."); return; }
+  if (data.exam_id && data.exam_id !== EXAM_ID &&
+      !confirm(`That file belongs to a different paper (${data.exam_title || data.exam_id}). Open it in this paper anyway? Answers are matched by position, so some may land in the wrong place.`)) return;
+  if (S.name && !confirm("Replace the work on screen with the work in this file?")) return;
+  const values = {}, outputs = {};
+  data.cells.forEach(c => {
+    if (!c.id) return;
+    if (c.type === "code") { values[c.id] = c.student_code || "";
+      if (c.output_html || c.output_text) outputs[c.id] = { html:c.output_html || esc(c.output_text || ""), text:c.output_text || "", hasError:!!c.has_error, lastRun:c.last_run }; }
+    else if (c.type === "answer") values[c.id] = c.answer_text || "";
+    else if (c.type === "fields") values[c.id] = (c.fields || []).map(x => x.answer || "");
+  });
+  const started = data.started_at ? Date.parse(data.started_at) : Date.now();
+  S = { name: data.student_name || S.name || "Student", startedAt: started, values, outputs };
+  if (document.getElementById("app").style.display !== "flex") startApp();
+  else { renderExam(); document.getElementById("h-student").textContent = S.name; document.getElementById("sd-name").textContent = S.name; }
+  writeStore(); toast("Opened " + f.name);
+}
+
+// ── Jupyter export ────────────────────────────────────────────────────────
+function exportIpynb(){
+  const lines = s => { const a = String(s).split("\n"); return a.map((l, i) => i < a.length - 1 ? l + "\n" : l).filter((l, i, arr) => !(i === arr.length - 1 && l === "")); };
+  const md = s => ({ cell_type:"markdown", metadata:{}, source: lines(s) });
+  const quote = s => (s && s.trim()) ? s.split("\n").map(l => "> " + l).join("\n") : "> *(no answer)*";
+  const cells = [md(`# ${META.module || ""}\n## ${META.title || ""}\n\n**Student:** ${S.name}  \n**Exported:** ${new Date().toLocaleString()}`)];
+  for (const b of blocks) {
+    if (b.type === "setup") continue;
+    if (b.type === "markdown") { const t = b.content.trim(); if (t) cells.push(md(t)); }
+    else if (b.type === "display") cells.push(md("```" + (b.lang === "text" ? "python" : b.lang) + "\n" + b.content + "\n```"));
+    else if (b.type === "code") {
+      const o = S.outputs[b.id];
+      const outputs = o && o.text ? [{ output_type:"stream", name: o.hasError ? "stderr" : "stdout", text: lines(o.text) }] : [];
+      cells.push({ cell_type:"code", execution_count:null, metadata:{ exam_label: b.label || "" },
+        source: lines(S.values[b.id] != null ? S.values[b.id] : b.content), outputs });
+    }
+    else if (b.type === "answer") cells.push(md(`**Your answer: ${b.label || ""}**\n\n` + quote(S.values[b.id] != null ? S.values[b.id] : b.content)));
+    else if (b.type === "fields") cells.push(md(`**Your answers: ${b.label || ""}**\n\n` +
+      b.labels.map((l, i) => `- **${l}** ${(S.values[b.id] || [])[i] || "*(no answer)*"}`).join("\n")));
+  }
+  cells.forEach((c, i) => { c.id = "cell-" + String(i).padStart(3, "0"); });
+  const nb = { cells, metadata:{ kernelspec:{ display_name:"Python 3", language:"python", name:"python3" },
+    language_info:{ name:"python", version:"3.12" } }, nbformat:4, nbformat_minor:5 };
+  download(fileName("ipynb"), JSON.stringify(nb, null, 1), "application/x-ipynb+json");
+  toast("Downloaded " + fileName("ipynb"));
+}
+
+// ── Print ─────────────────────────────────────────────────────────────────
+function scrollMainTo(el){
+  const main = document.getElementById("main");
+  const top = el.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop - 12;
+  main.scrollTo({ top, behavior: settings.reduceMotion ? "auto" : "smooth" });
+}
+function preparePrint(){
+  for (const id in editors) if (editors[id].state.completionActive) editors[id].closeHint();
+  for (const b of blocks) {
+    if (!b.id) continue;
+    if (b.type === "code") {
+      const code = editors[b.id] ? editors[b.id].getValue() : (S.values[b.id] || b.content);
+      document.getElementById("pc-" + b.id).innerHTML = highlight(code, true);
+    } else if (b.type === "answer") {
+      const v = S.values[b.id] != null ? S.values[b.id] : b.content, el = document.getElementById("pt-" + b.id);
+      el.textContent = v.trim() ? v : "(no answer)"; el.classList.toggle("empty", !v.trim());
+    } else if (b.type === "fields") {
+      b.labels.forEach((l, i) => { const v = (S.values[b.id] || [])[i] || "", el = document.getElementById(`pf-${b.id}-${i}`);
+        el.textContent = v.trim() ? v : "(no answer)"; el.classList.toggle("empty", !v.trim()); });
+    }
+  }
+  const mins = S.startedAt ? Math.round((Date.now() - S.startedAt) / 60000) : 0;
+  document.getElementById("print-head").innerHTML =
+    `<b>${esc(S.name)}</b><br>${esc(META.module || "")}: ${esc(META.title || "")}${META.session ? " (" + esc(META.session) + ")" : ""}<br>` +
+    `Printed ${esc(new Date().toLocaleString())}. Time since starting: ${mins} minutes.`;
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+function toast(msg){ const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1900); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+</script>
+</body>
+</html>

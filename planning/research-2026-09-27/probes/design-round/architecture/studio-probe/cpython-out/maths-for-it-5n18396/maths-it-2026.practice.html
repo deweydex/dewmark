@@ -1,0 +1,1619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maths for Information Technology - 5N18396</title>
+<style>/* Styles for the dewmark exam page. dewmark is kept self-contained, so
+   these styles repeat the dewlab palette rather than importing it. */
+
+:root {
+  --dm-navy: #1b2a4a;
+  --dm-orange: #d4692a;
+  --dm-bg: #fdfcfa;
+  --dm-ink: #1a1a1a;
+  --dm-muted: #5f6b7a;
+  --dm-rule: #e2ddd5;
+  --dm-border: #ddd7cd;
+  --dm-box-bg: #fbfaf8;
+  --dm-good: #1f6b3f;
+  --dm-good-bg: #edf7f0;
+  --dm-warn: #8a6d1f;
+  --dm-warn-bg: #faf3dc;
+  --dm-serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --dm-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--dm-bg);
+  color: var(--dm-ink);
+  font-family: var(--dm-serif);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.dm-band { background: var(--dm-navy); color: var(--dm-bg); padding: 18px 36px; }
+.dm-band-kind {
+  margin: 0; font-family: var(--dm-sans); font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8;
+}
+.dm-band-practice .dm-band-kind, .dm-band-answer_key .dm-band-kind {
+  color: #ffd9b8; opacity: 1;
+}
+.dm-band-title { margin: 4px 0 2px; font-size: 22px; font-weight: 700; }
+.dm-band-meta { margin: 0; font-family: var(--dm-sans); font-size: 13px; opacity: 0.85; }
+
+.dm-card {
+  max-width: 640px; margin: 40px auto; background: #ffffff;
+  border: 1px solid var(--dm-border); border-radius: 4px;
+  box-shadow: 0 2px 14px rgba(27, 42, 74, 0.12); padding: 28px 34px;
+}
+.dm-instructions { font-size: 15.5px; }
+.dm-details { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
+.dm-detail { font-family: var(--dm-sans); font-size: 13px; font-weight: 600; }
+.dm-detail input {
+  display: block; width: 100%; margin-top: 4px; padding: 8px 10px;
+  font-family: var(--dm-serif); font-size: 15px;
+  border: 1px solid var(--dm-border); border-radius: 4px; background: var(--dm-bg);
+}
+.dm-save-note {
+  font-family: var(--dm-sans); font-size: 13px; line-height: 1.5;
+  background: #eef2f8; border: 1px solid #c8d2e4; border-radius: 4px;
+  padding: 10px 14px;
+}
+.dm-restore-note {
+  font-family: var(--dm-sans); font-size: 13px; background: var(--dm-good-bg);
+  border: 1px solid #cfe6d6; border-radius: 4px; padding: 10px 14px;
+}
+
+button { cursor: pointer; font-family: var(--dm-sans); }
+.dm-primary {
+  background: var(--dm-navy); color: #ffffff; border: none; border-radius: 4px;
+  padding: 11px 20px; font-size: 15px; font-weight: 600;
+}
+.dm-secondary {
+  background: #ffffff; color: var(--dm-navy); border: 1px solid var(--dm-border);
+  border-radius: 4px; padding: 10px 16px; font-size: 13.5px;
+}
+#dm-start button { margin-top: 12px; margin-right: 10px; }
+
+#dm-topbar {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+  gap: 14px; background: var(--dm-navy); color: var(--dm-bg); padding: 8px 20px;
+}
+#dm-top-title { font-size: 14px; }
+#dm-top-student { font-family: var(--dm-sans); font-size: 12.5px; opacity: 0.85; }
+.dm-save-pill {
+  font-family: var(--dm-sans); font-size: 11.5px; padding: 3px 10px;
+  border-radius: 999px; background: rgba(255, 255, 255, 0.15);
+}
+.dm-save-pill.dm-ok { background: var(--dm-good-bg); color: var(--dm-good); }
+.dm-save-pill.dm-off { background: var(--dm-warn-bg); color: var(--dm-warn); }
+#dm-topbar .dm-primary { margin-left: auto; background: var(--dm-orange); }
+#dm-topbar .dm-secondary { padding: 6px 12px; font-size: 12.5px; }
+
+#dm-body { display: flex; align-items: flex-start; }
+#dm-panel {
+  position: sticky; top: 52px; width: 250px; flex-shrink: 0;
+  max-height: calc(100vh - 52px); overflow-y: auto;
+  border-right: 1px solid var(--dm-rule); background: #ffffff;
+  padding: 14px 16px; font-family: var(--dm-sans); font-size: 13px;
+}
+#dm-panel h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--dm-muted); margin: 12px 0 6px; }
+.dm-panel-q {
+  display: flex; justify-content: space-between; gap: 8px; width: 100%;
+  border: 1px solid var(--dm-border); background: var(--dm-bg);
+  border-radius: 3px; padding: 5px 9px; margin-bottom: 5px; text-align: left;
+}
+.dm-panel-q.dm-done { background: var(--dm-good-bg); border-color: #cfe6d6; color: var(--dm-good); }
+.dm-panel-note { color: var(--dm-muted); font-size: 12px; line-height: 1.5; }
+
+#dm-paper { flex: 1; max-width: 820px; padding: 26px 40px 120px; }
+#dm-paper h2 { color: var(--dm-navy); border-bottom: 2px solid var(--dm-navy); padding-bottom: 5px; }
+#dm-paper h3 { color: var(--dm-navy); margin-top: 34px; }
+.dm-math { font-style: italic; }
+table { border-collapse: collapse; }
+#dm-paper table td, #dm-paper table th { border: 1px solid var(--dm-border); padding: 5px 10px; }
+
+.dm-answer {
+  background: #ffffff; border: 1px solid var(--dm-border);
+  border-left: 3px solid var(--dm-navy); border-radius: 4px;
+  padding: 12px 16px 14px; margin: 14px 0;
+}
+.dm-answer.dm-answered { border-left-color: var(--dm-good); }
+.dm-answer-head {
+  display: flex; gap: 8px; align-items: baseline; font-family: var(--dm-sans);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--dm-muted); margin-bottom: 8px;
+}
+.dm-answered-flag { color: var(--dm-good); text-transform: none; letter-spacing: 0; }
+.dm-answer.dm-answered .dm-answered-flag { display: inline; }
+.dm-prompt { margin: 4px 0 8px; }
+.dm-small-label { font-family: var(--dm-sans); font-size: 12px; color: var(--dm-muted); margin: 10px 0 4px; }
+.dm-writing {
+  width: 100%; font-family: var(--dm-serif); font-size: 15.5px; line-height: 1.6;
+  border: 1px solid var(--dm-border); border-radius: 3px; background: var(--dm-bg);
+  padding: 9px 12px; resize: vertical;
+}
+.dm-word-count { font-family: var(--dm-sans); font-size: 12px; color: var(--dm-muted); margin: 4px 0 0; }
+.dm-options { display: flex; flex-direction: column; gap: 7px; }
+.dm-option {
+  display: flex; gap: 10px; align-items: baseline; border: 1px solid var(--dm-border);
+  border-radius: 3px; background: var(--dm-bg); padding: 8px 12px;
+}
+.dm-option:has(:checked) { border-color: var(--dm-navy); background: #eef2f8; }
+.dm-blank-text { line-height: 2.1; }
+.dm-blank, .dm-feature {
+  width: 110px; font-family: var(--dm-serif); font-size: 15px;
+  border: 1px solid var(--dm-border); border-radius: 3px; padding: 4px 8px;
+  background: var(--dm-bg);
+}
+.dm-feature { width: 70px; }
+.dm-numeric-row { display: flex; gap: 26px; flex-wrap: wrap; }
+.dm-numeric input {
+  width: 110px; font-family: var(--dm-serif); font-size: 15px;
+  border: 1px solid var(--dm-border); border-radius: 3px; padding: 6px 9px;
+  background: var(--dm-bg);
+}
+.dm-table input.dm-cell { width: 70px; border: 1px solid var(--dm-border); border-radius: 3px; padding: 4px 6px; }
+.dm-diagram { max-width: 100%; height: auto; display: block; margin: 6px 0 10px; }
+.dm-question img, .dm-section > img, .dm-section > p img {
+  max-width: 100%; height: auto; }
+.dm-diagram-labels { display: flex; flex-direction: column; gap: 8px; }
+.dm-diagram-label input {
+  width: 220px; font-family: var(--dm-serif); font-size: 15px;
+  border: 1px solid var(--dm-border); border-radius: 3px; padding: 5px 9px;
+  background: var(--dm-bg);
+}
+.dm-feature-row { margin: 8px 0; }
+
+.dm-question-chip {
+  font-family: var(--dm-sans); font-size: 11px; font-weight: 700;
+  color: var(--dm-muted); background: var(--dm-box-bg);
+  border: 1px solid var(--dm-border); border-radius: 3px;
+  display: inline-block; padding: 1px 7px; margin: 0 0 6px;
+}
+.dm-code-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--dm-navy); color: var(--dm-bg);
+  border-radius: 3px 3px 0 0; padding: 5px 10px;
+  font-family: var(--dm-sans); font-size: 12px;
+}
+.dm-code-lang { font-weight: 700; letter-spacing: 0.04em; }
+.dm-code-note { flex: 1; font-size: 12px; color: #f0c9a8; }
+.dm-run {
+  font-family: var(--dm-sans); font-size: 13px; font-weight: 600;
+  background: var(--dm-orange); color: #ffffff; border: none;
+  border-radius: 3px; padding: 4px 16px; cursor: pointer;
+}
+.dm-run:disabled { opacity: 0.45; cursor: default; }
+.dm-code {
+  display: block; width: 100%; box-sizing: border-box;
+  font-family: "SF Mono", ui-monospace, Consolas, Menlo, monospace;
+  font-size: 13.5px; line-height: 1.5; tab-size: 4;
+  background: #21283b; color: #e8e6e1;
+  border: 1px solid var(--dm-navy); border-top: none; border-radius: 0 0 3px 3px;
+  padding: 10px 12px; resize: vertical; min-height: 90px;
+}
+.dm-code-output, .dm-provided-output { margin: 8px 0 4px; }
+.dm-code-output:empty, .dm-provided-output:empty { display: none; }
+.dm-out-text, .dm-out-error {
+  font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 13px;
+  line-height: 1.5; margin: 6px 0; padding: 8px 12px; border-radius: 3px;
+  white-space: pre-wrap; overflow-x: auto;
+  background: var(--dm-box-bg); border: 1px solid var(--dm-border);
+}
+.dm-out-error { color: #8a2a1f; background: #faf0ee; border-color: #e4c7c1; }
+.dm-out-image { max-width: 100%; height: auto; display: block; margin: 8px 0;
+  border: 1px solid var(--dm-border); border-radius: 3px; background: #ffffff; }
+.dm-out-table { border-collapse: collapse; margin: 8px 0; font-size: 13.5px; }
+.dm-out-table th, .dm-out-table td {
+  border: 1px solid var(--dm-border); padding: 4px 10px; text-align: left; }
+.dm-out-table th { background: var(--dm-box-bg); font-family: var(--dm-sans);
+  font-size: 12px; }
+.dm-widget { margin: 6px 0; font-family: var(--dm-sans); font-size: 14px; }
+.dm-widget input, .dm-widget select {
+  border: 1px solid var(--dm-border); border-radius: 3px; padding: 4px 8px;
+  font-size: 14px; margin-left: 6px; }
+.dm-widget button {
+  font-family: var(--dm-sans); font-size: 13px; border: 1px solid var(--dm-navy);
+  background: var(--dm-bg); color: var(--dm-navy); border-radius: 3px;
+  padding: 4px 14px; cursor: pointer; }
+.dm-provided { margin: 10px 0; }
+.dm-provided-code {
+  font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 13px;
+  line-height: 1.5; margin: 4px 0; padding: 10px 12px; border-radius: 3px;
+  background: var(--dm-box-bg); border: 1px solid var(--dm-border);
+  white-space: pre-wrap; overflow-x: auto;
+}
+.dm-code-restore-note {
+  font-family: var(--dm-sans); font-size: 13px; color: var(--dm-warn);
+  background: var(--dm-warn-bg); border-radius: 3px; padding: 6px 10px;
+  margin: 6px 0;
+}
+.dm-calc { margin: 8px 0; }
+.dm-calc summary { font-family: var(--dm-sans); font-size: 13px;
+  font-weight: 600; color: var(--dm-navy); cursor: pointer; }
+#dm-calc-display {
+  width: 100%; box-sizing: border-box; margin: 8px 0 2px;
+  font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 14px;
+  border: 1px solid var(--dm-border); border-radius: 3px; padding: 6px 8px;
+  background: var(--dm-bg);
+}
+#dm-calc-result { font-family: ui-monospace, Consolas, Menlo, monospace;
+  font-size: 14px; min-height: 18px; margin: 2px 0 6px;
+  color: var(--dm-navy); overflow-wrap: break-word; }
+#dm-calc-result.dm-calc-error { font-family: var(--dm-sans); font-size: 12.5px;
+  color: var(--dm-warn); }
+.dm-calc-keys { display: grid; gap: 4px; margin: 4px 0; }
+.dm-calc-grid4 { grid-template-columns: repeat(4, 1fr); }
+.dm-calc-grid3 { grid-template-columns: repeat(3, 1fr); }
+.dm-calc-grid2 { grid-template-columns: repeat(2, 1fr); }
+.dm-calc-keys button {
+  font-family: var(--dm-sans); font-size: 13.5px; padding: 6px 0;
+  border: 1px solid var(--dm-border); border-radius: 3px;
+  background: var(--dm-box-bg); color: var(--dm-ink); cursor: pointer;
+}
+.dm-calc-keys button:hover { background: #f0ede7; }
+.dm-calc-grid2 button { font-weight: 700; color: var(--dm-navy); }
+
+.dm-ref { margin: 8px 0; font-size: 13.5px; }
+.dm-ref summary { font-family: var(--dm-sans); font-size: 13px; font-weight: 600;
+  color: var(--dm-navy); cursor: pointer; }
+.dm-ref p, .dm-ref ul, .dm-ref table { font-size: 13.5px; margin: 6px 0; }
+.dm-file-row { font-family: var(--dm-sans); font-size: 13px; margin: 5px 0; }
+.dm-file-row code { font-size: 12.5px; background: var(--dm-box-bg);
+  border: 1px solid var(--dm-border); border-radius: 3px; padding: 1px 5px; }
+
+.dm-model {
+  margin-top: 12px; border-top: 1px dashed var(--dm-border); padding-top: 10px;
+  background: #eef2f8; border-radius: 3px; padding: 10px 14px;
+}
+.dm-model-label { font-family: var(--dm-sans); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--dm-navy); margin: 6px 0 3px; }
+.dm-model-text { margin: 3px 0; font-size: 14.5px; }
+.dm-model ul { margin: 4px 0; font-size: 14px; }
+.dm-draft {
+  font-family: var(--dm-sans); font-size: 12px; font-weight: 700;
+  color: var(--dm-warn); background: var(--dm-warn-bg); border-radius: 3px;
+  display: inline-block; padding: 2px 8px; margin: 0 0 6px;
+}
+
+#dm-finish-report ul { font-family: var(--dm-sans); font-size: 14px; line-height: 1.7; }
+.dm-finish-good { color: var(--dm-good); }
+.dm-finish-warn { color: var(--dm-warn); }
+
+@media print {
+  #dm-topbar button, #dm-panel, .dm-save-pill, #dm-start, #dm-finish-screen { display: none !important; }
+  #dm-topbar { position: static; }
+  body { background: #ffffff; font-size: 11pt; }
+  .dm-answer { break-inside: avoid; }
+  .dm-question { break-inside: avoid; }
+  .dm-writing { resize: none; overflow: visible; }
+}
+</style>
+</head>
+<body data-variant="practice">
+<header class="dm-band dm-band-practice">
+  <p class="dm-band-kind">Practice paper</p>
+  <h1 class="dm-band-title">Maths for Information Technology - 5N18396</h1>
+  <p class="dm-band-meta">Time allowed: 3 hours
+   · Total marks: 120</p>
+</header>
+
+<div id="dm-start" class="dm-card">
+  <div class="dm-instructions"><p>In Section A, answer any ten of the twelve questions; each is worth 4
+marks. In Section B, answer any four of the six questions; each is
+worth 20 marks. Show all working: a correct final answer with no
+working shown may not receive full marks. The side panel holds a
+calculator, a formula sheet, and a guide to typing mathematical
+notation.</p></div>
+  <div class="dm-details"><label class="dm-detail">full name <input type="text" data-detail="full name" autocomplete="off"></label><label class="dm-detail">student number <input type="text" data-detail="student number" autocomplete="off"></label></div>
+  <p class="dm-save-note">When you press Begin, you will be asked where to
+  keep your answer file. The exam then saves itself there, and in this
+  browser, as you work. Nothing leaves this computer.</p>
+  <button id="dm-begin" class="dm-primary">Begin</button>
+  <button id="dm-load-file" class="dm-secondary">Load a saved answer
+  file…</button>
+</div>
+
+<div id="dm-app" hidden>
+  <div id="dm-topbar">
+    <span id="dm-top-title">Maths for Information Technology - 5N18396</span>
+    <span id="dm-top-student"></span>
+    <span id="dm-save-browser" class="dm-save-pill" title="saved in this
+    browser">Browser —</span>
+    <span id="dm-save-file" class="dm-save-pill" title="saved to your answer
+    file">File —</span>
+    <span id="dm-python-status" class="dm-save-pill" hidden>Python</span>
+    <button id="dm-download" class="dm-secondary">Save a copy</button>
+    <button id="dm-finish" class="dm-primary">Finish exam…</button>
+  </div>
+  <div id="dm-body">
+    <nav id="dm-panel" aria-label="questions and reference"><div id="dm-panel-questions"></div><details class="dm-calc" id="dm-calc" open><summary>Calculator</summary><input id="dm-calc-display" type="text" autocomplete="off" spellcheck="false" aria-label="calculator display" placeholder="for example sqrt(41.76)"><p id="dm-calc-result" aria-live="polite"></p><div class="dm-calc-keys dm-calc-grid4"><button type="button" data-insert="7">7</button><button type="button" data-insert="8">8</button><button type="button" data-insert="9">9</button><button type="button" data-insert="/">÷</button><button type="button" data-insert="4">4</button><button type="button" data-insert="5">5</button><button type="button" data-insert="6">6</button><button type="button" data-insert="*">×</button><button type="button" data-insert="1">1</button><button type="button" data-insert="2">2</button><button type="button" data-insert="3">3</button><button type="button" data-insert="-">−</button><button type="button" data-insert="0">0</button><button type="button" data-insert=".">.</button><button type="button" data-insert="(">(</button><button type="button" data-insert=")">)</button><button type="button" data-insert="+">+</button><button type="button" data-insert="sqrt(">√</button><button type="button" data-insert="pi">π</button><button type="button" data-insert="^">^</button></div><div class="dm-calc-keys dm-calc-grid3"><button type="button" data-insert="sind(">sind</button><button type="button" data-insert="cosd(">cosd</button><button type="button" data-insert="tand(">tand</button><button type="button" data-insert="asind(">asind</button><button type="button" data-insert="acosd(">acosd</button><button type="button" data-insert="atand(">atand</button></div><div class="dm-calc-keys dm-calc-grid2"><button type="button" data-action="clear">C</button><button type="button" data-action="equals">=</button></div><p class="dm-panel-note">sin, cos and tan read radians; sind, cosd and tand read degrees, and asind, acosd and atand answer in degrees. The calculator keeps no history and is not handed in.</p></details><h2>Reference</h2><details class="dm-ref"><summary>Typing mathematical notation</summary><p>Use whatever feels natural — the only thing that matters is being
+consistent within each answer.</p>
+<ul>
+<li><strong>Powers.</strong> <code>x^2</code>, <code>x**2</code>, and "x to the power 2" all mean the
+  same thing.</li>
+<li><strong>Fractions.</strong> Write <code>a/b</code>. Use brackets for compound tops or
+  bottoms: <code>(x+3)/(x-1)</code>.</li>
+<li><strong>Square roots.</strong> Write <code>sqrt(x)</code> or surd form like <code>4*sqrt(2)</code>.</li>
+<li><strong>Derivatives.</strong> <code>f'(x)</code>, <code>dy/dx</code>, or <code>d/dx</code> are all fine — say
+  once at the top of each calculus answer which you are using.</li>
+<li><strong>Degrees.</strong> To convert degrees to radians, multiply by pi/180.</li>
+<li><strong>Intervals.</strong> <code>x &lt; 2</code> or <code>(-inf, 2)</code> are both fine — pick one per
+  answer and stick to it.</li>
+<li><strong>Infinity.</strong> Write <code>+inf</code> or <code>-inf</code> when describing what a
+  function approaches.</li>
+</ul></details><details class="dm-ref"><summary>Formula sheet - algebra and functions</summary><ul>
+<li>Quadratic formula: <code>x = (-b ± sqrt(b² - 4ac)) / (2a)</code></li>
+<li>Completing the square:
+  <code>ax² + bx + c = a(x + b/2a)² + c - b²/4a</code></li>
+<li>Inverse function: write y = f(x), rearrange to make x the subject,
+  then swap x and y.</li>
+</ul></details><details class="dm-ref"><summary>Formula sheet - differentiation</summary><ul>
+<li>Power rule: <code>d/dx [x^n] = n x^(n-1)</code></li>
+<li>Sum rule: <code>(f + g)' = f' + g'</code></li>
+<li>Product rule: <code>(fg)' = f'g + fg'</code></li>
+<li>Quotient rule: <code>(f/g)' = (f'g - fg') / g²</code></li>
+<li>Chain rule: <code>d/dx [f(g(x))] = f'(g(x)) · g'(x)</code></li>
+<li>Trig derivatives: <code>d/dx [sin x] = cos x</code>, <code>d/dx [cos x] = -sin x</code></li>
+<li>Increasing where f'(x) &gt; 0; decreasing where f'(x) &lt; 0; turning
+  point where f'(x) = 0.</li>
+</ul></details><details class="dm-ref"><summary>Formula sheet - coordinate geometry</summary><ul>
+<li>Midpoint: <code>M = ((x1 + x2)/2, (y1 + y2)/2)</code></li>
+<li>Distance: <code>|PQ| = sqrt((x2 - x1)² + (y2 - y1)²)</code></li>
+<li>Slope: <code>m = (y2 - y1) / (x2 - x1)</code></li>
+<li>Parallel lines have equal slopes.</li>
+<li>Perpendicular lines: <code>m1 × m2 = -1</code></li>
+<li>Line through (x1, y1) with slope m: <code>y - y1 = m(x - x1)</code></li>
+</ul></details><details class="dm-ref"><summary>Formula sheet - counting and probability</summary><ul>
+<li>Factorial: <code>n! = n × (n-1) × ··· × 2 × 1</code></li>
+<li>Arrangements (order matters): <code>P(n,r) = n! / (n-r)!</code></li>
+<li>Selections (order does not matter): <code>C(n,r) = n! / (r! (n-r)!)</code></li>
+<li><code>0 ≤ P(A) ≤ 1</code> and <code>P(not A) = 1 - P(A)</code></li>
+<li>If A and B cannot both happen: <code>P(A or B) = P(A) + P(B)</code></li>
+<li>If A and B are independent: <code>P(A and B) = P(A) × P(B)</code></li>
+<li>Expected occurrences: <code>E = (number of tries) × P(event)</code></li>
+</ul></details><details class="dm-ref"><summary>Formula sheet - trigonometry</summary><p>Right-angled triangle:</p>
+<ul>
+<li><code>a² + b² = c²</code></li>
+<li><code>sin θ = opposite / hypotenuse</code>, <code>cos θ = adjacent / hypotenuse</code>,
+  <code>tan θ = opposite / adjacent</code></li>
+</ul>
+<p>Any triangle:</p>
+<ul>
+<li>Sine rule: <code>a / sin A = b / sin B = c / sin C</code></li>
+<li>Cosine rule: <code>c² = a² + b² - 2ab cos C</code></li>
+<li>Area: <code>Area = ½ ab sin C</code></li>
+</ul>
+<p>Unit circle values:</p>
+<table>
+<thead>
+<tr>
+<th>Angle</th>
+<th>sin</th>
+<th>cos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0°</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>30°</td>
+<td>1/2</td>
+<td>sqrt(3)/2</td>
+</tr>
+<tr>
+<td>45°</td>
+<td>sqrt(2)/2</td>
+<td>sqrt(2)/2</td>
+</tr>
+<tr>
+<td>60°</td>
+<td>sqrt(3)/2</td>
+<td>1/2</td>
+</tr>
+<tr>
+<td>90°</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>180°</td>
+<td>0</td>
+<td>-1</td>
+</tr>
+<tr>
+<td>270°</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></details><details class="dm-ref"><summary>Formula sheet - statistics</summary><ul>
+<li>Mean: add up all values and divide by how many there are.</li>
+<li>Mean from a frequency table:
+  <code>mean = Σ(value × frequency) / total frequency</code>. For grouped data,
+  use the midpoint of each group as the value.</li>
+<li>Median: the middle value when all values are listed in order.</li>
+<li>Mode: the value that appears most often.</li>
+<li>Range: largest value minus smallest value.</li>
+</ul></details></nav>
+    <main id="dm-paper"><section class="dm-section" data-section="A" data-choose="10"><h2>Section A — Answer any ten of the twelve questions</h2>
+<p>Each question in this section is worth 4 marks.</p>
+<h3>Question A1 — Sets</h3><div class="dm-question" data-question="a1" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>Two friends compare which apps they have installed on their phones.</p>
+<ul>
+<li><strong>Sam's phone:</strong> Calculator, Camera, Clock, Maps, Music, Weather</li>
+<li><strong>Kai's phone:</strong> Calendar, Camera, Clock, News, Photos, Weather</li>
+</ul><div class="dm-answer" data-answer="a1.both" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Which apps do both Sam and Kai have?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a1.union" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) List every app that appears on at least one of the two phones.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a1.difference" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) How many apps does Sam have that Kai does not have?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A2 — Functions</h3></div><div class="dm-question" data-question="a2" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>Let <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>f</mi><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mn>2</mn><mi>x</mi><mo>&#x0002B;</mo><mn>3</mn></mrow></math>.</p><div class="dm-answer" data-answer="a2.value" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Find f(4).</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a2.inverse" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) Find the inverse of f. Show your working.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a2.check" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Check your answer: substitute 9 into your inverse, then substitute the result into f, and show that you get 9 back.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A3 — A quadratic function</h3></div><div class="dm-question" data-question="a3" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>Consider <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>f</mi><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><msup><mi>x</mi><mn>2</mn></msup><mo>&#x02212;</mo><mn>2</mn><mi>x</mi><mo>&#x02212;</mo><mn>8</mn></mrow></math>.</p><div class="dm-answer" data-answer="a3.factors" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Write f(x) as a product of two brackets.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a3.roots" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) State the two values of x where the graph crosses the x-axis.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><p>Part (c): describe a rough sketch of the graph, marking the two
+x-intercepts and the y-intercept.</p><div class="dm-answer" data-answer="a3.sketch" data-type="describe-a-sketch" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">The parabola opens</p><div class="dm-options"><label class="dm-option dm-shape"><input type="radio" name="a3.sketch.shape" value="1"> <span>upward (a ∪ shape)</span></label><label class="dm-option dm-shape"><input type="radio" name="a3.sketch.shape" value="2"> <span>downward (a ∩ shape)</span></label></div><p class="dm-feature-row">Crosses the x-axis at x = <input class="dm-feature" data-feature="0" data-box="0" type="text" aria-label="Crosses the x-axis at x = _ and x = _ value 1"> and x = <input class="dm-feature" data-feature="0" data-box="1" type="text" aria-label="Crosses the x-axis at x = _ and x = _ value 2"></p><p class="dm-feature-row">Crosses the y-axis at y = <input class="dm-feature" data-feature="1" data-box="0" type="text" aria-label="Crosses the y-axis at y = _ value 1"></p></div><h3>Question A4 — Simultaneous equations</h3></div><div class="dm-question" data-question="a4" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><div class="dm-answer" data-answer="a4.working" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">Solve the following pair of equations and find the values of x and y. Show all steps, and state both values clearly at the end. 3x + y = 10 and x + y = 4.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><h3>Question A5 — Lines</h3></div><div class="dm-question" data-question="a5" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>Two points <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>A</mi><mo stretchy="false">&#x00028;</mo><mn>2</mn><mo>&#x0002C;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo></mrow></math> and <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>B</mi><mo stretchy="false">&#x00028;</mo><mn>5</mn><mo>&#x0002C;</mo><mn>7</mn><mo stretchy="false">&#x00029;</mo></mrow></math> lie on the coordinate plane.</p><div class="dm-answer" data-answer="a5.slope" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Find the slope of the line through A and B.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a5.equation" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) Write the equation of the line through A and B.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a5.perpendicular" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) A second line passes through B and is perpendicular to AB. Find its equation.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A6 — Distance and midpoint</h3></div><div class="dm-question" data-question="a6" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>Points <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>P</mi><mo stretchy="false">&#x00028;</mo><mn>2</mn><mo>&#x0002C;</mo><mo>&#x02212;</mo><mn>1</mn><mo stretchy="false">&#x00029;</mo></mrow></math> and <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>Q</mi><mo stretchy="false">&#x00028;</mo><mo>&#x02212;</mo><mn>4</mn><mo>&#x0002C;</mo><mn>3</mn><mo stretchy="false">&#x00029;</mo></mrow></math> are given.</p><div class="dm-answer" data-answer="a6.midpoint" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Find the midpoint M of PQ.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a6.distance" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) Find the distance from P to Q. Leave your answer in surd form if it does not simplify to a whole number.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a6.half" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Find the distance from M to P. How does it compare to |PQ|?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A7 — Pythagorean triples</h3></div><div class="dm-question" data-question="a7" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>A right-angled triangle whose three sides are all whole numbers is
+called a <em>Pythagorean triple</em>. The 3-4-5 triangle is the simplest
+example, since <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msup><mn>3</mn><mn>2</mn></msup><mo>&#x0002B;</mo><msup><mn>4</mn><mn>2</mn></msup><mo>&#x0003D;</mo><mn>9</mn><mo>&#x0002B;</mo><mn>16</mn><mo>&#x0003D;</mo><mn>25</mn><mo>&#x0003D;</mo><msup><mn>5</mn><mn>2</mn></msup></mrow></math>.</p><div class="dm-answer" data-answer="a7.triples" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">Find two more right-angled triangles where every side is a whole number. For each one, write down the three lengths and show that the Pythagorean theorem holds. (2 marks each.)
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><h3>Question A8 — Trigonometric ratios</h3></div><div class="dm-question" data-question="a8" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>In a right-angled triangle, the side opposite angle <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>θ</mi></mrow></math> has length 1
+and the hypotenuse has length 2.</p><div class="dm-answer" data-answer="a8.ratios" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Write down sin θ and cos θ. Leave your answers in surd form where appropriate.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a8.adjacent" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) Find the length of the third side, adjacent to θ.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a8.tan" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Use your answers to find tan θ.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A9 — Counting</h3></div><div class="dm-question" data-question="a9" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><div class="dm-answer" data-answer="a9.pins" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) A 4-digit PIN uses the digits 0 to 9, and digits can be repeated. How many different PINs are there?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a9.exact" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) One PIN is chosen at random. What is the probability it is exactly &quot;2580&quot;?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a9.norepeat" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) How many PINs are there where no digit is repeated? Show your reasoning.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A10 — Probability</h3></div><div class="dm-question" data-question="a10" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>The English alphabet has 26 letters. For this question, count 6 of
+them as vowels (a, e, i, o, u, y) and the other 20 as consonants. A
+letter is chosen at random.</p><div class="dm-answer" data-answer="a10.vowel" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) What is the probability the chosen letter is a vowel?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a10.notvowel" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) What is the probability the chosen letter is not a vowel?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a10.two" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Two letters are chosen one after the other, without replacement. What is the probability both are vowels? Show your working.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A11 — Statistics</h3></div><div class="dm-question" data-question="a11" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>A class of 20 students sat a short quiz. Their scores out of 5 are
+recorded below.</p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Students</td>
+<td>2</td>
+<td>4</td>
+<td>8</td>
+<td>4</td>
+<td>2</td>
+</tr>
+</tbody>
+</table><div class="dm-answer" data-answer="a11.mode" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) What score appeared most often?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a11.mean" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) Calculate the mean score.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a11.high" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) A student is chosen at random. What is the probability their score is 4 or higher?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question A12 — Limits</h3></div><div class="dm-question" data-question="a12" data-marks="4" data-section="A"><span class="dm-question-chip">4 marks</span><p>Consider the function <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>f</mi><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mn>5</mn><mo>&#x0002B;</mo><mn>12</mn><mo>&#x0002F;</mo><mi>x</mi></mrow></math>.</p><div class="dm-answer" data-answer="a12.values" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Calculate f(1), f(10), f(100), and f(1000).</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a12.limit" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) As x grows larger and larger without end, what single value does f(x) appear to be getting closer and closer to?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="a12.zero" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) What happens to f(x) as x gets very close to 0 from above? Give a brief reason.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div></div></section><section class="dm-section" data-section="B" data-choose="4"><h2>Section B — Answer any four of the six questions</h2>
+<p>Each question in this section is worth 20 marks.</p>
+<h3>Question B1 — Quadratic functions and derivatives</h3><div class="dm-question" data-question="b1" data-marks="20" data-section="B"><span class="dm-question-chip">20 marks</span><p>Let <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>f</mi><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><msup><mi>x</mi><mn>2</mn></msup><mo>&#x02212;</mo><mn>4</mn><mi>x</mi><mo>&#x0002B;</mo><mn>3</mn></mrow></math>.</p><div class="dm-answer" data-answer="b1.roots" data-type="long-written-answer" data-marks="5"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(5)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) Find the two roots of f(x) = 0 and the y-intercept. Use the roots to find the x-coordinate of the vertex, then calculate the y-value there. State the coordinates of the vertex.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><p>Part (b): describe a sketch of the graph, giving the vertex, both
+roots, and the y-intercept.</p><div class="dm-answer" data-answer="b1.sketch" data-type="describe-a-sketch" data-marks="6"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(6)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">The parabola opens</p><div class="dm-options"><label class="dm-option dm-shape"><input type="radio" name="b1.sketch.shape" value="1"> <span>upward (a ∪ shape)</span></label><label class="dm-option dm-shape"><input type="radio" name="b1.sketch.shape" value="2"> <span>downward (a ∩ shape)</span></label></div><p class="dm-feature-row">Root 1 at ( <input class="dm-feature" data-feature="0" data-box="0" type="text" aria-label="Root 1 at ( _ , 0 ) and root 2 at ( _ , 0 ) value 1"> , 0 ) and root 2 at ( <input class="dm-feature" data-feature="0" data-box="1" type="text" aria-label="Root 1 at ( _ , 0 ) and root 2 at ( _ , 0 ) value 2"> , 0 )</p><p class="dm-feature-row">Crosses the y-axis at ( 0 , <input class="dm-feature" data-feature="1" data-box="0" type="text" aria-label="Crosses the y-axis at ( 0 , _ ) value 1"> )</p><p class="dm-feature-row">Vertex at ( <input class="dm-feature" data-feature="2" data-box="0" type="text" aria-label="Vertex at ( _ , _ ) value 1"> , <input class="dm-feature" data-feature="2" data-box="1" type="text" aria-label="Vertex at ( _ , _ ) value 2"> )</p></div><div class="dm-answer" data-answer="b1.derivative" data-type="long-written-answer" data-marks="5"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(5)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Differentiate f. Use the derivative to state the value of x at which f has its minimum, the minimum value of f, and the intervals where f is decreasing and where it is increasing.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b1.shift" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(d) Now consider g(x) = f(x + 1). Substitute (x + 1) into your expression for f and simplify g(x) fully. Then describe in one sentence how the graph of g is related to the graph of f.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><h3>Question B2 — Cubic functions</h3></div><div class="dm-question" data-question="b2" data-marks="20" data-section="B"><span class="dm-question-chip">20 marks</span><p>Let <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>g</mi><mo stretchy="false">&#x00028;</mo><mi>x</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><msup><mi>x</mi><mn>3</mn></msup><mo>&#x02212;</mo><mn>12</mn><mi>x</mi></mrow></math>.</p>
+<p>Part (a): complete the table of values.</p><div class="dm-answer" data-answer="b2.table" data-type="complete-the-table" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><table class="dm-table"><tr><th>x</th><th>-2</th><th>-1</th><th>0</th><th>1</th><th>2</th></tr><tr><td>g(x)</td><td><input class="dm-cell" data-cell="r0c1" type="text" aria-label="row 1 column 2"></td><td><input class="dm-cell" data-cell="r0c2" type="text" aria-label="row 1 column 3"></td><td><input class="dm-cell" data-cell="r0c3" type="text" aria-label="row 1 column 4"></td><td><input class="dm-cell" data-cell="r0c4" type="text" aria-label="row 1 column 5"></td><td><input class="dm-cell" data-cell="r0c5" type="text" aria-label="row 1 column 6"></td></tr></table></div><p>Part (b): using your table, describe a sketch of the graph, marking
+approximately where it crosses the x-axis.</p><div class="dm-answer" data-answer="b2.sketch" data-type="describe-a-sketch" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">The overall shape of the curve is</p><div class="dm-options"><label class="dm-option dm-shape"><input type="radio" name="b2.sketch.shape" value="1"> <span>rising overall, with two turning points</span></label><label class="dm-option dm-shape"><input type="radio" name="b2.sketch.shape" value="2"> <span>rising overall, with no turning points</span></label><label class="dm-option dm-shape"><input type="radio" name="b2.sketch.shape" value="3"> <span>falling overall, with two turning points</span></label><label class="dm-option dm-shape"><input type="radio" name="b2.sketch.shape" value="4"> <span>falling overall, with no turning points</span></label></div><p class="dm-feature-row">Highest local point near x = <input class="dm-feature" data-feature="0" data-box="0" type="text" aria-label="Highest local point near x = _ , where g(x) = _ value 1"> , where g(x) = <input class="dm-feature" data-feature="0" data-box="1" type="text" aria-label="Highest local point near x = _ , where g(x) = _ value 2"></p><p class="dm-feature-row">Lowest local point near x = <input class="dm-feature" data-feature="1" data-box="0" type="text" aria-label="Lowest local point near x = _ , where g(x) = _ value 1"> , where g(x) = <input class="dm-feature" data-feature="1" data-box="1" type="text" aria-label="Lowest local point near x = _ , where g(x) = _ value 2"></p><p class="dm-feature-row">Crosses the x-axis at x = <input class="dm-feature" data-feature="2" data-box="0" type="text" aria-label="Crosses the x-axis at x = _ , x = _ , and x = _ value 1"> , x = <input class="dm-feature" data-feature="2" data-box="1" type="text" aria-label="Crosses the x-axis at x = _ , x = _ , and x = _ value 2"> , and x = <input class="dm-feature" data-feature="2" data-box="2" type="text" aria-label="Crosses the x-axis at x = _ , x = _ , and x = _ value 3"></p></div><div class="dm-answer" data-answer="b2.derivative" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Differentiate g.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b2.turning" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(d) Set your derivative equal to zero and solve to find the x-coordinates of both turning points. Then calculate the y-value at each one.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b2.classify" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(e) For each turning point, explain whether it is a local maximum or a local minimum. Then state the intervals over which g is increasing and over which g is decreasing.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b2.ends" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(f) As x grows to be a very large positive number, what happens to g(x)? What about when x becomes a very large negative number?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b2.atzero" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(g) Calculate the value of your derivative at x = 0. In one sentence, explain what this value tells you about the shape of the curve there.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><h3>Question B3 — Differentiation</h3></div><div class="dm-question" data-question="b3" data-marks="20" data-section="B"><span class="dm-question-chip">20 marks</span><p>Part (a): find the derivative of each function below, stating which
+rule you use in each case.</p><div class="dm-answer" data-answer="b3.power" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(i) h(x) = 3x⁴ - 2x³ + 5x - 7</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b3.expand" data-type="short-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(ii) k(x) = (x - 2)(x² + 3). Expand first, then differentiate.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b3.chain" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(iii) m(x) = (3x + 2)⁴</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><p>Part (b): a drone rises straight up from the ground. Its height in
+metres at time <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>t</mi></mrow></math> seconds is <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>h</mi><mo stretchy="false">&#x00028;</mo><mi>t</mi><mo stretchy="false">&#x00029;</mo><mo>&#x0003D;</mo><mn>24</mn><mi>t</mi><mo>&#x02212;</mo><mn>4</mn><msup><mi>t</mi><mn>2</mn></msup></mrow></math>, for <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>t</mi><mi>≥</mi><mn>0</mn></mrow></math>.</p><div class="dm-answer" data-answer="b3.velocity" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(i) Differentiate h. In one sentence, describe what the derivative represents in this situation.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b3.peaktime" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(ii) At what time t does the drone reach its maximum height?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b3.peak" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(iii) What is that maximum height?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b3.landing" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(iv) After reaching its peak, the drone falls back to the ground. At what time t does it land? Ignore t = 0, the launch time.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><h3>Question B4 — Probability and statistics</h3></div><div class="dm-question" data-question="b4" data-marks="20" data-section="B"><span class="dm-question-chip">20 marks</span><p>Part (a) is about long sequences of coin flips, and what turns out to
+be surprising about them.</p><div class="dm-answer" data-answer="b4.single" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(i) What is the probability of getting heads on a single flip?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.three" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(ii) What is the probability of getting heads three times in a row? Show your reasoning.
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.eight" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(iii) What is the probability of getting heads eight times in a row?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.runs" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a)(iv) Suppose you flip a coin 1000 times. At each position from flip 1 through to flip 993, you can ask whether the next 8 flips all come up heads — 993 possible starting positions for a run of 8 heads. Using your answer to part (iii), estimate the expected number of such runs in 1000 flips, rounded to one decimal place. Does the answer surprise you?
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><p>Part (b): the bar chart below shows how many times each of the
+letters A through E appeared in a short message.</p>
+<p><img alt="A bar chart. The vertical axis counts appearances, from 0 to 9 with
+a gridline every 2. Five bars: A reaches 5, B reaches 8, C reaches 3,
+D reaches 7, and E reaches 2." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzODAgMjQwIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLCBzYW5zLXNlcmlmIj4KICA8cmVjdCB3aWR0aD0iMzgwIiBoZWlnaHQ9IjI0MCIgZmlsbD0iI2ZkZmNmYSIvPgogIDwhLS0gZ3JpZGxpbmVzIGFuZCB5LWF4aXMgbGFiZWxzOiAwIHRvIDksIGEgbGluZSBldmVyeSAyIC0tPgogIDxnIHN0cm9rZT0iI2UyZGRkNSIgc3Ryb2tlLXdpZHRoPSIxIj4KICAgIDxsaW5lIHgxPSI0NSIgeTE9IjIwMCIgeDI9IjM2MCIgeTI9IjIwMCIvPgogICAgPGxpbmUgeDE9IjQ1IiB5MT0iMTYwIiB4Mj0iMzYwIiB5Mj0iMTYwIi8+CiAgICA8bGluZSB4MT0iNDUiIHkxPSIxMjAiIHgyPSIzNjAiIHkyPSIxMjAiLz4KICAgIDxsaW5lIHgxPSI0NSIgeTE9IjgwIiAgeDI9IjM2MCIgeTI9IjgwIi8+CiAgICA8bGluZSB4MT0iNDUiIHkxPSI0MCIgIHgyPSIzNjAiIHkyPSI0MCIvPgogIDwvZz4KICA8ZyBmaWxsPSIjNWY2YjdhIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0iZW5kIj4KICAgIDx0ZXh0IHg9IjM4IiB5PSIyMDQiPjA8L3RleHQ+CiAgICA8dGV4dCB4PSIzOCIgeT0iMTY0Ij4yPC90ZXh0PgogICAgPHRleHQgeD0iMzgiIHk9IjEyNCI+NDwvdGV4dD4KICAgIDx0ZXh0IHg9IjM4IiB5PSI4NCI+NjwvdGV4dD4KICAgIDx0ZXh0IHg9IjM4IiB5PSI0NCI+ODwvdGV4dD4KICA8L2c+CiAgPCEtLSBiYXJzOiAyMCBwaXhlbHMgcGVyIHVuaXQ7IEE9NSBCPTggQz0zIEQ9NyBFPTIgLS0+CiAgPGcgZmlsbD0iIzFiMmE0YSI+CiAgICA8cmVjdCB4PSI2MCIgIHk9IjEwMCIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjEwMCIvPgogICAgPHJlY3QgeD0iMTIxIiB5PSI0MCIgIHdpZHRoPSI0NCIgaGVpZ2h0PSIxNjAiLz4KICAgIDxyZWN0IHg9IjE4MiIgeT0iMTQwIiB3aWR0aD0iNDQiIGhlaWdodD0iNjAiLz4KICAgIDxyZWN0IHg9IjI0MyIgeT0iNjAiICB3aWR0aD0iNDQiIGhlaWdodD0iMTQwIi8+CiAgICA8cmVjdCB4PSIzMDQiIHk9IjE2MCIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQwIi8+CiAgPC9nPgogIDxnIGZpbGw9IiMxYTFhMWEiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPgogICAgPHRleHQgeD0iODIiICB5PSIyMjIiPkE8L3RleHQ+CiAgICA8dGV4dCB4PSIxNDMiIHk9IjIyMiI+QjwvdGV4dD4KICAgIDx0ZXh0IHg9IjIwNCIgeT0iMjIyIj5DPC90ZXh0PgogICAgPHRleHQgeD0iMjY1IiB5PSIyMjIiPkQ8L3RleHQ+CiAgICA8dGV4dCB4PSIzMjYiIHk9IjIyMiI+RTwvdGV4dD4KICA8L2c+CiAgPGxpbmUgeDE9IjQ1IiB5MT0iMjAiIHgyPSI0NSIgeTI9IjIwMCIgc3Ryb2tlPSIjNWY2YjdhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSI0NSIgeTE9IjIwMCIgeDI9IjM2MCIgeTI9IjIwMCIgc3Ryb2tlPSIjNWY2YjdhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8L3N2Zz4K" /></p><div class="dm-answer" data-answer="b4.most" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(i) Which letter appeared most often, and how many times did it appear?
+</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.total" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(ii) How many letters are there in the message altogether?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.pc" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(iii) If one letter is chosen at random from the message, what is the probability it is the letter C?
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.notc" data-type="short-written-answer" data-marks="1"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(1)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(iv) What is the probability the chosen letter is not C?</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.meanfreq" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(v) Find the mean frequency across the five letters A to E.</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b4.order" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b)(vi) List the five letters in order from least likely to most likely to be chosen at random.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><h3>Question B5 — Triangle trigonometry</h3></div><div class="dm-question" data-question="b5" data-marks="20" data-section="B"><span class="dm-question-chip">20 marks</span><p>In triangle ABC: angle <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>C</mi><mo>&#x0003D;</mo><mn>40</mn><mi>°</mi></mrow></math>, side <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>a</mi><mo>&#x0003D;</mo><mi>B</mi><mi>C</mi><mo>&#x0003D;</mo><mn>7</mn></mrow></math> cm, and side
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>b</mi><mo>&#x0003D;</mo><mi>A</mi><mi>C</mi><mo>&#x0003D;</mo><mn>10</mn></mrow></math> cm.</p>
+<p><img alt="A triangle with vertex C at the bottom left, vertex A at the bottom
+right, and vertex B at the top. Side a runs from C up to B, side b
+from B down to A, and side c along the bottom from C to A. An arc
+marks the angle at vertex C." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNjAgMjQwIiBmb250LWZhbWlseT0iR2VvcmdpYSwgc2VyaWYiPgogIDxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iMjQwIiBmaWxsPSIjZmRmY2ZhIi8+CiAgPCEtLSB2ZXJ0aWNlczogQyBib3R0b20tbGVmdCwgQSBib3R0b20tcmlnaHQsIEIgYXBleCAtLT4KICA8cG9seWdvbiBwb2ludHM9IjUwLDIwMCAzMjAsMjAwIDE1MCw1MCIgZmlsbD0iI2U5ZTZmMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8IS0tIHRoZSBrbm93biBhbmdsZSBhdCBDLCBtYXJrZWQgd2l0aCBhbiBhcmMgLS0+CiAgPHBhdGggZD0iTSA4NiAyMDAgQSAzNiAzNiAwIDAgMCA3NCAxNzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Q0NjkyYSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iOTYiIHk9IjE4OCIgZm9udC1zaXplPSIxNSIgZmlsbD0iI2Q0NjkyYSI+QyA9IDQwwrA8L3RleHQ+CiAgPCEtLSB2ZXJ0ZXggbGFiZWxzIC0tPgogIDx0ZXh0IHg9IjM0IiB5PSIyMTYiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMxYTFhMWEiPkM8L3RleHQ+CiAgPHRleHQgeD0iMzI2IiB5PSIyMTYiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMxYTFhMWEiPkE8L3RleHQ+CiAgPHRleHQgeD0iMTQ0IiB5PSIzOCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzFhMWExYSI+QjwvdGV4dD4KICA8IS0tIHNpZGUgbGFiZWxzOiBhIGpvaW5zIEMgYW5kIEIsIGIgam9pbnMgQiBhbmQgQSwgYyBqb2lucyBDIGFuZCBBIC0tPgogIDx0ZXh0IHg9Ijg0IiB5PSIxMTgiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZmlsbD0iIzFhMWExYSI+YTwvdGV4dD4KICA8dGV4dCB4PSIyNDQiIHk9IjExOCIgZm9udC1zaXplPSIxNiIgZm9udC1zdHlsZT0iaXRhbGljIiBmaWxsPSIjMWExYTFhIj5iPC90ZXh0PgogIDx0ZXh0IHg9IjE4MiIgeT0iMjIyIiBmb250LXNpemU9IjE2IiBmb250LXN0eWxlPSJpdGFsaWMiIGZpbGw9IiMxYTFhMWEiPmM8L3RleHQ+Cjwvc3ZnPgo=" /></p>
+<p>Part (i): fill in the values you know from the question, and — once
+you have worked them out in the later parts — the three unknowns.</p><div class="dm-answer" data-answer="b5.known" data-type="complete-the-table" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><table class="dm-table"><tr><th>quantity</th><th>value</th></tr><tr><td>angle C</td><td><input class="dm-cell" data-cell="r0c1" type="text" aria-label="row 1 column 2"></td></tr><tr><td>side a = BC</td><td><input class="dm-cell" data-cell="r1c1" type="text" aria-label="row 2 column 2"></td></tr><tr><td>side b = AC</td><td><input class="dm-cell" data-cell="r2c1" type="text" aria-label="row 3 column 2"></td></tr><tr><td>side c = AB</td><td><input class="dm-cell" data-cell="r3c1" type="text" aria-label="row 4 column 2"></td></tr><tr><td>angle A</td><td><input class="dm-cell" data-cell="r4c1" type="text" aria-label="row 5 column 2"></td></tr><tr><td>angle B</td><td><input class="dm-cell" data-cell="r5c1" type="text" aria-label="row 6 column 2"></td></tr></table></div><div class="dm-answer" data-answer="b5.cosine" data-type="long-written-answer" data-marks="6"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(6)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(ii) Using the cosine rule, find the length of side c = AB. Round to 2 decimal places.
+</p><textarea class="dm-writing" rows="10" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b5.sine" data-type="long-written-answer" data-marks="6"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(6)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(iii) Using the sine rule, find angle A. Round to 1 decimal place.
+</p><textarea class="dm-writing" rows="10" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b5.angleb" data-type="short-written-answer" data-marks="2"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(2)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(iv) Find angle B.</p><textarea class="dm-writing" rows="3" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b5.area" data-type="short-written-answer" data-marks="3"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(3)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(v) Calculate the area of triangle ABC, using the half-ab-sin-C formula from the formula sheet.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><h3>Question B6 — Similar triangles</h3></div><div class="dm-question" data-question="b6" data-marks="20" data-section="B"><span class="dm-question-chip">20 marks</span><p>Two right-angled triangles are given. In each triangle, the two
+shorter sides are equal in length. The longest side of the small
+triangle is 8 cm, and the longest side of the large triangle is
+24 cm.</p>
+<p><img alt="Two right-angled triangles side by side. Each has a small square
+marking the right angle at its bottom-left corner, and a single tick
+mark on each of its two shorter sides showing they are equal. The
+small triangle's longest side is labelled 8 cm; the large triangle's
+longest side is labelled 24 cm." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MjAgMjIwIiBmb250LWZhbWlseT0iR2VvcmdpYSwgc2VyaWYiPgogIDxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iMjIwIiBmaWxsPSIjZmRmY2ZhIi8+CiAgPCEtLSBzbWFsbCByaWdodC1hbmdsZWQgdHJpYW5nbGUsIGVxdWFsIGxlZ3MsIGh5cG90ZW51c2UgOCBjbSAtLT4KICA8cG9seWdvbiBwb2ludHM9IjQwLDE5MCAxMjAsMTkwIDQwLDExMCIgZmlsbD0iI2U3ZjBlOCIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8cmVjdCB4PSI0MCIgeT0iMTc2IiB3aWR0aD0iMTQiIGhlaWdodD0iMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICA8IS0tIG9uZSB0aWNrIG1hcmsgb24gZWFjaCBvZiB0aGUgdHdvIGVxdWFsIGxlZ3MgLS0+CiAgPGxpbmUgeDE9Ijc4IiB5MT0iMTg0IiB4Mj0iODIiIHkyPSIxOTYiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGxpbmUgeDE9IjM0IiB5MT0iMTQ4IiB4Mj0iNDYiIHkyPSIxNTIiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHRleHQgeD0iOTAiIHk9IjE0MCIgZm9udC1zaXplPSIxNSIgZmlsbD0iI2Q0NjkyYSI+OCBjbTwvdGV4dD4KICA8IS0tIGxhcmdlIHJpZ2h0LWFuZ2xlZCB0cmlhbmdsZSwgZXF1YWwgbGVncywgaHlwb3RlbnVzZSAyNCBjbSAtLT4KICA8cG9seWdvbiBwb2ludHM9IjE5MCwxOTAgMzYwLDE5MCAxOTAsMjAiIGZpbGw9IiNlN2YwZTgiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHJlY3QgeD0iMTkwIiB5PSIxNzQiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSIyNzMiIHkxPSIxODQiIHgyPSIyNzciIHkyPSIxOTYiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGxpbmUgeDE9IjE4NCIgeTE9IjEwMyIgeDI9IjE5NiIgeTI9IjEwNyIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSIyOTAiIHk9IjEwMCIgZm9udC1zaXplPSIxNSIgZmlsbD0iI2Q0NjkyYSI+MjQgY208L3RleHQ+Cjwvc3ZnPgo=" /></p><div class="dm-answer" data-answer="b6.similar" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(a) The two triangles shown are described as similar. Explain in your own words what it means for two triangles to be similar. Then, looking only at what is already marked on the diagrams, identify the features that are the same in both triangles and explain briefly why this is enough to confirm that they are similar to each other.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b6.angles" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(b) Using the fact that the angles of any triangle sum to 180°, find the size of each unknown angle in the small triangle. Explain your reasoning in full.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b6.sides" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(c) Find the length of each shorter side of the small triangle. Leave your answer in surd form.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b6.scale" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(d) Write down all three side lengths of the large triangle, and state the scale factor from the small triangle to the large one.
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div><div class="dm-answer" data-answer="b6.areas" data-type="long-written-answer" data-marks="4"><div class="dm-answer-head"><span>Answer space</span><span class="dm-answer-marks">(4)</span><span class="dm-answered-flag" hidden>answered</span></div><p class="dm-prompt">(e) Calculate the area of each triangle, showing your working. By what factor is the area of the large triangle greater than the area of the small one?
+</p><textarea class="dm-writing" rows="6" aria-label="your answer" placeholder=""></textarea></div></div></section></main>
+  </div>
+</div>
+
+<div id="dm-finish-screen" class="dm-card" hidden>
+  <h2>Check before you hand in</h2>
+  <div id="dm-finish-report"></div>
+  <button id="dm-submit" class="dm-primary">Download my submission</button>
+  <button id="dm-keep-working" class="dm-secondary">Keep working</button>
+</div>
+
+<script type="application/json" id="dewmark-exam-model">{"format_version": 1, "exam_code": "maths-it-2026", "exam_version": "2026.09.01.1", "title": "Maths for Information Technology - 5N18396", "total_marks": 120, "time_allowed": "3 hours", "student_details": ["full name", "student number"], "sections": [{"name": "A", "choose": 10, "questions": [{"name": "a1", "marks": 4, "answers": [{"name": "a1.both", "type": "short-written-answer", "marks": 2}, {"name": "a1.union", "type": "short-written-answer", "marks": 1}, {"name": "a1.difference", "type": "short-written-answer", "marks": 1}]}, {"name": "a2", "marks": 4, "answers": [{"name": "a2.value", "type": "short-written-answer", "marks": 1}, {"name": "a2.inverse", "type": "short-written-answer", "marks": 2}, {"name": "a2.check", "type": "short-written-answer", "marks": 1}]}, {"name": "a3", "marks": 4, "answers": [{"name": "a3.factors", "type": "short-written-answer", "marks": 2}, {"name": "a3.roots", "type": "short-written-answer", "marks": 1}, {"name": "a3.sketch", "type": "describe-a-sketch", "marks": 1}]}, {"name": "a4", "marks": 4, "answers": [{"name": "a4.working", "type": "long-written-answer", "marks": 4}]}, {"name": "a5", "marks": 4, "answers": [{"name": "a5.slope", "type": "short-written-answer", "marks": 1}, {"name": "a5.equation", "type": "short-written-answer", "marks": 1}, {"name": "a5.perpendicular", "type": "short-written-answer", "marks": 2}]}, {"name": "a6", "marks": 4, "answers": [{"name": "a6.midpoint", "type": "short-written-answer", "marks": 1}, {"name": "a6.distance", "type": "short-written-answer", "marks": 2}, {"name": "a6.half", "type": "short-written-answer", "marks": 1}]}, {"name": "a7", "marks": 4, "answers": [{"name": "a7.triples", "type": "long-written-answer", "marks": 4}]}, {"name": "a8", "marks": 4, "answers": [{"name": "a8.ratios", "type": "short-written-answer", "marks": 2}, {"name": "a8.adjacent", "type": "short-written-answer", "marks": 1}, {"name": "a8.tan", "type": "short-written-answer", "marks": 1}]}, {"name": "a9", "marks": 4, "answers": [{"name": "a9.pins", "type": "short-written-answer", "marks": 1}, {"name": "a9.exact", "type": "short-written-answer", "marks": 1}, {"name": "a9.norepeat", "type": "short-written-answer", "marks": 2}]}, {"name": "a10", "marks": 4, "answers": [{"name": "a10.vowel", "type": "short-written-answer", "marks": 1}, {"name": "a10.notvowel", "type": "short-written-answer", "marks": 1}, {"name": "a10.two", "type": "short-written-answer", "marks": 2}]}, {"name": "a11", "marks": 4, "answers": [{"name": "a11.mode", "type": "short-written-answer", "marks": 1}, {"name": "a11.mean", "type": "short-written-answer", "marks": 2}, {"name": "a11.high", "type": "short-written-answer", "marks": 1}]}, {"name": "a12", "marks": 4, "answers": [{"name": "a12.values", "type": "short-written-answer", "marks": 2}, {"name": "a12.limit", "type": "short-written-answer", "marks": 1}, {"name": "a12.zero", "type": "short-written-answer", "marks": 1}]}]}, {"name": "B", "choose": 4, "questions": [{"name": "b1", "marks": 20, "answers": [{"name": "b1.roots", "type": "long-written-answer", "marks": 5}, {"name": "b1.sketch", "type": "describe-a-sketch", "marks": 6}, {"name": "b1.derivative", "type": "long-written-answer", "marks": 5}, {"name": "b1.shift", "type": "long-written-answer", "marks": 4}]}, {"name": "b2", "marks": 20, "answers": [{"name": "b2.table", "type": "complete-the-table", "marks": 3}, {"name": "b2.sketch", "type": "describe-a-sketch", "marks": 4}, {"name": "b2.derivative", "type": "short-written-answer", "marks": 2}, {"name": "b2.turning", "type": "long-written-answer", "marks": 4}, {"name": "b2.classify", "type": "long-written-answer", "marks": 4}, {"name": "b2.ends", "type": "short-written-answer", "marks": 2}, {"name": "b2.atzero", "type": "short-written-answer", "marks": 1}]}, {"name": "b3", "marks": 20, "answers": [{"name": "b3.power", "type": "short-written-answer", "marks": 3}, {"name": "b3.expand", "type": "short-written-answer", "marks": 4}, {"name": "b3.chain", "type": "short-written-answer", "marks": 3}, {"name": "b3.velocity", "type": "short-written-answer", "marks": 3}, {"name": "b3.peaktime", "type": "short-written-answer", "marks": 2}, {"name": "b3.peak", "type": "short-written-answer", "marks": 2}, {"name": "b3.landing", "type": "short-written-answer", "marks": 3}]}, {"name": "b4", "marks": 20, "answers": [{"name": "b4.single", "type": "short-written-answer", "marks": 1}, {"name": "b4.three", "type": "short-written-answer", "marks": 2}, {"name": "b4.eight", "type": "short-written-answer", "marks": 1}, {"name": "b4.runs", "type": "long-written-answer", "marks": 4}, {"name": "b4.most", "type": "short-written-answer", "marks": 1}, {"name": "b4.total", "type": "short-written-answer", "marks": 1}, {"name": "b4.pc", "type": "short-written-answer", "marks": 3}, {"name": "b4.notc", "type": "short-written-answer", "marks": 1}, {"name": "b4.meanfreq", "type": "short-written-answer", "marks": 3}, {"name": "b4.order", "type": "short-written-answer", "marks": 3}]}, {"name": "b5", "marks": 20, "answers": [{"name": "b5.known", "type": "complete-the-table", "marks": 3}, {"name": "b5.cosine", "type": "long-written-answer", "marks": 6}, {"name": "b5.sine", "type": "long-written-answer", "marks": 6}, {"name": "b5.angleb", "type": "short-written-answer", "marks": 2}, {"name": "b5.area", "type": "short-written-answer", "marks": 3}]}, {"name": "b6", "marks": 20, "answers": [{"name": "b6.similar", "type": "long-written-answer", "marks": 4}, {"name": "b6.angles", "type": "long-written-answer", "marks": 4}, {"name": "b6.sides", "type": "long-written-answer", "marks": 4}, {"name": "b6.scale", "type": "long-written-answer", "marks": 4}, {"name": "b6.areas", "type": "long-written-answer", "marks": 4}]}]}], "variant": "practice"}</script>
+<script>
+"use strict";
+
+const MODEL = JSON.parse(
+  document.getElementById("dewmark-exam-model").textContent);
+const STORAGE_KEY = "dewmark:" + MODEL.exam_code;
+
+const SPACES = {};
+for (const section of MODEL.sections) {
+  for (const question of section.questions) {
+    for (const answer of question.answers) {
+      SPACES[answer.name] = {
+        type: answer.type, marks: answer.marks,
+        section: section.name, question: question.name,
+      };
+    }
+  }
+}
+
+let state = {
+  format_version: 1,
+  exam_code: MODEL.exam_code,
+  exam_version: MODEL.exam_version,
+  student: {},
+  started_at: null,
+  saved_at: null,
+  finished_at: null,
+  answers: {},
+};
+let fileHandle = null;
+let fileSaveTimer = null;
+
+function collectAnswer(root, type) {
+  if (type === "multiple-choice") {
+    const picked = [...root.querySelectorAll("input:checked")]
+      .map((el) => Number(el.value));
+    return picked.length ? { chosen: picked } : null;
+  }
+  if (type === "fill-in-the-blank") {
+    const blanks = {};
+    let any = false;
+    for (const el of root.querySelectorAll(".dm-blank")) {
+      blanks[el.dataset.blank] = el.value;
+      if (el.value.trim()) any = true;
+    }
+    return any ? { blanks } : null;
+  }
+  if (type === "short-written-answer" || type === "long-written-answer") {
+    const text = root.querySelector(".dm-writing").value;
+    return text.trim() ? { text } : null;
+  }
+  if (type === "essay") {
+    const essay = root.querySelector(".dm-essay").value;
+    const planningBox = root.querySelector(".dm-planning");
+    const planning = planningBox ? planningBox.value : "";
+    return essay.trim() || planning.trim()
+      ? { text: essay, planning } : null;
+  }
+  if (type === "numeric-answer") {
+    const boxes = {};
+    let any = false;
+    for (const el of root.querySelectorAll(".dm-numeric input")) {
+      boxes[el.dataset.box] = el.value;
+      if (el.value.trim()) any = true;
+    }
+    const workingBox = root.querySelector(".dm-working");
+    const working = workingBox ? workingBox.value : "";
+    if (working.trim()) any = true;
+    return any ? { boxes, working } : null;
+  }
+  if (type === "complete-the-table") {
+    const cells = {};
+    let any = false;
+    for (const el of root.querySelectorAll(".dm-cell")) {
+      cells[el.dataset.cell] = el.value;
+      if (el.value.trim()) any = true;
+    }
+    return any ? { cells } : null;
+  }
+  if (type === "describe-a-sketch") {
+    const shapeEl = root.querySelector("input[type=radio]:checked");
+    const features = {};
+    let any = Boolean(shapeEl);
+    for (const el of root.querySelectorAll(".dm-feature")) {
+      const key = el.dataset.feature + "." + el.dataset.box;
+      features[key] = el.value;
+      if (el.value.trim()) any = true;
+    }
+    return any
+      ? { shape: shapeEl ? Number(shapeEl.value) : null, features } : null;
+  }
+  if (type === "python-code") {
+    const editor = root.querySelector(".dm-code");
+    const run = pythonRuns[root.dataset.answer] || {};
+    const untouched = editor.value.trim() === editor.defaultValue.trim()
+      && !(run.outputs || []).length;
+    if (untouched) return null;
+    return {
+      code: editor.value,
+      outputs: run.outputs || [],
+      last_run: run.last_run || null,
+      run_matches_code: run.ran_code === editor.value,
+    };
+  }
+  if (type === "label-the-diagram") {
+    const labels = {};
+    let any = false;
+    for (const el of root.querySelectorAll(".dm-diagram-label input")) {
+      labels[el.dataset.label] = el.value;
+      if (el.value.trim()) any = true;
+    }
+    return any ? { labels } : null;
+  }
+  return null;
+}
+
+function applyAnswer(root, type, value) {
+  /* Put a saved value back into one answer space's controls. */
+  if (!value) return;
+  if (type === "multiple-choice") {
+    for (const el of root.querySelectorAll("input")) {
+      el.checked = (value.chosen || []).includes(Number(el.value));
+    }
+  } else if (type === "fill-in-the-blank") {
+    for (const el of root.querySelectorAll(".dm-blank")) {
+      el.value = (value.blanks || {})[el.dataset.blank] || "";
+    }
+  } else if (type === "short-written-answer"
+             || type === "long-written-answer") {
+    root.querySelector(".dm-writing").value = value.text || "";
+  } else if (type === "essay") {
+    root.querySelector(".dm-essay").value = value.text || "";
+    const planningBox = root.querySelector(".dm-planning");
+    if (planningBox) planningBox.value = value.planning || "";
+  } else if (type === "numeric-answer") {
+    for (const el of root.querySelectorAll(".dm-numeric input")) {
+      el.value = (value.boxes || {})[el.dataset.box] || "";
+    }
+    const workingBox = root.querySelector(".dm-working");
+    if (workingBox) workingBox.value = value.working || "";
+  } else if (type === "complete-the-table") {
+    for (const el of root.querySelectorAll(".dm-cell")) {
+      el.value = (value.cells || {})[el.dataset.cell] || "";
+    }
+  } else if (type === "describe-a-sketch") {
+    for (const el of root.querySelectorAll("input[type=radio]")) {
+      el.checked = Number(el.value) === value.shape;
+    }
+    for (const el of root.querySelectorAll(".dm-feature")) {
+      const key = el.dataset.feature + "." + el.dataset.box;
+      el.value = (value.features || {})[key] || "";
+    }
+  } else if (type === "label-the-diagram") {
+    for (const el of root.querySelectorAll(".dm-diagram-label input")) {
+      el.value = (value.labels || {})[el.dataset.label] || "";
+    }
+  } else if (type === "python-code") {
+    const editor = root.querySelector(".dm-code");
+    editor.value = value.code || "";
+    pythonRuns[root.dataset.answer] = {
+      outputs: value.outputs || [],
+      last_run: value.last_run || null,
+      ran_code: value.run_matches_code ? value.code : "\u0000never",
+    };
+    const output = root.querySelector(".dm-code-output");
+    renderRecords(output, value.outputs || []);
+    if ((value.outputs || []).length) {
+      output.prepend(el_note("Recorded output from your last run. The "
+        + "running Python session was not kept: run your cells again, "
+        + "top to bottom, to rebuild it."));
+    }
+  }
+}
+
+function gatherState() {
+  for (const root of document.querySelectorAll(".dm-answer")) {
+    const name = root.dataset.answer;
+    const value = collectAnswer(root, root.dataset.type);
+    if (value === null) delete state.answers[name];
+    else state.answers[name] = value;
+  }
+  state.saved_at = new Date().toISOString();
+  return state;
+}
+
+function setPill(id, text, cls) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = "dm-save-pill" + (cls ? " " + cls : "");
+}
+
+function saveEverywhere() {
+  gatherState();
+  const clock = new Date().toLocaleTimeString(
+    [], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setPill("dm-save-browser", "Browser ✓ " + clock, "dm-ok");
+  } catch (err) {
+    setPill("dm-save-browser", "Browser save failed", "dm-off");
+  }
+  if (fileHandle) {
+    clearTimeout(fileSaveTimer);
+    fileSaveTimer = setTimeout(async () => {
+      try {
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(state, null, 2));
+        await writable.close();
+        setPill("dm-save-file", "File ✓ " + clock, "dm-ok");
+      } catch (err) {
+        fileHandle = null;
+        setPill("dm-save-file", "File saving is off", "dm-off");
+      }
+    }, 800);
+  }
+  refreshProgress();
+  refreshCodeNotes();
+}
+
+function safeName(text) {
+  return String(text || "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "student";
+}
+
+function submissionBaseName() {
+  const details = state.student || {};
+  const number = safeName(details["student number"] || details.number);
+  const name = safeName(details["full name"] || details.name);
+  return "dewmark_" + MODEL.exam_code + "_" + number + "_" + name;
+}
+
+function readStoredState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed.exam_code !== MODEL.exam_code) return null;
+    return parsed;
+  } catch (err) {
+    return null;
+  }
+}
+
+function describeState(candidate, label) {
+  const count = Object.keys(candidate.answers || {}).length;
+  const when = candidate.saved_at
+    ? new Date(candidate.saved_at).toLocaleString() : "an unknown time";
+  return label + ": " + count + " answers, saved " + when;
+}
+
+function adoptState(candidate) {
+  state = candidate;
+  const details = state.student || {};
+  for (const el of document.querySelectorAll("[data-detail]")) {
+    el.value = details[el.dataset.detail] || "";
+  }
+}
+
+async function begin() {
+  for (const el of document.querySelectorAll("[data-detail]")) {
+    state.student[el.dataset.detail] = el.value.trim();
+    if (!el.value.trim()) {
+      alert("Please fill in your " + el.dataset.detail + ".");
+      el.focus();
+      return;
+    }
+  }
+  if (!state.started_at) state.started_at = new Date().toISOString();
+
+  if (MODEL.variant !== "answer_key" && "showSaveFilePicker" in window) {
+    try {
+      fileHandle = await window.showSaveFilePicker({
+        suggestedName: submissionBaseName() + ".json",
+        types: [{ description: "dewmark answer file",
+                  accept: { "application/json": [".json"] } }],
+      });
+    } catch (err) {
+      fileHandle = null;
+    }
+  }
+  if (!fileHandle) {
+    setPill("dm-save-file", "File saving is off", "dm-off");
+  }
+  enterExam();
+}
+
+function enterExam() {
+  document.getElementById("dm-start").hidden = true;
+  document.getElementById("dm-app").hidden = false;
+  document.getElementById("dm-top-student").textContent =
+    Object.values(state.student).filter(Boolean).join(" · ");
+  for (const root of document.querySelectorAll(".dm-answer")) {
+    applyAnswer(root, root.dataset.type, state.answers[root.dataset.answer]);
+  }
+  buildPanel();
+  saveEverywhere();
+  if (MODEL.python) startPython();
+}
+
+function loadAnswerFile() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json,.json";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    let loaded;
+    try {
+      loaded = JSON.parse(await file.text());
+    } catch (err) {
+      alert("That file could not be read as an answer file.");
+      return;
+    }
+    if (loaded.exam_code !== MODEL.exam_code) {
+      alert("That answer file belongs to a different exam ("
+        + loaded.exam_code + "), so it cannot be loaded here.");
+      return;
+    }
+    const stored = readStoredState();
+    if (stored && stored.saved_at !== loaded.saved_at
+        && Object.keys(stored.answers || {}).length) {
+      const keepFile = confirm(
+        "This browser also holds saved work for this exam.\n\n"
+        + describeState(loaded, "The file") + "\n"
+        + describeState(stored, "This browser") + "\n\n"
+        + "Press OK to continue from the file, or Cancel to continue "
+        + "from this browser.");
+      if (!keepFile) { adoptState(stored); enterExam(); return; }
+    }
+    adoptState(loaded);
+    enterExam();
+  };
+  input.click();
+}
+
+function refreshProgress() {
+  for (const root of document.querySelectorAll(".dm-answer")) {
+    const answered = root.dataset.answer in state.answers;
+    root.classList.toggle("dm-answered", answered);
+  }
+  for (const section of MODEL.sections) {
+    for (const question of section.questions) {
+      const attempted = question.answers.some((a) => a.name in state.answers);
+      const button = document.querySelector(
+        '[data-panel-question="' + question.name + '"]');
+      if (button) button.classList.toggle("dm-done", attempted);
+    }
+    const label = document.querySelector(
+      '[data-panel-count="' + section.name + '"]');
+    if (label && section.choose) {
+      const attempted = section.questions.filter(
+        (q) => q.answers.some((a) => a.name in state.answers)).length;
+      label.textContent = "answered " + attempted
+        + " · " + section.choose + " will count";
+    }
+  }
+}
+
+function buildPanel() {
+  const panel = document.getElementById("dm-panel-questions");
+  panel.innerHTML = "";
+  for (const section of MODEL.sections) {
+    const heading = document.createElement("h2");
+    heading.textContent = "Section " + section.name
+      + (section.choose ? " — answer any " + section.choose : "");
+    panel.appendChild(heading);
+    if (section.choose) {
+      const note = document.createElement("p");
+      note.className = "dm-panel-note";
+      note.dataset.panelCount = section.name;
+      panel.appendChild(note);
+    }
+    for (const question of section.questions) {
+      const button = document.createElement("button");
+      button.className = "dm-panel-q";
+      button.dataset.panelQuestion = question.name;
+      button.innerHTML = "<span>" + question.name.toUpperCase()
+        + "</span><span>(" + question.marks + ")</span>";
+      button.addEventListener("click", () => {
+        const target = document.querySelector(
+          '[data-question="' + question.name + '"]');
+        if (target) target.scrollIntoView({ behavior: "smooth" });
+      });
+      panel.appendChild(button);
+    }
+  }
+  refreshProgress();
+}
+
+function finishReport() {
+  const empty = [];
+  for (const name of Object.keys(SPACES)) {
+    if (!(name in state.answers)) {
+      empty.push({ name, marks: SPACES[name].marks });
+    }
+  }
+  const lines = [];
+  if (empty.length === 0) {
+    lines.push('<li class="dm-finish-good">Every answer space has '
+      + "something in it.</li>");
+  } else {
+    const total = empty.reduce((sum, e) => sum + e.marks, 0);
+    lines.push('<li class="dm-finish-warn">' + empty.length
+      + " answer spaces are empty, worth " + total + " marks: "
+      + empty.map((e) => e.name).join(", ") + "</li>");
+  }
+  for (const section of MODEL.sections) {
+    if (!section.choose) continue;
+    const attempted = section.questions.filter(
+      (q) => q.answers.some((a) => a.name in state.answers)).length;
+    const cls = attempted >= section.choose
+      ? "dm-finish-good" : "dm-finish-warn";
+    lines.push('<li class="' + cls + '">Section ' + section.name
+      + ": " + attempted + " answered, " + section.choose
+      + " will count.</li>");
+  }
+  lines.push("<li>Handing in as: "
+    + Object.values(state.student).filter(Boolean).join(" · ")
+    + "</li>");
+  return "<ul>" + lines.join("") + "</ul>"
+    + "<p>Pressing the button downloads one file. Upload it to the "
+    + "assignment your teacher named, and show the confirmation to your "
+    + "invigilator. If you are given more time, keep working and "
+    + "download again — the newest file is the one that counts.</p>";
+}
+
+function readableCopy() {
+  /* A plain copy of the paper with the answers written in as text: the
+     student's own record, openable anywhere, containing no scripts. */
+  const clone = document.documentElement.cloneNode(true);
+  for (const el of clone.querySelectorAll(
+      "script, button, #dm-panel, #dm-start, #dm-finish-screen,"
+      + " .dm-save-pill")) {
+    el.remove();
+  }
+  for (const el of clone.querySelectorAll("#dm-app, #dm-topbar")) {
+    el.hidden = false;
+  }
+  for (const root of clone.querySelectorAll(".dm-answer")) {
+    for (const field of root.querySelectorAll("textarea, input")) {
+      const shown = document.createElement(
+        field.tagName === "TEXTAREA" ? "pre" : "span");
+      let text = field.value;
+      if (field.type === "radio" || field.type === "checkbox") {
+        /* Cloned controls lose checked state; read the live one. */
+        const live = document.querySelector(
+          '[name="' + field.name + '"][value="' + field.value + '"]');
+        if (!(live && live.checked)) { field.closest("label").remove(); continue; }
+        text = "✓ chosen";
+      }
+      shown.textContent = text.trim() ? text : "(not attempted)";
+      shown.style.whiteSpace = "pre-wrap";
+      field.replaceWith(shown);
+    }
+  }
+  const student = Object.entries(state.student)
+    .map(([key, value]) => key + ": " + value).join(" · ");
+  const note = "<p style=\"font-family: system-ui, sans-serif;"
+    + " font-size: 13px; border: 1px solid #ddd7cd; padding: 8px 12px;\">"
+    + "Readable copy of a dewmark submission · " + student
+    + " · saved " + state.saved_at + "</p>";
+  return "<!doctype html>\n<html>" + clone.innerHTML
+    .replace("<main id=\"dm-paper\"", note + "<main id=\"dm-paper\"")
+    + "</html>";
+}
+
+function makeZip(entries) {
+  const encoder = new TextEncoder();
+  const table = [];
+  for (let n = 0; n < 256; n += 1) {
+    let c = n;
+    for (let k = 0; k < 8; k += 1) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[n] = c >>> 0;
+  }
+  const crc32 = (bytes) => {
+    let c = 0xffffffff;
+    for (const byte of bytes) c = table[(c ^ byte) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+  const u16 = (v) => new Uint8Array([v & 255, (v >> 8) & 255]);
+  const u32 = (v) => new Uint8Array(
+    [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >> 24) & 255]);
+  for (const entry of entries) {
+    const nameBytes = encoder.encode(entry.name);
+    const data = typeof entry.data === "string"
+      ? encoder.encode(entry.data) : entry.data;
+    const crc = crc32(data);
+    const header = [u32(0x04034b50), u16(20), u16(0), u16(0), u16(0),
+      u16(0), u32(crc), u32(data.length), u32(data.length),
+      u16(nameBytes.length), u16(0)];
+    for (const part of header) chunks.push(part);
+    chunks.push(nameBytes, data);
+    central.push({ nameBytes, crc, size: data.length, offset });
+    offset += header.reduce((s, p) => s + p.length, 0)
+      + nameBytes.length + data.length;
+  }
+  const centralStart = offset;
+  for (const entry of central) {
+    const record = [u32(0x02014b50), u16(20), u16(20), u16(0), u16(0),
+      u16(0), u16(0), u32(entry.crc), u32(entry.size), u32(entry.size),
+      u16(entry.nameBytes.length), u16(0), u16(0), u16(0), u16(0),
+      u32(0), u32(entry.offset)];
+    for (const part of record) chunks.push(part);
+    chunks.push(entry.nameBytes);
+    offset += record.reduce((s, p) => s + p.length, 0)
+      + entry.nameBytes.length;
+  }
+  chunks.push(u32(0x06054b50), u16(0), u16(0), u16(central.length),
+    u16(central.length), u32(offset - centralStart), u32(centralStart),
+    u16(0));
+  return new Blob(chunks, { type: "application/zip" });
+}
+
+function downloadSubmission() {
+  state.finished_at = new Date().toISOString();
+  saveEverywhere();
+  const zip = makeZip([
+    { name: "answers.json", data: JSON.stringify(state, null, 2) },
+    { name: "your-exam.html", data: readableCopy() },
+  ]);
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(zip);
+  link.download = submissionBaseName() + ".zip";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function downloadAnswerFile() {
+  gatherState();
+  const blob = new Blob([JSON.stringify(state, null, 2)],
+    { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = submissionBaseName() + ".json";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+const pythonRuns = {};   // answer name -> {outputs, last_run, ran_code}
+let pyodide = null;
+let pythonBusy = false;
+
+function el_note(text) {
+  const note = document.createElement("p");
+  note.className = "dm-code-restore-note";
+  note.textContent = text;
+  return note;
+}
+
+function renderRecords(container, records) {
+  container.innerHTML = "";
+  for (const record of records || []) {
+    if (record.kind === "stdout") {
+      const pre = document.createElement("pre");
+      pre.className = "dm-out-text";
+      pre.textContent = record.text;
+      container.appendChild(pre);
+    } else if (record.kind === "error") {
+      const pre = document.createElement("pre");
+      pre.className = "dm-out-error";
+      pre.textContent = record.text;
+      container.appendChild(pre);
+    } else if (record.kind === "image"
+               && /^[A-Za-z0-9+/=]+$/.test(record.b64 || "")) {
+      const img = document.createElement("img");
+      img.className = "dm-out-image";
+      img.alt = "output figure";
+      img.src = "data:image/png;base64," + record.b64;
+      container.appendChild(img);
+    } else if (record.kind === "table") {
+      const table = document.createElement("table");
+      table.className = "dm-out-table";
+      const head = document.createElement("tr");
+      for (const column of record.columns || []) {
+        const th = document.createElement("th");
+        th.textContent = column;
+        head.appendChild(th);
+      }
+      table.appendChild(head);
+      for (const cells of record.rows || []) {
+        const tr = document.createElement("tr");
+        for (const cell of cells) {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+      container.appendChild(table);
+    }
+  }
+}
+
+const DEWMARK_TOOLS_PY = `
+import io, json, base64
+from js import document, window
+from pyodide.ffi import create_proxy
+
+def _out():
+    return document.getElementById(window.__dewmarkOut)
+
+def _emit(kind, payload):
+    window.__dewmarkEmit(kind, json.dumps(payload))
+
+_uid_counter = [0]
+def _uid():
+    _uid_counter[0] += 1
+    return "dmw_" + str(_uid_counter[0])
+
+def show(value):
+    try:
+        import pandas as pd
+        if isinstance(value, pd.DataFrame):
+            _emit("table", {"columns": [str(c) for c in value.columns],
+                            "rows": [[str(cell) for cell in row]
+                                     for row in value.itertuples(index=False)]})
+            return
+    except ImportError:
+        pass
+    try:
+        import matplotlib.figure
+        if isinstance(value, matplotlib.figure.Figure):
+            import matplotlib.pyplot as plt
+            buffer = io.BytesIO()
+            value.savefig(buffer, format="png", bbox_inches="tight", dpi=100)
+            _emit("image", {"b64": base64.b64encode(buffer.getvalue()).decode()})
+            plt.close(value)
+            return
+    except ImportError:
+        pass
+    _emit("stdout", {"text": str(value) + "\\n"})
+
+def show_table(rows, columns=None):
+    rows = [list(map(str, row)) for row in (rows or [])]
+    _emit("table", {"columns": [str(c) for c in (columns or [])],
+                    "rows": rows})
+
+class _Field:
+    def __init__(self, element_id):
+        self._id = element_id
+    @property
+    def value(self):
+        node = document.getElementById(self._id)
+        return node.value if node else ""
+    def clear(self):
+        node = document.getElementById(self._id)
+        if node:
+            node.value = ""
+
+def text_input(label, placeholder=""):
+    field_id = _uid()
+    _out().insertAdjacentHTML("beforeend",
+        '<div class="dm-widget"><label>' + str(label)
+        + ' <input type="text" id="' + field_id + '" placeholder="'
+        + str(placeholder).replace('"', "&quot;") + '"></label></div>')
+    return _Field(field_id)
+
+def number_input(label, min_val=0, max_val=100, default=0):
+    field_id = _uid()
+    _out().insertAdjacentHTML("beforeend",
+        '<div class="dm-widget"><label>' + str(label)
+        + ' <input type="number" id="' + field_id + '" min="' + str(min_val)
+        + '" max="' + str(max_val) + '" value="' + str(default)
+        + '"></label></div>')
+    return _Field(field_id)
+
+def dropdown(label, options):
+    field_id = _uid()
+    choices = "".join('<option>' + str(option) + "</option>"
+                      for option in options)
+    _out().insertAdjacentHTML("beforeend",
+        '<div class="dm-widget"><label>' + str(label) + ' <select id="'
+        + field_id + '">' + choices + "</select></label></div>")
+    return _Field(field_id)
+
+def button(label):
+    def decorator(handler):
+        button_id, result_id = _uid(), _uid()
+        _out().insertAdjacentHTML("beforeend",
+            '<div class="dm-widget"><button type="button" id="' + button_id
+            + '">' + str(label) + '</button><div id="' + result_id
+            + '"></div></div>')
+        def on_click(event):
+            previous = window.__dewmarkOut
+            window.__dewmarkOut = result_id
+            document.getElementById(result_id).innerHTML = ""
+            try:
+                handler()
+            except Exception as error:
+                _emit("error", {"text": str(error)})
+            finally:
+                window.__dewmarkOut = previous
+        document.getElementById(button_id).addEventListener(
+            "click", create_proxy(on_click))
+        return handler
+    return decorator
+`;
+
+function setPythonStatus(text, cls) {
+  const pill = document.getElementById("dm-python-status");
+  pill.hidden = false;
+  pill.textContent = text;
+  pill.className = "dm-save-pill" + (cls ? " " + cls : "");
+}
+
+async function startPython() {
+  const config = MODEL.python;
+  setPythonStatus("Python loading…");
+  const base = window.DEWMARK_PYTHON_BASE
+    || "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/";
+  try {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = base + "pyodide.js";
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("could not load " + script.src));
+      document.head.appendChild(script);
+    });
+    pyodide = await loadPyodide({ indexURL: base });
+
+    /* The output bridge: Python emits records, this side keeps and
+       draws them. Consecutive printed chunks merge into one record. */
+    let currentRecords = null;
+    window.__dewmarkEmit = (kind, payloadJson) => {
+      const payload = JSON.parse(payloadJson);
+      const record = Object.assign({ kind }, payload);
+      if (currentRecords) {
+        const last = currentRecords[currentRecords.length - 1];
+        if (kind === "stdout" && last && last.kind === "stdout") {
+          last.text += payload.text;
+        } else {
+          currentRecords.push(record);
+        }
+      }
+      const target = document.getElementById(window.__dewmarkOut);
+      if (target && currentRecords) renderRecords(target, currentRecords);
+    };
+    window.__dewmarkBeginRun = (records) => { currentRecords = records; };
+
+    pyodide.setStdout({ batched: (text) =>
+      window.__dewmarkEmit("stdout", JSON.stringify({ text: text + "\n" })) });
+    pyodide.setStderr({ batched: (text) =>
+      window.__dewmarkEmit("error", JSON.stringify({ text })) });
+
+    const loadable = ["micropip"];
+    if (config.packages.includes("sqlite3")) loadable.push("sqlite3");
+    await pyodide.loadPackage(loadable);
+    const viaMicropip = config.packages.filter((pkg) => pkg !== "sqlite3");
+    if (viaMicropip.length) {
+      setPythonStatus("Python packages…");
+      await pyodide.runPythonAsync(
+        "import micropip\nawait micropip.install("
+        + JSON.stringify(viaMicropip) + ")");
+    }
+    pyodide.FS.mkdirTree("/exam");
+    for (const file of config.files) {
+      const bytes = Uint8Array.from(atob(file.b64), (c) => c.charCodeAt(0));
+      pyodide.FS.writeFile("/exam/" + file.name, bytes);
+    }
+    pyodide.FS.writeFile("/dewmark_tools.py", DEWMARK_TOOLS_PY);
+    let boot = "import sys, os\nsys.path.insert(0, '/')\nos.chdir('/exam')\n";
+    if (config.packages.includes("matplotlib")) {
+      boot += "import matplotlib\nmatplotlib.use('Agg')\n";
+    }
+    await pyodide.runPythonAsync(boot);
+    setPythonStatus("Python ready", "dm-ok");
+  } catch (error) {
+    setPythonStatus("Python failed — click to retry", "dm-off");
+    document.getElementById("dm-python-status").onclick = startPython;
+    return;
+  }
+
+  for (const button of document.querySelectorAll(".dm-run")) {
+    button.disabled = false;
+  }
+  if (config.setup_code.trim()) {
+    await runPython(config.setup_code, null);
+  }
+  for (const provided of config.provided) {
+    const holder = document.querySelector(
+      '[data-question="' + provided.question + '"] .dm-provided-output');
+    await runPython(provided.code, holder);
+  }
+}
+
+async function runPython(code, outputElement) {
+  if (!pyodide || pythonBusy) return null;
+  pythonBusy = true;
+  const records = [];
+  window.__dewmarkBeginRun(records);
+  if (outputElement) {
+    if (!outputElement.id) {
+      outputElement.id = "dm-out-" + Math.random().toString(36).slice(2);
+    }
+    window.__dewmarkOut = outputElement.id;
+    outputElement.innerHTML = "";
+  } else {
+    window.__dewmarkOut = "dm-nowhere";
+  }
+  try {
+    await pyodide.runPythonAsync(code);
+  } catch (error) {
+    window.__dewmarkEmit("error", JSON.stringify(
+      { text: String(error.message || error) }));
+  }
+  window.__dewmarkBeginRun(null);
+  pythonBusy = false;
+  return records;
+}
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest(".dm-run");
+  if (!button) return;
+  const root = button.closest(".dm-answer");
+  const name = root.dataset.answer;
+  const editor = root.querySelector(".dm-code");
+  if (!pyodide) return;
+  if (pythonBusy) {
+    root.querySelector(".dm-code-note").textContent =
+      "another cell is still running";
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "Running…";
+  const records = await runPython(editor.value,
+    root.querySelector(".dm-code-output"));
+  button.disabled = false;
+  button.textContent = "Run";
+  pythonRuns[name] = { outputs: records,
+    last_run: new Date().toISOString(), ran_code: editor.value };
+  saveEverywhere();
+});
+
+function refreshCodeNotes() {
+  for (const root of document.querySelectorAll(
+      '.dm-answer[data-type="python-code"]')) {
+    const note = root.querySelector(".dm-code-note");
+    const run = pythonRuns[root.dataset.answer];
+    const editor = root.querySelector(".dm-code");
+    if (!run || !(run.outputs || []).length) {
+      note.textContent = "";
+      continue;
+    }
+    if (run.ran_code !== editor.value) {
+      note.textContent = "the output below is from an earlier version "
+        + "of this code";
+    } else {
+      note.textContent = "";
+    }
+  }
+}
+
+document.getElementById("dm-begin").addEventListener("click", begin);
+document.getElementById("dm-load-file").addEventListener("click",
+  loadAnswerFile);
+document.getElementById("dm-download").addEventListener("click",
+  downloadAnswerFile);
+document.getElementById("dm-finish").addEventListener("click", () => {
+  gatherState();
+  document.getElementById("dm-finish-report").innerHTML = finishReport();
+  document.getElementById("dm-app").hidden = true;
+  document.getElementById("dm-finish-screen").hidden = false;
+});
+document.getElementById("dm-keep-working").addEventListener("click", () => {
+  document.getElementById("dm-finish-screen").hidden = true;
+  document.getElementById("dm-app").hidden = false;
+});
+document.getElementById("dm-submit").addEventListener("click",
+  downloadSubmission);
+
+document.addEventListener("input", (event) => {
+  if (event.target.closest(".dm-answer")) {
+    const essay = event.target.closest(".dm-answer")
+      .querySelector(".dm-essay");
+    if (essay) {
+      const counter = event.target.closest(".dm-answer")
+        .querySelector(".dm-word-count");
+      const words = essay.value.trim().split(/\s+/).filter(Boolean).length;
+      counter.textContent = words + " words";
+    }
+    saveEverywhere();
+  }
+});
+document.addEventListener("change", (event) => {
+  if (event.target.closest(".dm-answer")) saveEverywhere();
+});
+window.addEventListener("beforeunload", () => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherState()));
+  } catch (err) { /* the periodic save already reported storage trouble */ }
+});
+
+/* If this browser already holds saved work for this exam, offer to
+   continue from it rather than starting blank. */
+const stored = readStoredState();
+if (stored && Object.keys(stored.answers || {}).length) {
+  const note = document.createElement("p");
+  note.className = "dm-restore-note";
+  note.textContent = "Saved work was found ("
+    + describeState(stored, "this browser") + "). ";
+  const resume = document.createElement("button");
+  resume.className = "dm-secondary";
+  resume.textContent = "Continue from saved work";
+  resume.addEventListener("click", () => { adoptState(stored); enterExam(); });
+  note.appendChild(resume);
+  document.getElementById("dm-start").prepend(note);
+}
+
+const CALC_FUNCTIONS = {
+  sqrt: Math.sqrt,
+  sin: Math.sin, cos: Math.cos, tan: Math.tan,
+  asin: Math.asin, acos: Math.acos, atan: Math.atan,
+  sind: (d) => Math.sin(d * Math.PI / 180),
+  cosd: (d) => Math.cos(d * Math.PI / 180),
+  tand: (d) => Math.tan(d * Math.PI / 180),
+  asind: (x) => Math.asin(x) * 180 / Math.PI,
+  acosd: (x) => Math.acos(x) * 180 / Math.PI,
+  atand: (x) => Math.atan(x) * 180 / Math.PI,
+};
+
+function calculate(text) {
+  /* Returns a number, or throws with a readable message. */
+  const source = text.replace(/÷/g, "/").replace(/×/g, "*")
+    .replace(/−/g, "-").replace(/√/g, "sqrt").replace(/π/g, "pi");
+  const tokens = [];
+  const tokenRe = /\s*(?:(\d+\.?\d*|\.\d+)|([A-Za-z]+)|([()+\-*/^]))/y;
+  let at = 0;
+  while (at < source.length) {
+    tokenRe.lastIndex = at;
+    const match = tokenRe.exec(source);
+    if (!match || tokenRe.lastIndex === at) {
+      if (!source.slice(at).trim()) break;
+      throw new Error("cannot read “" + source.slice(at).trim()
+        + "”");
+    }
+    if (match[1] !== undefined) tokens.push(Number(match[1]));
+    else tokens.push(match[2] || match[3]);
+    at = tokenRe.lastIndex;
+  }
+  if (!tokens.length) throw new Error("nothing to work out");
+
+  let position = 0;
+  const peek = () => tokens[position];
+  const take = () => tokens[position++];
+
+  function primary() {
+    const token = take();
+    if (typeof token === "number") return token;
+    if (token === "pi") return Math.PI;
+    if (token === "(") {
+      const value = sum();
+      if (take() !== ")") throw new Error("a bracket is not closed");
+      return value;
+    }
+    if (token === "-") return -primary();
+    if (token === "+") return primary();
+    if (CALC_FUNCTIONS[token]) {
+      if (take() !== "(") {
+        throw new Error(token + " needs brackets: " + token + "(...)");
+      }
+      const value = sum();
+      if (take() !== ")") throw new Error("a bracket is not closed");
+      return CALC_FUNCTIONS[token](value);
+    }
+    throw new Error("cannot read “" + token + "”");
+  }
+
+  function power() {
+    const base = primary();
+    if (peek() === "^") { take(); return base ** power(); }
+    return base;
+  }
+
+  function product() {
+    let value = power();
+    while (peek() === "*" || peek() === "/") {
+      value = take() === "*" ? value * power() : value / power();
+    }
+    return value;
+  }
+
+  function sum() {
+    let value = product();
+    while (peek() === "+" || peek() === "-") {
+      value = take() === "+" ? value + product() : value - product();
+    }
+    return value;
+  }
+
+  const result = sum();
+  if (position < tokens.length) {
+    throw new Error("cannot read “" + tokens[position] + "”");
+  }
+  if (!Number.isFinite(result)) throw new Error("this has no value");
+  return result;
+}
+
+const calcPanel = document.getElementById("dm-calc");
+if (calcPanel) {
+  const display = document.getElementById("dm-calc-display");
+  const result = document.getElementById("dm-calc-result");
+  const evaluate = () => {
+    if (!display.value.trim()) { result.textContent = ""; return; }
+    try {
+      result.textContent = "= " + Number(calculate(display.value)
+        .toPrecision(12));
+      result.classList.remove("dm-calc-error");
+    } catch (error) {
+      result.textContent = error.message;
+      result.classList.add("dm-calc-error");
+    }
+  };
+  calcPanel.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    if (button.dataset.action === "clear") {
+      display.value = "";
+      result.textContent = "";
+    } else if (button.dataset.action === "equals") {
+      evaluate();
+    } else if (button.dataset.insert !== undefined) {
+      display.setRangeText(button.dataset.insert,
+        display.selectionStart ?? display.value.length,
+        display.selectionEnd ?? display.value.length, "end");
+    }
+    display.focus();
+  });
+  display.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") { event.preventDefault(); evaluate(); }
+  });
+}
+
+/* A second copy of the exam open in this browser must not save over the
+   first; the second copy detects the first and steps back. */
+const channel = "BroadcastChannel" in window
+  ? new BroadcastChannel(STORAGE_KEY) : null;
+if (channel) {
+  let iAmFirst = true;
+  channel.onmessage = (event) => {
+    if (event.data === "anyone-there?" && iAmFirst) channel.postMessage("yes");
+    if (event.data === "yes") {
+      iAmFirst = false;
+      /* Every way into the exam is closed, not only the Begin button. */
+      for (const button of document.querySelectorAll(
+          "#dm-begin, #dm-load-file, .dm-restore-note button")) {
+        button.disabled = true;
+      }
+      alert("This exam is already open in another window on this "
+        + "computer. Please continue there; this window will not save.");
+    }
+  };
+  channel.postMessage("anyone-there?");
+}
+</script>
+</body>
+</html>
