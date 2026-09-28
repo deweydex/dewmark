@@ -1,0 +1,50 @@
+# The checks every change must pass. The browser rehearsals in dev/ stay
+# manual for now: they need Chromium and Playwright, and step 2 of the plan
+# (planning/PROPOSAL.md §9) brings them into CI with the data-loss fixes.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+
+      - name: Run the exam builder's tests
+        run: python -m pytest
+
+      - name: Build every sample exam
+        run: |
+          for exam in samples/*.exam.md; do
+            python build_exam.py "$exam" --output /tmp/dewmark-out
+          done
+
+      - name: Build the site
+        run: python dev/build_site.py
+
+      # .gitignore keeps real papers and submissions out, but `git add -f`
+      # gets past it; this is the second lock (DECISIONS_LOG.md, entry 0.4).
+      - name: Refuse real papers and submissions
+        run: |
+          bad=$(git ls-files | grep -E '^private/|\.zip$|(^|/)dewmark_[^/]*$' || true)
+          strays=$(git ls-files '*.exam.md' | grep -vE '^(samples|experiments)/' || true)
+          if [ -n "$bad$strays" ]; then
+            echo "These files must not be committed:"; echo "$bad"; echo "$strays"; exit 1
+          fi

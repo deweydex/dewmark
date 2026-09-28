@@ -11,7 +11,7 @@ promises for code questions, run without a person.
 
 Run it by hand:
 
-    python dewmark/dev/smoke_python_page.py
+    python dev/smoke_python_page.py
 
 It needs the playwright package and a Chromium browser (found the same
 way as smoke_pages.py). The Python system itself is thirty-plus

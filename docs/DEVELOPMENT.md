@@ -7,19 +7,20 @@ documents, so nobody mistakes a draft behaviour for a decision.
 
 ## dewmark stands alone
 
-dewmark lives inside the dewlab repository but deliberately shares no
-code, styles, or build machinery with it. Everything dewmark needs is
-under `dewmark/`, its pages repeat the colour palette rather than
-importing it, and its tests run on their own. The intent is that the
-folder could be lifted into its own repository without breaking
-anything. The one thing shared with dewlab is its working habits:
+dewmark began inside the [dewlab](https://github.com/deweydex/dewlab)
+repository and moved to its own in September 2026, with its history
+(see `DECISIONS_LOG.md`, entry 0.1). It shares no code, styles, or
+build machinery with dewlab: its pages repeat the colour palette rather
+than importing it, and its tests run on their own. Anything it takes
+from dewlab in future is copied, with a record of where it came from
+(entry 0.3), never linked. The one thing shared with dewlab is its
+working habits:
 plain-spoken documents, why-comments in code, and tests beside every
 program.
 
 ## Layout
 
 ```text
-dewmark/
   build_exam.py        the exam builder: exam file in, finished pages out
   assets/
     exam-page.css      styles inlined into every built exam page
@@ -36,18 +37,18 @@ dewmark/
 ## Running things
 
 ```sh
-pip install -r dewmark/requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 
 # build the sample exam
-python dewmark/build_exam.py dewmark/samples/sample-mixed-paper.exam.md \
+python build_exam.py samples/sample-mixed-paper.exam.md \
     --output /tmp/dewmark-sample
 
 # the builder's tests
-python -m pytest dewmark/tests -q
+python -m pytest
 
 # the browser smoke tests (need Playwright and a Chromium; see each file)
-python dewmark/dev/smoke_pages.py
-python dewmark/dev/smoke_python_page.py
+python dev/smoke_pages.py
+python dev/smoke_python_page.py
 ```
 
 The first smoke test builds the mixed sample exam, sits part of it in

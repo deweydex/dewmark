@@ -6,7 +6,7 @@ the question is answered, what changing that assumption later would
 cost, and what the open question blocks in the meantime. When a
 question is settled, the answer moves into the relevant design document
 and the entry here is removed, with the decision recorded in the
-repository's decision log.
+repository's decision log, `DECISIONS_LOG.md`.
 
 **Q1 — Where do real exam files and submissions live?**
 The question: this repository is public, real exams are secret before

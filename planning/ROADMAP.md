@@ -77,7 +77,7 @@ question types.
 
 Every program file lands together with its explanation document and its
 automated tests, following dewlab's conventions. Every decision that
-closes an open question is recorded in the repository's decision log.
+closes an open question is recorded in the repository's decision log, `DECISIONS_LOG.md`.
 Before any real exam is sat, the saved-data formats — the exam file,
 the submission, the marking record — are frozen and documented, because
 real submissions must remain readable for years. And no real exam

@@ -15,7 +15,7 @@ stage works from a folder on one computer.
 
 ## Who this is for
 
-dewmark is being built inside dewlab, an open teaching project for QQI
+dewmark began inside [dewlab](https://github.com/deweydex/dewlab), an open teaching project for QQI
 Level 5 and 6 computing and mathematics modules in Ireland. The first
 users are the teachers of those modules. The design aims further than
 that: any teacher who can write an exam in a word processor should be
@@ -89,13 +89,21 @@ documents.
 [`docs/FOR_TEACHERS.md`](docs/FOR_TEACHERS.md) walks a teacher through
 the whole process.
 
-Before any of this, three exams were built by hand and used in the
-2025–2026 academic year; they proved that a browser exam with no server
-works in a real exam room, and their faults shaped many of the rules in
+Before any of this, exams were built by hand: two in the 2025–2026
+academic year, which proved that a browser exam with no server works in
+a real exam room, and four trial papers for Programming and Design
+Principles 5N2927 in 2026. Their faults shaped many of the rules in
 these documents.
 [`planning/LESSONS_FROM_THE_EXPERIMENTS.md`](planning/LESSONS_FROM_THE_EXPERIMENTS.md)
-records what those exams taught, and the [`experiments/`](experiments/)
-folder holds corrected copies of them.
+records what the first two taught, and the [`experiments/`](experiments/)
+folder holds copies of all six.
+
+The next shape of dewmark is set out in
+[`planning/PROPOSAL.md`](planning/PROPOSAL.md), with Josh's decisions on
+it in [`planning/DECISIONS_2026-09-27.md`](planning/DECISIONS_2026-09-27.md)
+and the exam format it adopts in [`docs/EXAM_FORMAT.md`](docs/EXAM_FORMAT.md).
+Where those documents and the older ones in `planning/` disagree, the
+newer ones win until the older ones are rewritten.
 
 ## Where exam content lives
 
@@ -109,10 +117,12 @@ computers or in private storage.
 ## Folder layout
 
 ```text
-dewmark/
   README.md         this file
+  LICENSE.md        the terms of use
+  DECISIONS_LOG.md  decisions, numbered, with their reasons
+  CLAUDE.md         what an assistant needs before touching anything
   planning/         the design documents listed above
-  experiments/      the corrected 2025-2026 hand-built exams
+  experiments/      the hand-built exams that came before dewmark
   build_exam.py     the exam builder: exam file in, finished pages out
   assets/           the styles and behaviour built into every exam page
   workbench/        the marking workbench page
@@ -120,5 +130,6 @@ dewmark/
   tests/            the builder's automated tests
   dev/              hand-run scripts, including the browser rehearsal
   docs/             the teacher guide and the development notes
-  requirements.txt  what the builder and the tests need installed
+  requirements.txt  what the builder needs installed
+  requirements-dev.txt  what the tests and rehearsals need on top
 ```

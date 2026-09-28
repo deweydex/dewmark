@@ -13,7 +13,7 @@ The builder is a Python program, `build_exam.py`, run from a command
 line:
 
 ```sh
-python dewmark/build_exam.py my-exam.md --output finished/
+python build_exam.py my-exam.md --output finished/
 ```
 
 For one exam file it produces four things.
@@ -97,7 +97,8 @@ about its one-time download.
 
 ## 4. Where the builder lives
 
-The builder is part of the dewlab repository and follows its
+The builder began inside the
+[dewlab](https://github.com/deweydex/dewlab) repository and follows its
 conventions: it is one well-commented Python file with a companion
 explanation document, and every check listed above has an automated
 test. The exam files it reads, being real exam content, live outside

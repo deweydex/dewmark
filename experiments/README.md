@@ -1,7 +1,8 @@
 # The exam experiments, corrected
 
 This folder holds the two hand-built browser exams from the 2025–2026
-academic year, each in its student version and its sample-answers
+academic year, and (in `pdp-5n2927/`) four trial papers from 2026;
+the first two come in a student version and a sample-answers
 version, with their known code faults repaired. The exams are released
 past papers; committing them here breaks no rule about exam secrecy,
 which applies to exams that have not yet been sat and to student
@@ -11,7 +12,8 @@ dewmark, and
 records what they taught. The dewmark design documents, not these
 files, define what gets built.
 
-Only faults were fixed. The structural habits that the lessons document
+In the first two, only faults were fixed (a later tidy in dewlab
+removed some code comments from the mathematics paper's two files). The structural habits that the lessons document
 criticises — saving answers by position, hand-maintaining several
 copies of the same facts, embedding content inside program code — were
 left as they were, because these files are kept as a record, and
@@ -33,6 +35,16 @@ double-clicked file with no network at all.
 cells that fills every answer space with the model answers when it
 opens; its Run buttons need the internet once, and everything else
 works without it.
+
+`pdp-5n2927/` holds four hand-built papers for Programming and Design
+Principles 5N2927: a sample exam, two practice exams and a 2026–2027
+written examination. All four were trial runs and will not be sat as
+exams; Josh has cleared them for this repository and the site. Each is
+one self-contained page with its paper embedded as Markdown, a code
+editor, Python, reading settings and a name screen that shows Python
+loading. They load Python, the editor and fonts from the internet, so
+they do not work offline, and they are kept exactly as they were
+written, faults included.
 
 ## The corrections
 

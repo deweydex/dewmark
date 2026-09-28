@@ -11,7 +11,7 @@ up here, in the round trip, before it shows up in an exam room.
 
 Run it by hand:
 
-    python dewmark/dev/smoke_pages.py
+    python dev/smoke_pages.py
 
 It needs the playwright package and a Chromium browser. If Playwright's
 own browser download is present it is used; otherwise set the

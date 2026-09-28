@@ -57,7 +57,7 @@ Building turns the exam file into the finished pages. On a computer
 with Python installed, run:
 
 ```sh
-python dewmark/build_exam.py my-exam.md --output finished/
+python build_exam.py my-exam.md --output finished/
 ```
 
 If anything in the file is wrong — marks that do not add up, a missing
@@ -112,8 +112,9 @@ workbench accepts it and tells you it arrived without the finish step.
 
 ## 4. Mark the exam
 
-Download all the submissions into one folder. Open
-`dewmark/workbench/index.html` in Chrome or Edge, load the marking
+Download all the submissions into one folder. Open the workbench at
+<https://deweydex.github.io/dewmark/workbench/>, or open
+`workbench/index.html` from a downloaded copy, in Chrome or Edge; load the marking
 scheme file from step 2, and open the submissions folder. You will see
 a class list with each student's attempts and marking status.
 

@@ -1,0 +1,17 @@
+# Python's own leftovers.
+__pycache__/
+*.py[cod]
+
+# What the build writes: the Pages site, and the teacher guide's example
+# output folder.
+/site/
+/out/
+/finished/
+
+# Real exam papers and anything a student hands in never belong in this
+# public repository. private/ is the documented place to keep a real paper
+# beside a working copy; submissions and marking records are named
+# dewmark_<exam code>_..., which puts a student's name in the filename.
+/private/
+dewmark_*
+*.zip

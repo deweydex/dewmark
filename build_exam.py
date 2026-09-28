@@ -413,7 +413,7 @@ def check_exam(exam, problems, base_dir):
         problems.append((math_uses[0][0], "this exam contains $...$ "
                          "mathematics, but the latex2mathml package that "
                          "typesets it is not installed; install it with "
-                         "'pip install -r dewmark/requirements.txt'"))
+                         "'pip install -r requirements.txt'"))
     elif mathml_converter is not None:
         for m_line, tex in math_uses:
             try:
