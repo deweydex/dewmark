@@ -97,7 +97,11 @@ and saves into it automatically as they work; on other browsers they
 use the "Save a copy" button regularly instead. The page also saves
 into the browser itself after every change, so a crash or an
 accidental close loses nothing: reopening the page offers to continue
-from the saved work.
+from the saved work. A student who presses Begin to start again is
+asked first, and their earlier work is kept on the computer rather
+than deleted. The practice version and the student paper keep their
+saved work apart, so a practice attempt is never offered in the real
+paper, and the answer key saves nothing.
 
 When a student presses "Finish exam", the page shows them anything
 still empty, confirms their details, and downloads one file named after

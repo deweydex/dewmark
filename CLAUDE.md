@@ -54,9 +54,12 @@ format version are what saved answers and marking records are keyed on.
 Once a paper has been sat, renaming any of them strands that work. The
 same lesson as dewlab's cell ids.
 
-**Practice and exam builds share one save slot today.** Until step 2 of
-the plan fixes it, a practice attempt can be offered as a restore in the
-real paper when both open in the same browser, and reloading the start
-screen wipes saved answers. Do not host practice and exam builds of one
-paper side by side, and do not put a class in front of a dewmark paper,
-before step 2 lands.
+**The start screen must never write.** The page holds a blank state
+until the student presses Begin or Continue, and writing it (from a
+save, an unload handler, a second window) wipes the saved work the start
+screen is offering to restore. `canWrite` in `assets/exam-page.js` is
+the one switch every save of the student's work goes through; the one
+deliberate write before Begin is `setAsideStoredWork()`, which copies
+earlier work aside when a student starts again. `tests/browser/` fails
+if another write gets past. Each page of an exam keeps its own save slot
+(`dewmark:<exam code>:<page>`), and the answer key saves nothing.

@@ -1,6 +1,5 @@
-# The checks every change must pass. The browser rehearsals in dev/ stay
-# manual for now: they need Chromium and Playwright, and step 2 of the plan
-# (planning/PROPOSAL.md §9) brings them into CI with the data-loss fixes.
+# The checks every change must pass: the builder's tests and builds in one
+# job, and the browser rehearsals in another, since they need Chromium.
 name: tests
 
 on:
@@ -28,7 +27,7 @@ jobs:
           python -m pip install -r requirements.txt pytest
 
       - name: Run the exam builder's tests
-        run: python -m pytest
+        run: python -m pytest --ignore=tests/browser
 
       - name: Build every sample exam
         run: |
@@ -48,3 +47,32 @@ jobs:
           if [ -n "$bad$strays" ]; then
             echo "These files must not be committed:"; echo "$bad"; echo "$strays"; exit 1
           fi
+
+  # The page's worst bugs live in the browser, not the builder: what is
+  # written to storage, and when (DECISIONS_LOG.md, entry 0.6). These run
+  # the saving rehearsals and the end-to-end smoke test in Chromium.
+  # DEWMARK_REQUIRE_BROWSER turns a missing browser into a failure rather
+  # than a skip, so a rehearsal cannot pass by not running. The Python
+  # smoke test stays hand-run: it downloads Pyodide from the internet.
+  rehearsals:
+    runs-on: ubuntu-latest
+    env:
+      DEWMARK_REQUIRE_BROWSER: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -r requirements-dev.txt
+          python -m playwright install --with-deps chromium
+
+      - name: The saving rehearsals
+        run: python -m pytest tests/browser
+
+      - name: The end-to-end smoke test
+        run: python dev/smoke_pages.py

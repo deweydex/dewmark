@@ -92,6 +92,15 @@ save. If either stops working — a USB stick pulled out, for example —
 its indicator changes colour and the page offers to choose a new file,
 while the other saving route continues unaffected.
 
+Each of an exam's pages keeps its own saved work in the browser: the
+student paper, the practice paper and the answer key are built from one
+exam, but a practice attempt is never offered as the student's exam
+work, and the answer key saves nothing. Nothing is written until the
+student has entered the paper with Begin or Continue, so reloading or
+closing the start screen cannot touch saved work; and a student who
+presses Begin to start again, when saved work exists, is asked first,
+and the earlier work is kept aside on the computer rather than deleted.
+
 If the page is closed and reopened, it restores the saved answers and
 tells the student exactly what happened: "Restored 14 answers saved at
 10:41." When the browser copy and an answer file disagree — which

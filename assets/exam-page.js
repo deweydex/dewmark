@@ -3,7 +3,19 @@
 
 const MODEL = JSON.parse(
   document.getElementById("dewmark-exam-model").textContent);
-const STORAGE_KEY = "dewmark:" + MODEL.exam_code;
+/* Each of an exam's three pages keeps its own save slot: the student
+   paper, the practice paper and the answer key are built from one exam
+   code, and a shared slot let one page offer another's work as the
+   student's own. The answer key saves nothing at all. */
+const VARIANT = MODEL.variant;
+const STORAGE_KEY = "dewmark:" + MODEL.exam_code + ":" + VARIANT;
+const SAVES = VARIANT !== "answer_key";
+/* Nothing is written to storage until the student has entered the paper
+   (Begin or Continue). Before that the page holds only a blank state, and
+   writing it would wipe the saved work the start screen is offering to
+   restore. A second copy of the paper in the same browser never writes. */
+let canWrite = false;
+let secondWindow = false;
 
 const SPACES = {};
 for (const section of MODEL.sections) {
@@ -21,6 +33,7 @@ let state = {
   format_version: 1,
   exam_code: MODEL.exam_code,
   exam_version: MODEL.exam_version,
+  variant: VARIANT,
   student: {},
   started_at: null,
   saved_at: null,
@@ -191,6 +204,11 @@ function setPill(id, text, cls) {
 
 function saveEverywhere() {
   gatherState();
+  if (!canWrite) {
+    refreshProgress();
+    refreshCodeNotes();
+    return;
+  }
   const clock = new Date().toLocaleTimeString(
     [], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   try {
@@ -235,6 +253,7 @@ function readStoredState() {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed.exam_code !== MODEL.exam_code) return null;
+    if (parsed.variant && parsed.variant !== VARIANT) return null;
     return parsed;
   } catch (err) {
     return null;
@@ -256,18 +275,44 @@ function adoptState(candidate) {
   }
 }
 
+/* Starting afresh when this browser holds saved work for the paper keeps
+   that work under a set-aside key rather than writing over it, so an
+   invigilator can still recover it. */
+function setAsideStoredWork() {
+  const stored = readStoredState();
+  if (!stored || !Object.keys(stored.answers || {}).length) return true;
+  const keep = confirm("This browser holds saved work for this paper ("
+    + describeState(stored, "saved work") + ").\n\n"
+    + "Press OK to start again. The saved work is kept aside on this "
+    + "computer, not deleted. Press Cancel to go back and continue from "
+    + "it instead.");
+  if (!keep) return false;
+  try {
+    localStorage.setItem(STORAGE_KEY + ":set-aside:"
+      + (stored.saved_at || new Date().toISOString()), JSON.stringify(stored));
+  } catch (err) {
+    alert("The saved work could not be kept aside, so nothing has "
+      + "changed. Ask the invigilator for help.");
+    return false;
+  }
+  return true;
+}
+
 async function begin() {
   for (const el of document.querySelectorAll("[data-detail]")) {
-    state.student[el.dataset.detail] = el.value.trim();
     if (!el.value.trim()) {
       alert("Please fill in your " + el.dataset.detail + ".");
       el.focus();
       return;
     }
   }
+  if (SAVES && !secondWindow && !setAsideStoredWork()) return;
+  for (const el of document.querySelectorAll("[data-detail]")) {
+    state.student[el.dataset.detail] = el.value.trim();
+  }
   if (!state.started_at) state.started_at = new Date().toISOString();
 
-  if (MODEL.variant !== "answer_key" && "showSaveFilePicker" in window) {
+  if (SAVES && !secondWindow && "showSaveFilePicker" in window) {
     try {
       fileHandle = await window.showSaveFilePicker({
         suggestedName: submissionBaseName() + ".json",
@@ -279,7 +324,8 @@ async function begin() {
     }
   }
   if (!fileHandle) {
-    setPill("dm-save-file", "File saving is off", "dm-off");
+    setPill("dm-save-file", SAVES ? "File saving is off"
+      : "The answer key saves nothing", "dm-off");
   }
   enterExam();
 }
@@ -293,6 +339,10 @@ function enterExam() {
     applyAnswer(root, root.dataset.type, state.answers[root.dataset.answer]);
   }
   buildPanel();
+  canWrite = SAVES && !secondWindow;
+  if (!SAVES) {
+    setPill("dm-save-browser", "The answer key saves nothing", "dm-off");
+  }
   saveEverywhere();
   if (MODEL.python) startPython();
 }
@@ -890,6 +940,7 @@ document.addEventListener("change", (event) => {
   if (event.target.closest(".dm-answer")) saveEverywhere();
 });
 window.addEventListener("beforeunload", () => {
+  if (!canWrite) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(gatherState()));
   } catch (err) { /* the periodic save already reported storage trouble */ }
@@ -1045,6 +1096,8 @@ if (channel) {
     if (event.data === "anyone-there?" && iAmFirst) channel.postMessage("yes");
     if (event.data === "yes") {
       iAmFirst = false;
+      secondWindow = true;
+      canWrite = false;
       /* Every way into the exam is closed, not only the Begin button. */
       for (const button of document.querySelectorAll(
           "#dm-begin, #dm-load-file, .dm-restore-note button")) {
