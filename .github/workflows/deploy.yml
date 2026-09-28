@@ -1,0 +1,59 @@
+# Builds the site and publishes it to GitHub Pages on every push to main,
+# so the published samples cannot drift from the exam files they come from.
+# Pages must be set to deploy from GitHub Actions (Settings → Pages →
+# Source: GitHub Actions).
+name: publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publish at a time, and never cancel one halfway: a half-published
+# site is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the builder's dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Build
+        run: python dev/build_site.py
+
+      # A build that produced nothing would otherwise publish an empty site
+      # over a working one.
+      - name: Check something was built
+        run: |
+          test -f site/index.html || { echo "no home page was built"; exit 1; }
+          test -f site/workbench/index.html || { echo "no workbench"; exit 1; }
+          count=$(find site/samples -name '*.html' | wc -l)
+          echo "built $count sample pages"
+          test "$count" -gt 0 || { echo "no samples were built"; exit 1; }
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
