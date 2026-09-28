@@ -12,6 +12,7 @@ pip install -r requirements.txt -r requirements-dev.txt   # first time only
 python -m pytest                                           # the builder's tests
 python build_exam.py samples/sample-mixed-paper.exam.md --output /tmp/out
 python dev/build_site.py                                   # the Pages site, into site/
+python -m dewmark check samples/pdp-5n2927/*.exam.md       # the new reader (docs/EXAM_FORMAT.md)
 python dev/smoke_pages.py                                  # browser rehearsal (Playwright + Chromium)
 ```
 

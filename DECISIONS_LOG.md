@@ -95,3 +95,36 @@ With the shared slot gone, the site publishes each sample's practice
 version and answer key again. *Changing it:* the per-page key is part of
 the saved-data contract from now on; renaming it strands saved work.
 
+**0.7 — The reader for the new exam format, and where it departs from the
+format's text.** Step 3 begins with `dewmark/reader.py`, which reads a
+file in the format of `docs/EXAM_FORMAT.md` into its settings, sections,
+questions, parts, answer boxes with their permanent names, and marking
+scheme, with a coded message for every problem. It grew from the format
+judge's prototype (`unified.py`, kept in history with the research) and
+is tested with the judge's hostile cases (`tests/test_reader.py`). The
+four PDP papers convert with `dewmark/convert_pdp.py` and read with no
+problems; the converted files are in `samples/pdp-5n2927/`, each with a
+marking-scheme skeleton of `(draft)` entries to fill.
+
+Two departures from the format's text:
+
+- *Structure is read line by line, not with markdown-it-py.* §4.1 says
+  one CommonMark reader in pure Python reads the file. The reader follows
+  CommonMark's fence rules (a fence closes on a line of at least as many
+  of its own character, so four backticks hold a three-backtick listing)
+  but reads headings, fences and scheme lines itself, with only Python's
+  standard library, so nothing need be installed for the studio to run it
+  in the browser. A CommonMark renderer is still the plan for turning
+  prose into the page, in step 4.
+- *A key for a word bank or a drop-down needs one choosable answer, not
+  all.* §5(c) says "every keyed label in 5(d) is in its bank", but its own
+  key for 5(d) accepts "vacuole / large vacuole / permanent vacuole"
+  against a bank offering only "vacuole". The reader refuses a key none of
+  whose alternatives a student could choose, and leaves harmless extra
+  alternatives alone.
+
+*Changing it:* the names this reader makes (`dewmark/numbers.py`) become
+the keys saved answers are stored under once a paper in this format is
+sat; changing how a printed number becomes a name after that strands
+saved work, which is what the names lock, next, will enforce.
+

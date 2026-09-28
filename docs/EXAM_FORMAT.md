@@ -2,10 +2,21 @@
 
 > **Status.** Adopted on 28 September 2026 (decision 21 in
 > `planning/DECISIONS_2026-09-27.md`), with the ten choices in
-> "Decisions for Josh" at the end taking their recommended options. The
-> builder does not read this format yet: it arrives with step 3 of the
-> plan (`planning/PROPOSAL.md` §9), and until then `build_exam.py` reads
-> the older format in `planning/THE_EXAM_FILE.md`. The three rival
+> "Decisions for Josh" at the end taking their recommended options.
+>
+> **The reader** is `dewmark/reader.py`; `python -m dewmark check FILE`
+> runs it. It reads the settings (§4.9), the split at `# Marking scheme`
+> with the lookalike refusals (§4.1, §4.5 layers 1 and 2), headings,
+> marks and sums (§4.2), fences, kinds and notes (§4.3), permanent names
+> (§4.4), the marker's half with keys, points, criteria, model answers,
+> tests and drafts (§4.6, §4.7), and gives the messages of §7 with stable
+> codes. Not yet built: the names lock (§4.4), the page search and the
+> mutation test (§4.5 layers 3 and 4, which need the renderer), the
+> dewlab import form (§4.11), and the JSON schema for a connected model
+> (§4.10). No page is built from this format yet; until the exam page
+> of step 4, `build_exam.py` builds pages from the older format in
+> `planning/THE_EXAM_FILE.md`. Two places where the reader departs from
+> the text below are in `DECISIONS_LOG.md`, entry 0.7. The three rival
 > proposals this document judges, and the other files it names, are kept
 > in history at commit `b3823f91799f` under
 > `planning/research-2026-09-27/design/`. Decision 22 later added an
