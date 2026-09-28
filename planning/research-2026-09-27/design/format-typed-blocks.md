@@ -1,6 +1,6 @@
 # The exam file as typed blocks
 
-*Design round 2, 2026-09-27. One of three rival proposals for the file a teacher writes (the others are `format-paper-first.md` and `format-one-fence-family.md`). The angle: keep dewmark's typed settings blocks, make them strict, and let the machine check everything it can. Every fragment below comes from a file that passes a working prototype checker, and section 7's figures come from running two prototype converters on the real papers. The prototype is in scratch space, listed at the end.*
+*Design round 2, 2026-09-27, revised the same evening to follow Josh's twenty decisions (`planning/DECISIONS_2026-09-27.md`; where this document and a decision differ, the decision wins). One of three rival proposals for the file a teacher writes (the others are `format-paper-first.md` and `format-one-fence-family.md`). The angle: keep dewmark's typed settings blocks, make them strict, and let the machine check everything it can. Every fragment below comes from a file that passes a working prototype checker, re-run after the revision, and section 7's figures come from running two prototype converters on the real papers. The prototype is in scratch space, listed at the end.*
 
 ## The case in brief
 
@@ -30,7 +30,6 @@ What changes is how a block is read. Today `build_exam.py:175` uses `yaml.safe_l
 | `options: [Yes, No]` | `True`, `False`, shown to students as "True"/"False" (`code.md` §1) | "Yes", "No" |
 | `expected: 12:30` | 750 | "12:30", refused where a number is required |
 | `value: 0.0750` with `sf: 3` | 0.075: the significant figures are lost | "0.0750", 3 significant figures |
-| `code: 007` | 7 | "007" |
 | `session: 2025-10-20` | a date object | "2025-10-20" |
 | `planning_box: no` | `False` | no, because `planning_box` is a yes-or-no setting |
 
@@ -41,14 +40,14 @@ Five things YAML allows are refused, each with a message saying what to do: tabs
 | Kind | How many, and where | Required settings | Optional settings |
 |---|---|---|---|
 | `exam` | exactly one, first in the file | `format`, `exam_code`, `version`, `kind`, `title`, `total_marks`, `time_allowed`, `student_details`; when `kind: exam`, also `module`, `module_code`, `hand_in` | branding and tools (§5) |
-| `python-setup` | at most one, before the first section; required when any answer is `python-code` | `packages` | `files`, `setup_code`, `time_limit`, `suggestions`, `error_hints` |
+| `python-setup` | at most one, before the first section; required when any answer is `python-code` | `packages` | `delivery`, `files`, `setup_code`, `time_limit`, `suggestions`, `error_hints` |
 | `reference` | any number, before the first section | `title` and `text`, or `standard` | — |
 | `section` | one or more | `name` | `title`, `label`, `choose`, `total` |
 | `question` | inside a section | `name` | `title`, `label`, `marks`, `total`, `choose`, `topic`, `outcomes`, `provided_code` |
 | `stimulus` | inside a question, before its first part | `name`, `title` | — |
 | `part` | inside a question | `name` | `title`, `label`, `marks`, `total`, `choose`, `topic`, `outcomes` |
 | `subpart` | inside a part | `name` | `title`, `label`, `marks`, `total`, `outcomes` |
-| `answer` | inside a question, part or sub-part | `name`, `type` | `marks`, `label`, `marked`, `hint`, `lines`, `maths_preview`, `paper_allowed`, `outcomes`, and the type's own settings (§1.5) |
+| `answer` | inside a question, part or sub-part | `name`, `type` | `marks`, `label`, `marked`, `hint`, `lines`, `maths_input`, `paper_allowed`, `outcomes`, and the type's own settings (§1.5) |
 | `marking` | directly under the last answer box it marks | `method` | `guidance`, `points` or `criteria` (by method), `model_answer`, `model_code`, `key`, `any_order`, `form`, `checks`, `draft` |
 
 Every block also accepts `note`. Today's six kinds (`build_exam.py:38`) gain four: `python-setup` takes the Python settings out of the exam block, and `stimulus`, `part` and `subpart` add the levels real papers have (the PDP Sample's 4B(i), a biology table shared by four parts). A question has parts or answer boxes, never both, and so does a part with sub-parts; the builder checks it.
@@ -154,9 +153,9 @@ Line 66, the marking block for the answer box "q1.b.value" in 1(b):
   `sf: 2`, but the value 0.0750 is written with 3 significant figures. Write the value to the same number of figures you ask for.
 ```
 
-**Hidden tests for code** are `checks:` in the three shapes the PDP papers need (`question-types.md` §5): `- call: longer_word("cat", "horse")`; `- run: [17]` with `contains: [junior]` (run the program, typing 17 when asked); `- after: [a == 17, leftover == 2]`. Without `expect:`, a result is compared with the same check on `model_code`. Checks run only in the workbench's Python worker.
+**Hidden tests for code** are `checks:` in the three shapes the PDP papers need (`question-types.md` §5): `- call: longer_word("cat", "horse")`; `- run: [17]` with `contains: [junior]` (run the program, typing 17 when asked); `- after: [a == 17, leftover == 2]`. Without `expect:`, a result is compared with the same check on `model_code`. Checks run in the workbench's Python worker, and also in a practice or sample page that says `practice_checks: yes`, so students see which pass (decision 16). They never run in an exam page, and `practice_checks` on a `kind: exam` file is refused.
 
-**A key never awards a mark.** Keys, tolerances and checks feed the workbench's "assisted, never automatic" facts and proposals (`question-types.md` §2.5); a person confirms every mark. `draft: yes` marks what a converter or the assistant wrote rather than transcribed (`TRANSLATING_AN_EXISTING_EXAM.md` §2); drafts build for preview and practice, and Issue refuses an exam that still has one.
+**A key never awards a mark.** Following decision 13, the rules the teacher wrote (a key, a tolerance, a check) propose marks on closed types and give evidence on the rest; the marker confirms every mark. The language-model assistant never proposes marks (decision 17); nothing in the marking block is addressed to it. `draft: yes` marks what a converter or the assistant wrote rather than transcribed (`TRANSLATING_AN_EXISTING_EXAM.md` §2); drafts build for preview and practice, and Issue refuses an exam that still has one.
 
 **Keeping it out of the student page** takes three layers, the first new:
 
@@ -164,7 +163,7 @@ Line 66, the marking block for the answer box "q1.b.value" in 1(b):
 2. **Schema.** Answer blocks have no secret settings; `expected:` in an answer box is refused, pointing to the marking block.
 3. **Search.** The self-check searches the whole built page for every marking string of four or more characters, including the embedded data and scripts that today's check strips out first (`build_exam.py:1228`, `code.md` §1).
 
-The one declared exception: a `kind: practice` or `sample` paper with `practice_reveal: closed` or `all` carries the keys its "Show the paper's answer" needs (`question-types.md` §7). A `kind: exam` file refuses `practice_reveal`.
+The declared exceptions are both practice-only and both named in the exam block, so the leak search knows what to allow. `practice_reveal: closed` (keys of closed types) or `all` (also model answers) carries the answers into a practice or sample page, shown only once the student has finished the whole paper, never question by question (decision 14). `practice_checks: yes` carries `checks` and `model_code`. A `kind: exam` file refuses both settings, so an examination page is always built from the public tree alone.
 
 ---
 
@@ -188,7 +187,8 @@ technique: Examination-Theory
 weighting: 30%
 total_marks: 60
 time_allowed: 2 hours
-timer: shown
+timer: enforced
+breaks: no
 calculator: none
 student_details: [name, number]
 number_example: D00123456
@@ -206,17 +206,20 @@ hand_in: |
 | `title`, `module`, `module_code`, `session`, `institution`, `college` | cover, masthead, print header, answer file, exports (`student-flow.md` §11.2) |
 | `logo`, `logo_dark` | cover and masthead; SVG, PNG, JPEG or WebP, scripts stripped, refused above 150 KB (`student-flow.md` §11.3) |
 | `technique`, `weighting`, `outcomes` | QQI export columns; blocks tag `outcomes: [6, 7]`, and an unlisted number is refused (`question-types.md` §8) |
-| `time_allowed`, `timer`: `shown`, `hidden`, `off` | Get ready screen and the time-left chip; never enforced |
+| `time_allowed`, `timer`: `none`, `shown`, `enforced` | decision 11: no timer, a timer shown, or a timer that ends the sitting; in every case the student can hide it with one click |
+| `breaks`: yes or no | decision 11: off unless set; when on, the page offers a clean way to start and end a break |
 | `calculator`: `none`, `scientific` | the side-panel calculator |
-| `student_details`, `number_example` | the cover's fields, from the fixed vocabulary `name`, `number`, `seat` (`student-flow.md` §3.2) |
-| `hand_in` | the finish screen, replacing the PDP pages' hard-coded Moodle wording |
+| `student_details`, `number_example` | the fields on the one combined start screen (decision 9), from the fixed vocabulary `name`, `number`, `seat` |
+| `hand_in` | the finish screen's upload instructions, replacing the PDP pages' hard-coded Moodle wording. There is no setting for the PDF: every hand-in includes one (decision 10), and the data file's form is dewmark's choice, not the paper's |
 | `numbering`: `1(a)(i)`, `1A(i)`, `A1(a)(i)` | printed numbers |
-| `practice_reveal`, `maths_preview` | practice self-check; the typed-maths "Reads as" line |
+| `maths_input`: a list from `typed`, `editor`, `photo` | decision 15: which maths routes the paper offers (plain text with a "reads as" line and symbol palette; the MathLive visual editor; photographs of handwritten working). An answer box may narrow it |
+| `practice_reveal`: `none`, `closed`, `all`; `practice_checks`: yes or no | practice and sample papers only (§4) |
 
 **Python** has its own block, present only when the paper has code, so the decision to carry Python is visible at the top:
 
 ```python-setup
 packages: [sqlite3, pandas, matplotlib]
+delivery: inside
 files:
   - path: data/hvit_registry.db
     as: hvit_registry.db
@@ -233,13 +236,17 @@ error_hints: no
 
 **The start screens are generated from these blocks.** The cover takes its branding from the exam block, and the Get ready checklist (`student-flow.md` §5.2) has one row per thing `python-setup` declares: Python, each package with its pinned size, each file, the set-up code. A teacher never configures the loading screen; the file already says what must load.
 
-Defaults: `calculator: none`; `timer: shown` for exams, `hidden` for practice; `time_limit: 10 seconds`; `suggestions: yes`; `error_hints: yes`.
+**Branding** follows decision 12: text settings plus an optional logo, and the EXAMINATION or PRACTICE band is fixed by `kind`, not written. There is deliberately no colour setting yet; a strict grammar adds one later as one more row, without disturbing existing files.
+
+**Python delivery** (decision 7) is `delivery: inside` (Python carried in the file, with a folder beside it for heavy packages) or `delivery: internet` (loaded from the web when the page opens). The builder should warn, not refuse, when a `kind: exam` paper says `internet`, since an exam room may have no connection but the teacher knows the room; with `inside` it refuses any package missing from the pinned kit.
+
+Defaults: `timer: shown`; `breaks: no`; `calculator: none`; `maths_input: [typed]`; `delivery: inside`; `time_limit: 10 seconds`; `suggestions: yes`; `error_hints: yes`.
 
 ---
 
 ## 6. Worked examples
 
-All five are sections of one file, `examples.exam.md`, which passes the prototype checker; its exam block is like §5's with `kind: practice`.
+All five are sections of one file, `examples.exam.md`, which passes the prototype checker; its exam block is like §5's with `kind: practice`, `practice_reveal: closed`, `practice_checks: yes` and `maths_input: [typed, editor, photo]`.
 
 ### (a) A PDP-style question: listing, labelled boxes, code, rough work
 
@@ -490,7 +497,7 @@ key:
 ```
 ````
 
-The builder computes the section as 2 × 6 = 12 marks and writes "Answer any two of the three questions in this section. Each is worth 6 marks." The hint appears only in the practice build. `math-expression` is a later type (§1.5); until it ships, the same part is a `short-written-answer` with `maths_preview: yes` and the expression as `model_answer`.
+The builder computes the section as 2 × 6 = 12 marks and writes "Answer any two of the three questions in this section. Each is worth 6 marks." The hint appears only in the practice build. `math-expression` is a later type (§1.5); until it ships, the same part is a `short-written-answer` (whose box offers the paper's `maths_input` routes: here typed, the MathLive editor, or a photograph) with the expression as `model_answer`.
 
 ### (c) Biology: a shared data table, a label bank, a matching part
 
@@ -721,7 +728,7 @@ criteria:
 
 Both kinds of source convert **by script**, because both are already machine-readable. The prototypes share one 95-line writer (`emit.py`) that turns plain data into blocks, quoting only where the syntax needs it.
 
-**PDP pages** (`pdp2tb.py`, 281 lines). It reads the `exam-src` string out of the page. Front matter becomes the exam and `python-setup` blocks ("Programming and Design Principles 5N2927" is split into `module` and `module_code`; `duration_minutes: 120` becomes `time_allowed: 2 hours`). `## Question N: Title (M marks)` becomes a question with `total: M`; `### 1(a): Title (3 marks)` a part with `marks: 3`; the Sample's `**(i) Longer word (4 marks).**` a sub-part. `answer` fences become written answers (a pre-filled body becomes `starter_text`), `python` fences code answers (`(optional)` ones `marked: no`), `fields` fences `labelled-boxes`, and `text`, `py` and `pseudo` fences numbered listings. The 2027 paper's inline HTML fractions become `$\frac{4}{3}\pi r^3$`, its flowchart SVG a picture file described by its `aria-label`, and the learning-outcomes list `outcomes:`. Each part gets `method: marks` with `draft: yes`.
+**PDP pages** (`pdp2tb.py`, 281 lines) read the `exam-src` string out of the page. Front matter becomes the exam and `python-setup` blocks; `## Question N: Title (M marks)` a question with `total: M`; `### 1(a): Title (3 marks)` a part with `marks: 3`; the Sample's `**(i) Longer word (4 marks).**` a sub-part. `answer` fences become written answers, `python` fences code answers (`(optional)` ones `marked: no`), `fields` fences `labelled-boxes`, and `text`, `py` and `pseudo` fences numbered listings. The 2027 paper's HTML fractions become `$\frac{4}{3}\pi r^3$` and its flowchart SVG a picture file described by its `aria-label`. Each part gets `method: marks` with `draft: yes`.
 
 | Paper | Answer boxes | Marking units | Drafts to write | Source → typed file |
 |---|---|---|---|---|
@@ -742,13 +749,15 @@ All four pass, with totals of 60 computed from the parts. What remains by hand i
 
 ## 8. Translation by a language model
 
-A model converting a teacher's Word exam gets this grammar right for five reasons.
+A model converting a teacher's Word exam gets this grammar right for five reasons. The first matters now, because the paste route ships first (decision 20); the others matter once a local or approved cloud endpoint is connected (decision 18).
 
-1. **The file is the JSON the model already returns.** `assistant.md` §3.4 has the model return JSON (a plain-text data format) under a schema, and dewmark write the file. Here each block is one JSON object and each setting one property, so the writing is mechanical: `emit.py` does it in 95 lines for both converters.
-2. **The model's schema comes from the checker's own lists.** A JSON Schema (a description of the exact shape a reply must have) generated from the block and type settings uses only closed property lists and fixed choices, the subset local model servers turn into a grammar the model cannot step outside (`assistant.md` §1.5, `local-llm.md` §1). An unknown setting, type or method becomes impossible to generate, not merely caught. The sixteen answer types use the per-request schemas `assistant.md` already has: the outline step picks each part's type, and the next request's schema holds that type's settings only.
-3. **Nothing depends on counting.** Options carry their letters, gaps their numbers, boxes their names. Models are unreliable at "the third option"; `correct: 3` by position was a hazard even for people (`design-docs.md` §9).
-4. **Every fact has one home.** Marks go on the marking unit, the method is named, secrets go in the marking block. A model cannot produce two disagreeing copies of a number, so "valid" is decidable; the only repeats are checksums, exactly where a transcription slip should show.
-5. **When a model writes the file directly** (the paste route, `assistant.md` §4), it writes `key: value` lines, the most common settings format in its training text. When it slips (a stray `true`, an unquoted colon, `expected:` in the answer box) the reader refuses loudly, with a fix, and the repair loop sends that message back.
+1. **The paste route checks the reply mechanically.** With no model connected, the studio prepares a package for any assistant: an idealised exam file for the subject (section 6's examples are ready-made), the cheat sheet of section 9 as the format guide, and the teacher's exam, with no student data. The model writes `key: value` lines, the commonest settings format in its training text, and the teacher pastes the reply back. Because every setting list is closed and every value typed, the checker can tell a right reply from a plausible one: a stray `true`, an unquoted colon or `expected:` in an answer box is refused with its line and a fix, and the teacher can paste the message back to the assistant (the studio should offer a "copy these problems" button). That loop is also the small exercise in AI literacy the decision asks for: the teacher sees the model's slips named.
+2. **With an endpoint, the file is the JSON the model already returns.** `assistant.md` §3.4 has the model return JSON (a plain-text data format) under a schema, and dewmark write the file. Each block is one JSON object and each setting one property, so writing is mechanical: `emit.py` does it in 95 lines.
+3. **The model's schema comes from the checker's own lists.** A JSON Schema (a description of the exact shape a reply must have) generated from the block and type lists uses only closed property lists and fixed choices, the subset local model servers turn into a grammar the model cannot step outside (`assistant.md` §1.5, `local-llm.md` §1). An unknown setting, type or method becomes impossible to generate, not merely caught.
+4. **Nothing depends on counting.** Options carry their letters, gaps their numbers, boxes their names. Models are unreliable at "the third option"; `correct: 3` by position was a hazard even for people (`design-docs.md` §9).
+5. **Every fact has one home.** Marks go on the marking unit, the method is named, secrets go in the marking block. A model cannot produce two disagreeing copies of a number; the only repeats are checksums, exactly where a transcription slip should show.
+
+The five conversion modes of decision 19 (copy without composing, tidy the wording, check accessible language, make it more UDL-friendly, rephrase commands as invitations) change only the prose between blocks and the `title:` and `label:` settings. Because structure, names, marks and keys live in typed settings, the studio can show every wording change as a difference in text and verify that no mark, name or key moved: a rephrasing mode whose reply alters a `marks:` line should be refused, not merely flagged.
 
 `draft: yes` carries the rule that drafted answers are labelled, and dewmark, not the model, assigns names from printed numbers (`assistant.md` §3.4). Three messages, exactly as the prototype prints them to a teacher:
 
@@ -779,6 +788,12 @@ THE EXAM FILE ON ONE PAGE
 A paper is ordinary text with settings blocks in it. A block starts with
 ```kind and ends with ```. Inside, one setting per line:  marks: 3
 Text outside the blocks is what students read, shown where it sits.
+
+PAPER SETTINGS WORTH KNOWING  (in the exam block)
+  kind: exam | practice | sample        timer: none | shown | enforced
+  breaks: yes | no                      calculator: none | scientific
+  maths_input: [typed, editor, photo]   (choose one or more)
+  Every hand-in includes a PDF. You do not set it.
 
 THE ORDER OF A FILE
   ```exam           once, at the top: what the paper is (see the template)
@@ -848,9 +863,9 @@ The studio's Insert menu writes every block from the registry's snippets (`archi
 
 ## 11. What ships first, what waits, and what Josh decides
 
-**First, with the move and before any sitting** (`architecture.md` §7 step 2): the text-only reader and its five refusals; closed settings lists with did-you-mean; `format: 1`; named methods; marks once, with checksums; a required marking block per unit; secrets only in marking blocks, with the structural split and the full-page leak search; generated headings; names separate from printed numbers; `part`, `subpart`, `marked: no`, `labelled-boxes`; the `python-setup` block; the branding settings; both converters. This replaces `parse_exam_file` and `check_exam`/`check_answer`/`check_marking` (`build_exam.py:111-640`). The prototype is about 1,500 lines, much of it messages; production code with a test per message is about two weeks.
+**First, with the move and before any sitting** (`architecture.md` §7 step 2): the text-only reader and its five refusals; closed settings lists with did-you-mean; `format: 1`; named methods; marks once, with checksums; a required marking block per unit; secrets only in marking blocks, with the structural split and the full-page leak search; generated headings; names separate from printed numbers; `part`, `subpart`, `marked: no`, `labelled-boxes`; the `python-setup` block with `delivery`; the branding, `timer`, `breaks` and `maths_input` settings; both converters; and the paste package of §8, which needs nothing but the cheat sheet, the examples file and the checker. This replaces `parse_exam_file` and `check_exam`/`check_answer`/`check_marking` (`build_exam.py:111-640`). The prototype is about 1,500 lines, much of it messages; production code with a test per message is about two weeks.
 
-**With each type as it lands** (`question-types.md` §10, T2–T4): `stimulus`, `matching`, `ordering`, label banks, drop-down gaps, numeric `tolerance`, `sf`, `dp` and `units`, and `checks`. **Later:** `math-expression` and `form`; the JSON Schema export for the assistant; a checked `accent` colour.
+**With each type as it lands** (`question-types.md` §10, T2–T4): `stimulus`, `matching`, `ordering`, label banks, drop-down gaps, numeric `tolerance`, `sf`, `dp` and `units`, and `checks`. **Later:** `math-expression` and `form`; the JSON Schema export for a connected model (§8); a colour setting, once Josh wants one (decision 12 says not yet).
 
 | Decision | Recommendation | If not |
 |---|---|---|
@@ -866,4 +881,4 @@ The studio's Insert menu writes every block from the registry's snippets (`archi
 
 Research: `design-docs.md` §2, §9; `code.md` §1, §2, §4, §8; `pdp-pages.md` §1, §3, §9.3; `exam-types.md` §3, §7; `local-llm.md` §1, §7. This round's designs: `architecture.md` §0, §3.2–3.3, §6, §7; `question-types.md` §1, §2.2, §2.5, §5–§8, §10; `student-flow.md` §3.2, §5.2, §10, §11; `assistant.md` §1.5, §3.4, §4. Primary sources: `dewlab/dewmark/build_exam.py` (lines cited), `planning/THE_EXAM_FILE.md`, `QUESTION_TYPES_AND_MARKING.md`, `TRANSLATING_AN_EXISTING_EXAM.md`, `LESSONS_FROM_THE_EXPERIMENTS.md`, the five samples, and the four PDP pages' embedded sources.
 
-Prototype, in `/tmp/claude-0/-home-user/9d1373ae-0961-5985-b2c8-adad08e8b8ed/scratchpad/design-round/format-typed-blocks/` (Python 3.11, PyYAML 6.0.1, latex2mathml): `tb.py` (the checker; `python3 tb.py FILE --outline`), `emit.py`, `pdp2tb.py`, `old2tb.py`, `examples.exam.md` (section 6), `converted/pdp/` (the four PDP papers, plus `presentation-2027.exam.md` with §5's exam block), `converted/samples/` (the five samples), and `probe-marks.exam.md`, `broken.exam.md`, `broken-photosynthesis.exam.md` (the messages in §4 and §8). Checking the largest file, the 1,450-line maths sample, takes about 80 ms, which fits the studio's check-as-you-type (`architecture.md` §3.3).
+Prototype, in `/tmp/claude-0/-home-user/9d1373ae-0961-5985-b2c8-adad08e8b8ed/scratchpad/design-round/format-typed-blocks/` (Python 3.11, PyYAML 6.0.1, latex2mathml): `tb.py` (the checker; `python3 tb.py FILE --outline`), `emit.py`, `pdp2tb.py`, `old2tb.py`, `examples.exam.md` (section 6), `converted/pdp/` (the four PDP papers, plus `presentation-2027.exam.md` with §5's exam block), `converted/samples/` (the five samples), and `probe-marks.exam.md`, `broken.exam.md`, `broken-photosynthesis.exam.md` (the messages in §4 and §8), `probe-decisions.exam.md` and `probe-maths.exam.md` (the refusals added for the 27 September decisions: `timer: hidden`, `practice_reveal` on an exam, `maths_input: [typed, photos]`, which the checker answers with Did you mean "photo"?). `tb.round2-before-decisions.py` is the checker as it stood before the revision. Checking the largest file, the 1,450-line maths sample, takes about 80 ms, which fits the studio's check-as-you-type (`architecture.md` §3.3).

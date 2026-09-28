@@ -1,15 +1,15 @@
 # The exam file, paper-first
 
-*Design round 2, 2026-09-27. One of three rival proposals for the one file a teacher writes. It argues that the file should read like the printed paper followed by the printed marking scheme. It starts from the source format inside the four PDP 5N2927 pages (the `exam-src` block, read by `parseExam` at `experiments/pdp-5n2927/PDP_5N2927_Exam_2027.html:1187-1219`) and adds only what marking and robustness need. I tested the claims with a prototype reader (about 460 lines of Python) and a PDP converter (about 120 lines). Both are scratch work in `/tmp/claude-0/-home-user/9d1373ae-0961-5985-b2c8-adad08e8b8ed/scratchpad/design-round/paper-first/`, not part of either repository.*
+*Design round 2, 2026-09-27, revised after `planning/DECISIONS_2026-09-27.md`. One of three rival proposals for the one file a teacher writes. The argument: the file should read like the printed paper, followed by the printed marking scheme. It starts from the source format inside the four PDP 5N2927 pages (the `exam-src` block, read by `parseFrontmatter` and `parseExam` at `experiments/pdp-5n2927/PDP_5N2927_Exam_2027.html:1187` and `:1193`, and `questionList` at `:1364`) and adds only what marking and robustness need. The claims below were tested with a prototype reader (`paperfirst.py`, about 480 lines of Python) and a PDP converter (`pdp2paperfirst.py`, about 120 lines), both scratch work in `/tmp/claude-0/-home-user/9d1373ae-0961-5985-b2c8-adad08e8b8ed/scratchpad/design-round/paper-first/`, not part of either repository.*
 
 ## The proposal in brief
 
-1. **One file, two halves.** The top half is the paper, written as it would be printed. Below a line reading `# Marking scheme` is the marker's half, written the way schemes already are: under each question number. The student page is built from the top half only, so it is built from text that holds no answers.
+1. **One file, two halves.** The top half is the paper as it would be printed. Below a line reading `# Marking scheme` is the marker's half, laid out the way schemes already are: under each question number. The student page is built from the top half only.
 2. **Headings carry the numbers and the marks**, as on paper: `## Question 1: Functions (15 marks)`, `### 1(a): Parts of a function (6 marks)`. A heading counts only when it gives marks. The builder checks every sum.
-3. **An answer box is a fence under its part.** A fence is a block that opens with three backticks and a word and closes with three backticks. The word names what the student gets: `answer`, `python`, `boxes`, `choice` and so on.
-4. **An answer's permanent name is the number printed beside it**, tidied: `1(b)(i): your tests` is stored as `q1b.i.your-tests`. After a sitting, the names lock refuses a renumbering unless the paper's `version` changes.
-5. **The three marking methods are recognised by how their lines look.** Tick-box points are written `- 2 marks: …`. A criteria grid is written `- **Argument** (15 marks)` with its bands indented below. Anything else is guidance for a mark out of a total.
-6. **The four PDP papers convert by script, with 32 to 36 changed lines each, and pass the prototype's checks.** The marking schemes, which none of them has, arrive as `(draft)` entries, and a draft cannot be issued as an exam.
+3. **An answer box is a fence under its part.** A fence is a block that opens with three backticks and a word, and closes with three backticks. The word says what the student gets: `answer`, `python`, `boxes`, `choice` and so on.
+4. **An answer's permanent name is the number printed beside it**, tidied: `1(b)(i): your tests` is stored as `q1b.i.your-tests`. Once a paper has been sat, the builder refuses a renumbering unless the paper's `version` changes.
+5. **The three marking methods are recognised by how their lines look**: `- 2 marks: …` is a tick-box point; `- **Argument** (15 marks)` with bands indented below is a criteria grid; anything else is guidance for a mark out of a total.
+6. **The four PDP papers convert by script** (a diff of 37 to 41 lines each) and pass every check. Their marking schemes, which none of them has, arrive as `(draft)` entries, and a draft cannot be issued as an exam.
 
 ---
 
@@ -17,14 +17,9 @@
 
 ### 1.1 The carrier
 
-An exam file is a UTF-8 text file, `<code>.exam.md`, with `pictures/` and `data/` folders beside it. It is read as **CommonMark**, the fully specified dialect of Markdown, by one reader written in pure Python (`markdown-it-py`), so it can run in the studio's in-browser Python as today's Markdown library does (`architecture.md` §4). CommonMark fixes two PDP bugs on its own (`pdp-pages.md` §3.4). First, `2 * 3 * 4` stays as written instead of becoming italics. Second, a four-backtick fence can contain a three-backtick one. On top of Markdown the format adds four things:
+An exam file is a plain text file, `<code>.exam.md`, with `pictures/` and `data/` folders beside it. It is read as **CommonMark**, the precisely specified dialect of Markdown, by one reader in pure Python (`markdown-it-py`), so the same code runs on the command line and inside the browser studio (decision 5). CommonMark fixes two PDP defects on its own (`pdp-pages.md` §3.4): `2 * 3 * 4` stays as written instead of turning into italics, and a four-backtick fence can hold a three-backtick one. Before reading, the builder tidies Windows line endings, tabs, non-breaking spaces and curly quotes in settings, headings and fence lines; today a PDP file saved with Windows line endings loses all its settings (`pdp-pages.md` §3.1).
 
-- **settings** between two `---` lines at the very top;
-- **`$…$` maths**, typeset at build time;
-- **fences**, for answer boxes and for things students read;
-- **one reserved line**, `# Marking scheme`, and **one optional line**, `# Reference`.
-
-Before reading anything, the builder tidies Windows line endings, tabs, non-breaking spaces, and curly quotes and dashes in settings, headings and fence lines. At present a PDP file with Windows line endings loses all its settings (`pdp-pages.md` §3.1).
+On top of Markdown the format adds four things: settings between two `---` lines; `$…$` maths, typeset at build time; fences; and two reserved lines, `# Marking scheme` (required once) and `# Reference` (optional).
 
 ```
 ---
@@ -33,21 +28,21 @@ settings, one per line (§5)
 the front page: everything before the first section or question
 # Section A: …                  optional sections
 ## Question 1: … (15 marks)     questions, parts, boxes, material
-# Reference                     optional: cards for the side panel
+# Reference                     optional cards for the side panel
 # Marking scheme                the marker's half (§4)
 ```
 
 ### 1.2 Headings
 
-| Written | Means | Rule |
-|---|---|---|
-| `# Section B: Answer any two questions (40 marks)` | A section | Optional. Marks are checked when given. "any N" (digits or one to ten) sets a choice rule. |
-| `## Question 3: Loops (20 marks)` | A question | Counts only when it ends in marks; it must carry a number |
-| `### 3(a): Tracing a loop (5 marks)` | A part | Also written `(a)`; it belongs to the question above it |
-| `#### (i) First pass (2 marks)` | A sub-part with its own marks | Only when a sub-part has its own marks |
-| a heading with no marks | Ordinary text, such as `## Instructions to candidates` | Warned if it looks numbered |
+| Written | Means |
+|---|---|
+| `# Section B: Answer any two questions (40 marks)` | A section (optional). "any N" sets a choice rule. |
+| `## Question 3: Loops (20 marks)` | A question. It counts only if it ends in marks and carries a number. |
+| `### 3(a): Tracing a loop (5 marks)` | A part; `### (a) …` also works. |
+| `#### (i) First pass (2 marks)` | A sub-part, only when it has its own marks. |
+| a heading with no marks | Ordinary text, such as `## Instructions to candidates`. Warned if it looks numbered. |
 
-**Marks** are written `(N marks)`, `(1 mark)`, `[N marks]` or `[N]`, and halves are allowed. **Numbers** may take any of the usual printed styles: `Question 3`, `Q3`, `3(b)`, `3B`, `3b`, `3 (b)`, `3.b`; `(b)` under Question 3 and `(ii)` under 3(b); and `A1` or `B2(c)(ii)` in papers numbered by section. The prototype reads all eighteen spellings I tried; every spelling of 1(a), including `(a)` under Question 1, becomes the same name, `q1a`.
+**Marks** are written `(N marks)`, `(1 mark)`, `[N marks]` or `[N]`; halves are allowed. **Numbers** take the usual printed styles: `Question 3`, `Q3`, `3(b)`, `3B`, `3b`, `3 (b)`, `3.b`, a bare `(b)` under Question 3, and `A1` or `B2(c)(ii)` for papers numbered by section. The prototype reads all eighteen spellings tried; every spelling of 1(a) becomes the name `q1a`.
 
 ### 1.3 Fences
 
@@ -55,103 +50,83 @@ the front page: everything before the first section or question
 ```KIND  LABEL  (NOTE)
 ````
 
-**KIND** is one word from the two tables below. An unknown word is refused. It is never quietly shown as code, which is what the PDP runtime does (`pdp-pages.md` §3.2). **LABEL** is a number, optionally followed by `: caption`. It is needed only when a part has two or more boxes. **NOTES** are `(not marked)`, `(choose 2)` and `(about 800 words)`. Everything on the line except the kind is shown to the student as written.
+**KIND** is one word from the tables below; an unknown word is refused with the nearest match suggested, never shown quietly as code, which is what the PDP runtime does (`pdp-pages.md` §3.2). **LABEL** is a number, optionally followed by `: caption`, and is needed only when a part has two or more boxes. **NOTES** are `(not marked)`, `(choose 2)` and `(about 800 words)`. Everything after the kind is shown to the student as written.
 
 **Answer boxes**
 
-| Kind | The student gets | The body is | Registry type (`question-types.md` §2) |
-|---|---|---|---|
-| `answer` | A growing written box, sized from the marks, with a word count | Starter text (PDP's "Line 1: … Line 12:" scaffolds) | written answer |
-| `maths` | A written box with a "Reads as" preview and a symbol palette, stored as plain text | Starter text | written answer + maths feature |
-| `python` | An editor with Run, sharing one Python session | Starter code | python-code |
-| `essay` | A writing view with a word count against the note | Empty | essay |
-| `boxes` | One labelled box per line. `____` places the box inside the line; a last line `Choose from: a / b / c` makes every box a drop-down | The labels | labelled boxes |
-| `blanks` | Text with gaps: `____` to type, `[a / b / c]` to choose | The text | fill in the blank |
-| `table` | A table with `____` in the cells to fill | A pipe table | complete the table |
-| `choice` | Options; `(choose N)` allows several | `A.`, `B.` … each may hold Markdown, including code | multiple choice |
-| `match` | A drop-down of letters beside each numbered item | `1.`, `2.` …, then `A.`, `B.` … | matching |
-| `order` | A list to reorder with keyboard buttons | `A.`, `B.` … as shown | ordering |
-| `on-paper` | "Answer 3(c) on the paper provided"; the mark is typed in the workbench | The instruction | answer on paper |
+| Kind | The student gets | The body is |
+|---|---|---|
+| `answer` | A growing written box with a word count | Starter text (PDP's "Permitted: … Not permitted: …" scaffolds) |
+| `maths` | A maths box in the routes the paper allows: plain text with a "reads as" line and symbol palette, a visual editor (MathLive), a photograph (decision 15) | Starter text |
+| `python` | A code editor with Run, all cells sharing one Python session | Starter code |
+| `essay` | A writing view with a word count against the note | Empty |
+| `boxes` | One labelled box per line; `____` puts the box inside the line; a last line `Choose from: a / b / c` makes every box a drop-down | The labels |
+| `blanks` | Text with gaps: `____` to type, `[a / b / c]` to choose | The text |
+| `table` | A table with `____` in the cells to fill | A pipe table |
+| `choice` | Options; `(choose N)` allows several | `A.`, `B.` …, each may hold Markdown and code |
+| `match` | A drop-down of letters beside each numbered item | `1.`, `2.` …, then `A.`, `B.` … |
+| `order` | A list to reorder, with keyboard buttons | `A.`, `B.` … |
+| `photo` | A photograph of handwritten work, such as a drawn graph | The instruction |
+| `on-paper` | "Answer 3(c) on the paper provided"; the mark is typed in the workbench | The instruction |
 
-Any box marked `(not marked)` becomes rough work: it is saved, printed and shown to the marker, but it carries no marks and never counts as unanswered. PDP's `fields` becomes `boxes`, because a non-programmer knows what a box is; the converter renames it. Three of today's types become combinations, which leaves the registry fewer types to build and test:
-
-- `numeric-answer` becomes a `maths` working box plus a `boxes` answer line;
-- `label-the-diagram` becomes a picture plus `boxes` labelled 1, 2, 3;
-- `describe-a-sketch` becomes a `choice` plus `boxes`.
+A box marked `(not marked)` is rough work: saved, printed, shown to the marker, never counted as unanswered. PDP's `fields` becomes `boxes`, because a non-programmer knows what a box is. A number answer is a `maths` working box plus a `boxes` answer line; label-the-diagram is a picture plus `boxes`. Neither needs a type of its own.
 
 **Things students read**
 
 | Written | Shown as |
 |---|---|
-| ` ```text ` | A code listing with line numbers and Python colouring (PDP's meaning); `text sql` and `start=4` also work |
-| ` ```pseudo ` | Pseudocode: monospaced, not coloured |
+| ` ```text ` | A code listing with line numbers and colouring (PDP's meaning); `text sql` and `start=4` also work |
+| ` ```pseudo ` | Pseudocode, monospaced, not coloured |
 | ` ```python setup ` | Code that runs before Begin, shown collapsed as "Set-up code (runs automatically)" |
-| `![what it shows](pictures/cell.svg)` | An embedded picture; the description is required |
-| `[hvit_registry.db](data/hvit_registry.db)` | An embedded data file, listed in the side panel and placed in Python's folder |
-| `$\frac{k^2}{4}$` | Maths, typeset everywhere: prose, options, box labels, table cells, keys |
-| raw HTML | Shown as text and never run (PDP passes it through, so `If a<b` loses its text) |
+| `![what it shows](pictures/cell.svg)` | A picture; the description is required |
+| `[registry.db](data/registry.db)` | A data file, listed in the side panel and placed in Python's folder |
+| `$\frac{k^2}{4}$` | Maths, typeset in prose, options, labels, table cells and keys |
+| raw HTML | Shown as text, never run (PDP passes it through, so `If a<b` loses its text) |
 
-**Shared material needs no syntax.** Text between a question heading and its first part belongs to the whole question, as it does on paper. When that text holds a table, picture or listing, the page keeps it available beside every part. Text between a section heading and its first question works the same way for the section.
+**Shared material needs no syntax.** Text between a question heading and its first part belongs to the whole question, as on paper. When it holds a table, picture or listing, the page keeps it available beside every part.
 
 ### 1.4 The marker's half
 
 | Line | Meaning |
 |---|---|
-| A heading that starts with a number: `### 2(a)`, `### 2(a): answer`, `## Question 2` | The entry for that part, box or question. The heading level does not matter; `(draft)` at the end marks it unchecked |
+| A heading that starts with a number: `### 2(a)`, `### 2(a): answer`, `## Question 2` | The entry for that part, box or question. Level does not matter. `(draft)` at the end marks it unchecked. |
 | `Answer: …`, or `Answers:` and a numbered list; `Answers (any order):` | The key (§4.3) |
-| `Model answer: …`, or a ` ```python ` block | The model answer or model code |
-| ` ```tests ` | Hidden tests, run only in the workbench |
+| `Model answer: …`, or a ` ```python ` block | The model answer |
+| ` ```tests ` | Hidden tests for code (§4.4) |
 | `- 2 marks: …` | A tick-box point |
-| `- **Name** (15 marks)` with indented `- 13 to 15: …` lines | A criterion and its bands |
-| `Hint:` / `Topic:` / `Outcomes: 3, 7` | Practice-only hint; export and QQI fields |
+| `- **Name** (15 marks)` with indented `- 13 to 15: …` | A criterion and its bands |
+| `Topic:` / `Outcomes: 3, 7` | Fields for the marks spreadsheet and QQI records |
 | anything else | Guidance for the marker |
-
-Besides the sums and names in §2 and §3, the builder refuses unknown settings and fence words (suggesting the nearest match), `Answer:` or `Model answer:` above the scheme line, any scheme text repeated in the paper half (a model answer pasted in as starter text), and dewlab-style `{word}` gaps, which would print the answer.
 
 ---
 
 ## 2. Structure and marks
 
-**Marks come only from headings.** A box shares the marks of the heading it sits under, which is how the PDP papers are marked. In the Sample, 1A (i), (ii) and (iii) share 3 marks, and 4B's function and tests cells share 4. dewmark's current format forces the teacher to split marks like these (`pdp-pages.md` §9.3, gap 3). In the workbench, the unit a marker marks is the lowest heading that has marks, shown with all its boxes.
+**Marks come only from headings.** A box shares the marks of the heading it sits under, which is how the PDP papers are marked: in the Sample, 1A (i), (ii) and (iii) share 3 marks and 4B's function and tests cells share 4. dewmark's current format forces a teacher to split marks like these (`pdp-pages.md` §9.3). In the workbench, the unit a marker marks is the lowest heading with marks, shown with all its boxes.
 
-**The builder checks that:**
+**The builder checks** that every heading's marks equal the sum of its children's; that a section which states marks adds up; that the paper equals `total marks` (a setting the PDP runtime never reads, `pdp-pages.md` §3.1); that no box in a question with parts sits outside every part, unless it is rough work; and that every marked part has a box.
 
-- every heading's marks equal the sum of its children's;
-- any section that states marks adds up;
-- the paper's sum equals `total marks`, a setting the PDP runtime never reads;
-- no box in a question with parts sits outside every part, unless it is rough work;
-- every marked part has a box or is `on-paper`.
+**Marks are written twice on purpose.** A paper shows "(15 marks)" and each part's marks, and the builder checks that they agree, catching the commonest slip in a hand-written paper. This is not the hidden duplication `design-docs.md` §9 criticised (marks in an answer block and again in a marking block): both copies are on the page students read.
 
-**Printed marks are written twice on purpose.** A paper shows "(15 marks)" and each part's marks, and the builder checks that they agree, which catches the commonest slip in a hand-written paper. This is not the hidden duplication `design-docs.md` §9 criticised (marks in both an answer block and a marking block): both copies are on the page students read.
+**"Answer any N" is read from the heading that says it**, which on paper is where it is said: `# Section B: Answer any two of Questions 2 to 4 (20 marks)`. A question heading can say it about its parts. The alternatives must be worth the same and outnumber N. There is no separate `choose:` key to fall out of step with the instructions, because the rule is the instruction. The page never blocks an extra attempt; the workbench counts the best N and lets the marker override.
 
-**"Answer any N" is read from the heading that says it**, which on paper is where it is said: `# Section B: Answer any two of Questions 2 to 4 (20 marks)`. A question heading can say it about its parts. The alternatives must be worth the same, and there must be more of them than N. Parts nested inside alternatives are summed first. There is no `choose:` key to fall out of step with the instructions, because the rule is the instruction. The page never blocks an extra attempt. The workbench counts the best N and allows an override, as `THE_MARKING_WORKBENCH.md` already plans.
+**Faults run through the prototype:**
 
-**Hostile cases run through the prototype:**
-
-| Case | Result |
+| Fault | Message (abridged) |
 |---|---|
-| 2(b) changed to 5 marks | "2's parts add up to 11 marks, but its heading says 10." |
-| A 12-mark question in an "any two" section of 10-mark questions | "…says 'any 2', but its questions are not all worth the same", then the section and paper sums |
-| `(4 marks)` deleted from `### 5(c)` | A warning that the heading "looks like a part but gives no marks", then three knock-on problems. The builder must list the cause first (§10) |
-| PDP's `**(ii) Counting a letter (5 marks).**` left in bold | "This line gives marks but is not a heading… start the line with ####." |
+| 2(b) changed to 5 marks | "Question 2's parts add up to 11 marks, but its heading says 10." |
+| A 12-mark question in an "any two" section of 10-mark questions | "Section B says 'any 2', but its questions are not all worth the same." |
+| PDP's `**(ii) Counting a letter (5 marks).**` left in bold | "This line gives marks but is not a heading. Start the line with ####." |
 | Two boxes labelled `2(a): working` | "Two answer boxes would both be stored as q2a.working (lines 99 and 102)." |
-| `boxes 2(c): answer` placed under 2(b) | "The box labelled '2(c): answer' sits under 2(b)." |
-| `version: 1.10`, `code: 0123`, `calculator: no` | Read as `1.10`, `0123` and off; values stay text until a known key converts them |
+| `timer: hidden` | "'timer' can be enforced, none, shown, not 'hidden'." |
 
 ---
 
 ## 3. Answer spaces and their names
 
-**Declaring a box.** Put a fence under its part. A lone box needs no label: an empty ` ```answer ` under `### 5(c)` is stored as `q5c`. When a part has more than one box, label each one.
+**Declaring a box.** Put a fence under its part. A lone box needs no label: an empty ` ```answer ` under `### 5(c)` is stored as `q5c`. When a part has more than one box, label each.
 
-**The name rule.** The name is built from these pieces, in order:
-
-1. `q`;
-2. the question number and the part letter (whether the number is written in full or relative to its heading);
-3. `.` and the roman numeral of the sub-part;
-4. `.` and the caption, in lower case with dashes.
-
-This matches the form `assistant.md` §3.4 already uses when it names answers from printed numbers (`1A (ii)` becomes `q1a.ii`).
+**The name rule**: `q`, the question number and part letter, then `.` and the sub-part numeral, then `.` and the caption in lower case with dashes. This is the form `assistant.md` §3.4 already uses when it names answers from printed numbers.
 
 | As printed | Stored as |
 |---|---|
@@ -161,17 +136,16 @@ This matches the form `assistant.md` §3.4 already uses when it names answers fr
 | `Question 1: rough work (not marked)` | `q1.rough-work` |
 | `B2(c)(ii)` | `qb2c.ii` |
 
-**Why the printed number.** The student saw "2(b)". The scheme, the graded paper, an appeal and the internal verifier's sample all say "2(b)". A hidden identifier would be a second name that can drift from the first. The teacher could not see it, and a model converting a Word paper would have to invent it. dewlab learnt that cell ids are a contract. Here the contract is the number students were shown, and nobody renumbers a paper after it has been sat.
+**Why the printed number.** The student saw "2(b)". The scheme, the graded paper, an appeal and the external authenticator's sample all say "2(b)". A hidden identifier would be a second name that can drift from the first; the teacher could not see it, and a model converting a Word paper would have to invent it. dewlab learnt that a cell id is a contract. Here the contract is the number students were shown, and nobody renumbers a paper that has been sat.
 
-**How names stay stable.** The names lock (`architecture.md` §6) records each name at first issue, with its label, kind, part and marks.
+**How names stay stable.** A names lock (a small file beside the paper, `architecture.md` §6) records each name at first issue, with its label, kind, part and marks.
 
-- **Before the first issue,** renumbering is free.
-- **After a sitting,** changing a locked number stops the build unless `version` changes (§8 shows the message). A new version gets its own names; the old sitting keeps its scheme and record. So "renumber 2(b) to 2(c) after a sitting" ends in one of two clear outcomes: put the number back, or make the paper version 2.
-- **A caption-only fix** (same number, same kind, same position, caption edited) keeps the stored name, and the builder says so.
-- **Reordering questions without renumbering** keeps every name, with a warning that the paper now reads 1, 3, 2.
-- **Later,** a "2(c) was 2(b)" map in the lock carries item statistics across versions.
+- **Before first issue,** renumbering and reordering are free.
+- **After a sitting,** changing a locked number stops the build unless `version` changes (§8 shows the message). A new version gets its own names; the old sitting keeps its scheme and record.
+- **A caption-only fix** (same number, kind and position) keeps the stored name, and the builder says so.
+- **Moving questions without renumbering** keeps every name, with a warning that the paper now reads 1, 3, 2.
 
-**Inner names.** A choice option is stored by its printed letter, so a key never depends on position. `boxes` lines and `table` cells are stored by position, and the lock records their count or shape. `match` items are stored by number. After a sitting, changing any of these is refused in the same way (`question-types.md` §2.2).
+Inside a box, a choice option is stored by its printed letter, `match` items by number, and `boxes` lines and `table` cells by position; the lock records their count and shape, and changes after a sitting are refused the same way.
 
 ---
 
@@ -181,25 +155,24 @@ This matches the form `assistant.md` §3.4 already uses when it names answers fr
 
 | | Inline after each box | `# Marking scheme` at the end (recommended) | A companion file |
 |---|---|---|---|
-| Reads like | Neither a paper nor a scheme | The paper, then its scheme: the pair QQI asks a provider to keep | Two documents |
-| Keeping keys off the student page | Every renderer must skip every marking block, with a leak check per type (`code.md` §1) | One split at one line, before anything is rendered | As at the end |
-| Sharing the paper with a moderator | Not without the answers | Send the top half | Send one file |
+| Reads like | Neither paper nor scheme | The paper, then its scheme, the pair QQI asks a provider to keep | Two documents |
+| Keeping answers off the student page | Every renderer must skip every marking block (the gap `code.md` §1 found) | One split at one line, before anything is rendered | As at the end |
+| Sending the paper to a moderator | Not without the answers | Send the top half | Send one file |
 | Scheme beside its question | Yes | In the studio's split view | No |
-| Drift | None | Numbers in two places, cross-checked both ways | The same, plus a file that can go missing |
 
-The end of the file keeps one file, makes secrecy a matter of structure rather than of a list of fragments to strip, and matches what teachers already have: a Word paper and a Word scheme, numbered alike. The half can later move into `<code>.marking.md` unchanged. It is `#`, not `## Marking`, because `##` is question level.
+The end of the file keeps one file, makes secrecy a matter of structure rather than of a list of fragments to strip, and matches what teachers already have: a Word paper and a Word scheme, numbered alike. The half can later move into `<code>.marking.md` unchanged. It is `#`, not `## Marking`, because `##` is the question level.
 
 ### 4.2 The three methods
 
-Each part uses one method. The builder recognises it from the lines, refuses a part that mixes points with criteria, and names the method it found in the answer-key preview ("Marked by points: 5 listed, up to 4 marks").
+Each part uses one method. The builder recognises it from the lines, refuses a part that mixes points with criteria, and says what it found in the preview ("Marked by points: 5 listed, up to 4 marks").
 
 | Method | Written as | The marker gets | Checked |
 |---|---|---|---|
 | Marks out of a total | Guidance in any form | One number, in half-mark steps | none |
-| Points with a limit | `- 2 marks: the enzyme is denatured` | Tick boxes; the total stops at the part's marks | none; points may add up to more than the part ("any of") |
-| Criteria grid | `- **Evidence** (15 marks)` with indented `- 13 to 15: …` bands | A band, then an exact mark, per criterion | the criteria add up to the part; the bands run from 0 to the top with no gaps or overlaps |
+| Points with a limit | `- 2 marks: the enzyme is denatured` | Tick boxes; the total stops at the part's marks | points may add to more than the part ("any of") |
+| Criteria grid | `- **Evidence** (15 marks)`, bands indented below | A band, then an exact mark, per criterion | criteria add to the part; bands run from 0 to the top with no gaps |
 
-The limit is always the part's marks, so there is no `limit:` to keep in step. Error carried forward stays as guidance, because the marker applies it.
+The limit is always the part's marks, so there is no `limit:` key to keep in step.
 
 ### 4.3 Keys, alternatives, numbers
 
@@ -207,71 +180,62 @@ The limit is always the part's marks, so there is no `limit:` to keep in step. E
 |---|---|
 | `choice` | `Answer: B`, or `Answer: A, C` with `(choose 2)` |
 | `match` / `order` | `Answer: 1 B, 2 A, 3 C` / `Answer: B, D, C, A` |
-| `boxes`, `blanks` | `Answer:` for one box; otherwise `Answers:` and a numbered list in order; `Answers (any order):` when the boxes are interchangeable |
-| `table` | The completed table, the same shape as in the paper |
+| `boxes`, `blanks` | `Answer:` for one box; `Answers:` and a numbered list otherwise; `Answers (any order):` when boxes are interchangeable |
+| `table` | The completed table |
 | two keyed boxes in one part | One entry per box: `### 2(c): shape` |
 
-- **Accepted alternatives** are separated by a slash with spaces around it: `vacuole / large vacuole`. `3/8` is one answer.
-- **A key that starts with a number is compared as a number:**
-  - `4.88 m ± 0.01` gives a value, a unit and a tolerance;
-  - `± 2%` gives a relative tolerance;
-  - `12.4 to 12.6 cm` gives a range;
-  - `(2 d.p.)` and `(3 s.f.)` give the precision;
-  - `4/13` is a fraction;
-  - `500`, `500.0` and `5e2` all agree.
-- **A quoted key**, such as `"0123"`, is compared exactly as written.
+- **Alternatives** are separated by a slash with spaces: `vacuole / large vacuole`. `3/8` is one answer.
+- **A key that starts with a number is compared as a number:** `4.88 m ± 0.01` (value, unit, tolerance); `± 2%` (relative); `12.4 to 12.6 cm` (range); `(2 d.p.)`, `(3 s.f.)` (precision); `4/13` (fraction). `500`, `500.0` and `5e2` agree.
+- **A quoted key**, such as `"0123"`, is compared exactly.
 
-The workbench uses keys only to suggest, for example "matches key", "right value, no unit" or "same value, not in lowest terms". The marker confirms every mark (`question-types.md` §2.5).
+In line with decision 13, a key proposes a mark on a closed box ("matches key", "right value, no unit") and the marker confirms every mark.
 
 ### 4.4 Model answers, tests and drafts
 
-- **Model answers.** A `Model answer:` paragraph or a ` ```python ` block. It appears in the answer key and the workbench, and in practice papers when `show answers` allows it.
-- **Hidden tests.** A ` ```tests ` fence has one test per line, in one of two forms:
-  - a Python expression that should be true, such as `longer_word("cat", "horse") == "horse"`;
-  - `with input 17: output includes "junior"`, which feeds typed input to the student's program.
-
-  Tests run only in the workbench. A fresh Python session runs the paper's set-up code, then the part's own cells in order, then each line. The marker sees the results beside the model answer's results, as evidence and never as a mark.
-- **Drafts.** An entry ending `(draft)` is labelled "draft" everywhere, and an exam cannot be issued while one remains.
+- **Model answers**: a `Model answer:` paragraph or a ` ```python ` block. Shown in the answer key and the workbench, and on a practice paper after the student finishes (decision 14).
+- **Hidden tests**: a ` ```tests ` fence, one test per line, either a Python expression that should be true (`longer_word("cat", "horse") == "horse"`) or `with input 17: output includes "junior"`. In the workbench a fresh Python session runs the set-up code, then the part's cells, then each line; the marker sees which pass, as evidence. On a practice paper with `practice tests` on, the same lines run in the student's page (decision 16). They are never placed in an exam page.
+- **Drafts**: an entry ending `(draft)` is labelled "draft" everywhere, and an exam cannot be issued while one remains.
 
 ### 4.5 Keeping it off the student page
 
-Student and practice pages are built from the paper half only. The builder then searches the whole built page, **including the embedded data block that today's check skips** (`code.md` §1, stage 5), for every key, model answer and test line of eight characters or more. Short keys such as `B` or `500` are protected by structure, because they exist only below the line. A practice or sample paper receives keys and hints on purpose, through `show answers` and `Hint:`. The builder refuses `show answers` on `kind: exam`.
+Exam pages are built from the paper half only. The builder then searches the whole built page, **including the embedded data block that today's check skips** (`code.md` §1, stage 5), for every key, model answer and test line of eight characters or more; short keys such as `B` exist only below the line, so structure protects them. A practice page receives keys, model answers and tests on purpose, locked until the student finishes, and the builder refuses `show answers` or `practice tests` on `kind: exam` (tested in the prototype).
 
 ---
 
 ## 5. Exam settings and presentation
 
-Settings are `key: value` lines. Capitals, spaces, underscores and hyphens in a key are ignored, so `time_allowed` and `Time allowed` are the same key. Every value is text until the builder converts a key it knows: to a number, to a list separated by commas, or to a switch (`on`/`off`, `yes`/`no`, `true`/`false`, in any capitals). This removes YAML's traps, where `no` becomes false and `1.10` becomes `1.1` (`code.md` §1), and PDP's rule that only a lower-case `false` counts.
+Settings are `key: value` lines. Capitals, spaces, underscores and hyphens in a key are ignored, so `time_allowed` and `Time allowed` are the same key. Every value is text until the builder converts a key it knows, which removes YAML's traps (`no` becomes false, `1.10` becomes `1.1`, `code.md` §1) and PDP's rule that only lower-case `false` counts.
 
 | Setting | Example | Needed |
 |---|---|---|
 | `dewmark` (format version) | `1` | written by templates |
-| `code` (permanent; file names, save keys, lock) | `pdp-5n2927-exam-2027` | yes |
+| `code` (permanent: file names, save keys, lock) | `pdp-5n2927-exam-2027` | yes |
 | `version` | `1` | default 1 |
-| `kind` (sets the cover band and what practice may show) | `exam`, `practice`, `sample` | yes |
-| `title` | Written Examination 2026–2027 | yes |
-| `module`, `module code` | Programming and Design Principles; 5N2927 | yes; code recommended |
-| `institution`, `college`, `session` | Dublin and Dún Laoghaire ETB; Dublin College Dundrum; 2026–2027 | recommended |
-| `logo`, `logo dark` | `pictures/dcd-logo.svg` | optional |
+| `kind` (sets the EXAMINATION or PRACTICE band, decision 12) | `exam`, `practice`, `sample` | yes |
+| `title`, `module`, `module code` | Written Examination 2026–2027; Programming and Design Principles; 5N2927 | yes |
+| `institution`, `college`, `session`, `logo` | Dublin and Dún Laoghaire ETB; Dublin College Dundrum; 2026–2027; `pictures/dcd-logo.svg` | recommended; logo optional |
 | `total marks`, `time allowed` | 60; 2 hours | yes |
-| `weighting`, `technique` (QQI, `exam-types.md` §4) | 30%; Examination-Theory | optional |
-| `student details`, `number example` | full name, student number; D00123456 | default as shown |
-| `hand in` (replaces the hard-coded Moodle text) | Upload your file to "PDP exam" on Moodle, then raise your hand. | yes for an exam |
-| `timer` | `shown`, `hidden`, `off` | default `shown`, never enforced |
+| `timer` (decision 11) | `none`, `shown`, `enforced` | default `shown`; the student can always hide it |
+| `breaks` | `on`, `off` | default `off` |
+| `student details` | full name, student number | default as shown |
+| `hand in` (replaces the hard-coded Moodle text) | Upload your PDF and answer file to "PDP exam" on Moodle. | yes for an exam; the PDF is always produced (decision 10) |
 | `calculator` | `none`, `basic`, `scientific` | default `none` |
-| `python packages` | sqlite3, pandas, matplotlib | checked against pinned Pyodide; anything needing PyPI during the sitting is refused |
+| `maths input` (decision 15) | `text, visual, photo` | default `text` |
+| `python from` (decision 7) | `this file`, `internet` | default `this file` |
+| `python packages` | sqlite3, pandas | checked against the pinned Pyodide |
 | `python time limit` | 10 seconds, or `off` | default 10 seconds |
-| `code completion` / `error hints` | `on`, `off` | off / on in practice and off in an exam, as the PDP papers chose |
-| `python reference` | `yes` | default `no` |
-| `show answers` | `never`, `on request`, `after finishing` | practice only |
+| `code completion`, `error hints` | `on`, `off` | off, on |
+| `python reference` | `yes`, `no` | default `no` |
+| `show answers`, `practice tests` | `never`, `after finishing` (tests also `while working`) | practice and sample only |
+| `weighting`, `technique` | 30%; Examination-Theory | optional, for QQI records |
 
-**Branding** is these text settings plus an optional logo. It appears on the cover, the masthead, print headers and the answer file as `student-flow.md` §11.2 lays out. There is no college colour in the first release, so the exam and practice bands mean the same thing in every college. **Reference sheets** are `python reference: yes` for dewmark's standard Python sheet, and anything under `# Reference`, where each `##` becomes one side-panel card; a formula sheet goes there. **How Python reaches the room** is chosen at Issue rather than written in the paper, since one paper may be sat in several rooms (`architecture.md` §3.4).
+**Branding** is these text settings plus the optional logo, shown on the combined start screen, the masthead, print headers and the PDF. There is no college colour yet, so the two bands mean the same in every college. **Reference sheets**: `python reference: yes` adds dewmark's standard Python sheet, and each `##` under `# Reference` becomes one side-panel card, which is where a formula sheet goes.
 
 ---
 
 ## 6. Worked examples
 
-Together, examples (a) to (e) make one specimen paper. The settings in (a) head the file, the `# Reference` card closes the paper half after the essay in (e), and the scheme entries follow `# Marking scheme` in question order. Assembled that way, the prototype reads the file with no problems: 7 questions, 23 boxes, 92 marks. The specimen crosses subjects, as no real paper would.
+Examples (a) to (e) make one specimen paper, `specimen.exam.md` in the scratch folder. The prototype reads it with no problems: 7 questions, 23 boxes, 92 marks.
 
 ### (a) A PDP-style question: a code listing, Python cells and labelled boxes
 
@@ -279,6 +243,7 @@ Together, examples (a) to (e) make one specimen paper. The settings in (a) head 
 ---
 dewmark: 1
 code: dewmark-specimen
+version: 1
 kind: practice
 title: Specimen Paper
 module: Specimen paper for the exam format
@@ -287,12 +252,16 @@ college: Dublin College Dundrum
 session: 2026–2027
 total marks: 92
 time allowed: 2 hours 30 minutes
+timer: shown
 calculator: scientific
+maths input: text, visual, photo
+python from: this file
 python time limit: 10 seconds
 code completion: on
 python reference: yes
 show answers: after finishing
-hand in: Keep your answer file. In the real exam you will upload it to Moodle and raise your hand.
+practice tests: after finishing
+hand in: Keep your PDF and answer file. In the real exam you will upload both to Moodle.
 ---
 
 ## Instructions to candidates
@@ -328,7 +297,7 @@ What would happen if the last line (the function call) were removed?
 
 ### 1(b): Writing functions (9 marks)
 
-Write the following functions with clear comments, and write tests to show that each function works.
+Write the following functions with clear comments, and write tests to show that each works.
 
 #### (i) Longer word (4 marks)
 
@@ -344,7 +313,7 @@ Write a function named `longer_word` that takes two strings and returns whicheve
 
 #### (ii) Counting a letter (5 marks)
 
-Write a function named `count_letter` with two arguments, `text` and `letter`. It must use a loop to count how many times `letter` appears in `text`, and return the count. Do not use `.count()`.
+Write a function named `count_letter` with two arguments, `text` and `letter`. It must use a loop to count how many times `letter` appears in `text`. Do not use `.count()`.
 
 ```python 1(b)(ii): your function
 # Write your function here
@@ -354,13 +323,11 @@ Write a function named `count_letter` with two arguments, `text` and `letter`. I
 # Call your function and write your tests here
 ```
 
-You can use this cell for rough work.
-
 ```python Question 1: rough work (not marked)
 ```
 ````
 
-The marking scheme entries:
+Scheme entries, below `# Marking scheme`:
 
 ````markdown
 # Marking scheme
@@ -425,7 +392,7 @@ count_letter("", "a") == 0
 ````markdown
 # Section B: Answer any two of Questions 2 to 4 (20 marks)
 
-Each question in this section is worth 10 marks. Show your working in the working boxes.
+Each question in this section is worth 10 marks. Show your working.
 
 ## Question 2: A ladder (10 marks)
 
@@ -476,7 +443,7 @@ x = ____
 
 ## Question 4: Cards (10 marks)
 
-A card is drawn at random from a standard deck of 52 cards. Find the probability that it is a heart or a king. Give your answer as a fraction in its lowest terms.
+A card is drawn at random from a standard deck of 52. Find the probability that it is a heart or a king, as a fraction in its lowest terms.
 
 ```maths 4: working
 ```
@@ -486,7 +453,7 @@ P(heart or king) = ____
 ```
 ````
 
-The marking scheme entries:
+Scheme entries:
 
 ```markdown
 ### 2(a)
@@ -506,7 +473,8 @@ Answer: 70° ± 1
 - 2 marks: $\cos\theta = 1.8 / 5.2$, or an equivalent ratio using 2(a)'s answer
 - 1 mark: 69.7° before rounding
 - 1 mark: 70°
-- Follow through from the student's own answer to 2(a) when they use sine or tangent.
+
+Follow through from the student's own answer to 2(a).
 
 ### 3(a)
 
@@ -534,7 +502,7 @@ Answer: 4/13
 - 2 marks: 4/13 in lowest terms
 ```
 
-### (c) Biology: a data table shared by several parts, a label bank and matching
+### (c) Biology: a shared data table, a label bank and matching
 
 ````markdown
 # Section C: Biology (17 marks)
@@ -572,7 +540,7 @@ Explain why no result was recorded at 60 °C.
 
 ### 5(d): Parts of a cell (3 marks)
 
-![A plant cell with three numbered pointers. Pointer 1 points to the thick outer boundary of the cell. Pointer 2 points to one of several small oval bodies near the edge. Pointer 3 points to the large pale space that fills the middle of the cell.](pictures/plant-cell-3.svg)
+![A plant cell with three numbered pointers. Pointer 1 points to the thick outer boundary. Pointer 2 points to one of several small oval bodies near the edge. Pointer 3 points to the large pale space in the middle of the cell.](pictures/plant-cell-3.svg)
 
 Name the parts labelled 1 to 3.
 
@@ -599,7 +567,7 @@ D. Controls what enters and leaves the cell
 ```
 ````
 
-The table sits between the question heading and 5(a), so it is Question 5's shared material, and the page keeps it available beside 5(a) to 5(e). The marking scheme entries:
+The table sits between the question heading and 5(a), so it is Question 5's shared material and stays available beside 5(a) to 5(e). Scheme entries:
 
 ```markdown
 ## Question 5
@@ -611,13 +579,9 @@ Outcomes: 2, 4
 
 Answer: 40
 
-- 2 marks for 40 °C; no marks for 30 or 50.
-
 ### 5(b)
 
 Answer: 0.25 per minute ± 0.005
-
-Hint: Rate = 1 ÷ time. Use the time for 30 °C from the table.
 
 - 2 marks: 1 ÷ 4 = 0.25
 - 1 mark: the unit, per minute or /min
@@ -636,16 +600,12 @@ Answers:
 2. chloroplast
 3. vacuole / large vacuole / permanent vacuole
 
-1 mark each. Do not accept "cell membrane" for 1.
+Do not accept "cell membrane" for 1.
 
 ### 5(e)
 
 Answer: 1 B, 2 A, 3 C
-
-1 mark each.
 ```
-
-Note that 5(a)'s "2 marks for 40 °C" has no colon after "marks", so it is guidance, not a tick-box point. The preview says "Marked by: marks out of 2".
 
 ### (d) Multiple choice, with an option that is code
 
@@ -668,13 +628,7 @@ D. `print(range(1, 6))`
 ````
 `````
 
-Option C holds its own code block, so the choice fence uses four backticks. CommonMark closes a fence only with at least as many backticks as opened it. The answer is stored as the letter, so reordering the options before issue is safe, and after issue the lock refuses it. The marking scheme entry:
-
-```markdown
-### 6
-
-Answer: B
-```
+Option C holds its own code block, so this fence uses four backticks. The answer is stored as the letter, so reordering options before issue is safe. Scheme entry: `### 6` then `Answer: B`.
 
 ### (e) An essay with a criteria grid
 
@@ -685,22 +639,16 @@ Answer: B
 
 "Every lecture should be recorded." Discuss.
 
-Use the planning box first if it helps. It is handed in with your essay but carries no marks.
+Use the planning box first if it helps. It is handed in but carries no marks.
 
 ```answer 7: plan (not marked)
 ```
 
 ```essay (about 800 words)
 ```
-
-# Reference
-
-## Rate of reaction
-
-Rate = 1 ÷ time taken. Its unit is "per minute" when time is in minutes.
 ````
 
-The `# Reference` card serves Question 5, but reference cards come after the last question, so it closes the paper half here. The marking scheme entry:
+Scheme entry:
 
 ```markdown
 ### 7
@@ -721,42 +669,22 @@ The `# Reference` card serves Question 5, but reference cards come after the las
   - 0 to 3: meaning is often unclear
 ```
 
-The planning box is ordinary rough work, not a separate `planning_box` key. Changing Clarity to `(8 marks)` gives "The criteria for 7 add up to 38, but it is worth 40" and "The bands for 'Clarity…' should run from 0 to 8".
+Changing Clarity to `(8 marks)` gives "The criteria for 7 add up to 38, but it is worth 40" and "The bands for 'Clarity…' should run from 0 to 8".
 
 ---
 
 ## 7. Conversion
 
-**PDP pages, by script.** The converter reads the `exam-src` block and makes these changes:
+**PDP pages, by script.** The converter reads each page's `exam-src` block and changes only this: `exam_id` becomes `code`; `duration_minutes: 120` becomes `time allowed: 2 hours` with `timer: shown` (PDP's behaviour); `module` is split into module and code; the dead `reference_theory` key is dropped; switches become `on`/`off`; `python from` and `hand in` lines are added; the `#` line repeating the title goes; `(optional)` becomes `(not marked)` and `fields` becomes `boxes`; bold sub-part leads carrying marks become `####` headings; in 2027 only, four lines of HTML maths become `$…$` and the inline SVG flowchart becomes `pictures/…-figure-1.svg` with a placeholder description. A scheme skeleton follows, one `(draft)` entry per part. Every question, label, listing and starter text is kept as written.
 
-- **Settings:** `exam_id` becomes `code`, `duration_minutes: 120` becomes `time allowed: 2 hours`, `module` is split into module and code, the unused `reference_theory` is dropped, switches become `on` and `off`, and a `hand in` line is added.
-- **Title:** the `#` line that repeats the title is dropped.
-- **Box words:** `(optional)` becomes `(not marked)`, and `fields` becomes `boxes`.
-- **Sub-parts:** a bold lead that carries marks, such as `**(i) Longer word (4 marks).**`, becomes a `####` heading.
-- **The 2027 paper only:** four lines of HTML maths become `$…$`, and the inline SVG flowchart becomes `pictures/…-figure-1.svg`, with a placeholder description for the teacher to write.
-- **Marking scheme:** a skeleton is appended, with one `(draft)` entry per part and `Topic:` and `Outcomes:` lines per question.
-
-Every question, part, label, listing and piece of starter text is kept as written.
-
-| Paper | Source lines | Lines changed | Prototype result |
+| Paper | Source lines | Diff lines | Prototype result |
 |---|---|---|---|
-| Sample, Practice 1, Practice 2 | 266–270 | 32 each | 60 marks, 17 boxes (1 rough work), 13 draft entries, no problems |
-| Exam 2027 | 456 | 36 | 60 marks, 28 boxes (2 rough work), 21 draft entries, no problems |
+| Sample, Practice 1, Practice 2 | 266–270 | 37 each | 60 marks, 17 boxes (1 rough work), 13 draft entries, no problems |
+| Exam 2027 | 456 | 41 | 60 marks, 28 boxes (2 rough work), 21 draft entries, no problems |
 
-The parts the prototype finds with shared marks are the ones `pdp-pages.md` §3.5 counted by hand: 1A and 4B(i)/(ii) in the Sample, and 2(d), 3(a), 4(e) and 4(f) in 2027. **Effort:** the converter exists. For each paper, allow 15 minutes to compare the preview with the original and one to two hours to write the scheme. Add 10 minutes for 2027's figure description. The four papers take six to nine hours in all, and nearly all of that is scheme writing, which no format avoids. The assistant can draft those entries as `(draft)` (`assistant.md` §3.5). The importer for old `pdp-exam/1` submissions (`pdp-pages.md` §9.3) becomes small, because a PDP label is now the name: `"label": "1A (i)"` maps to `q1a.i`.
+The parts found with shared marks are the ones `pdp-pages.md` §3.5 counted by hand (1A and 4B(i)/(ii) in the Sample; 2(d), 3(a), 4(e), 4(f) in 2027). **Effort:** the converter exists; per paper, 15 minutes comparing the preview with the original and one to two hours writing the scheme, which no format avoids; six to nine hours for all four. Old `pdp-exam/1` submissions import easily, because a PDP label is now the name: `"label": "1A (i)"` maps to `q1a.i`. One PDP instruction line ("a small box appears at the top of the screen") describes the old `input()` prompt and must be reworded by hand.
 
-**dewmark's five samples, by script.** They are YAML blocks, so a converter can read them with `build_exam.py`'s own `parse_exam_file` and write paper-first text:
-
-- `question` blocks become headings with marks;
-- `prompt` becomes prose;
-- each `type` maps to a fence or a pair of fences (§1.3);
-- `{word}` gaps become `____`, with each answer moved to `Answers:`;
-- `marking` blocks go below the line;
-- `choose: 2` becomes "Answer any two" in the section heading;
-- `reference` blocks become `# Reference` cards;
-- `data_files` become links, and `setup_code` becomes a `python setup` fence.
-
-The converter must place headings by position, because today's parser attaches each heading to the previous question (`code.md` §1). **Effort:** about 250 lines and a day to write, then a day of review, mostly on the maths sample and its 70 boxes. Splitting its final values into `boxes`, so the workbench can suggest marks, is optional teacher work of about half a day. No sample has been sat, so their names can change freely.
+**dewmark's five samples, by script.** They are YAML blocks, so a converter can read them with `build_exam.py`'s own parser and write paper-first text: `question` blocks become headings with marks, `prompt` becomes prose, each `type` maps to a fence, `{word}` gaps become `____` with the answer moved to `Answers:`, `marking` blocks move below the line, `choose: 2` becomes "Answer any two" in the section heading, `reference` blocks become `# Reference` cards, and `setup_code` becomes a `python setup` fence. It must place headings by position, because today's parser attaches each heading to the previous question (`code.md` §1). **Effort:** about 250 lines and a day to write, a day to review, mostly on the maths 5N18396 sample and its 70 boxes. No sample has been sat, so their names can change freely.
 
 ---
 
@@ -764,20 +692,20 @@ The converter must place headings by position, because today's parser attaches e
 
 **Why a model gets this format right.**
 
-- **The output looks like the input.** A Word exam is already numbered headings with "(15 marks)", and a Word scheme already reads "1(a) … 2 marks …". The model mostly copies text and adds a fence where a box goes, instead of re-encoding the paper into a structure. Its one real judgement, what kind of box a part needs, is the judgement a teacher would make.
-- **There are few ways to fail.** Markdown is what models write most reliably. Nothing depends on indentation except criteria bands, and there any indent is accepted. There are no quoting rules and no YAML typing, and the vocabulary is eleven box words, three material words and `tests`.
-- **The model invents no names.** Names come from the printed numbers by rule.
-- **Coverage is checked by plain text matching.** The paper half keeps the teacher's sentences verbatim, so `assistant.md` §3.4's check ("every source paragraph appears once, or is listed as left out") works without unfolding YAML strings. That design's JSON quote objects still work: a serialiser writing this format from them is a few dozen lines. On the paste route, a large hosted model can write the file directly.
-- **Repair messages point to a line the teacher recognises**, not to a path in a schema.
+- **The output looks like the input.** A Word exam is already numbered headings with "(15 marks)", and a Word scheme already reads "1(a) … 2 marks …". The model mostly copies and adds a fence where a box goes. Its one judgement, what kind of box a part needs, is the one a teacher would make.
+- **Few ways to fail.** Markdown is what models write most reliably. No indentation matters except criteria bands; there are no quoting rules and no YAML typing; the vocabulary is twelve box words, three material words and `tests`.
+- **The model invents no names**; they come from the printed numbers.
+- **Coverage is checked by plain text matching.** The paper half keeps the teacher's sentences, so a check that every source paragraph appears once, or is listed as left out, is a text comparison. That makes decision 19's modes easy to show: "copy without composing" should produce a paper half almost identical to the Word text, and every change made by "tidy the wording" or "rephrase commands as invitations" appears as a plain diff the teacher reads line by line.
+- **The paste route (decision 20) needs only this document's cheat sheet** and the specimen paper; both are short Markdown, the natural thing to paste into any assistant, and the reply is checked by the same builder.
 
-**What goes wrong.** Markdown forgives, so a plausible file can mean something else. A model may write `**Question 1** (15 marks)` in bold instead of as a heading, write "(3m)", nest a part at the wrong level, or kindly write the solution into the starter text. The first three are caught by the warning about marks on a line that is not a heading, the warning about numbered headings without marks, and the sums. The last is caught by the check that no scheme text appears above the line.
+**What goes wrong.** Markdown forgives, so a plausible file can mean something else. A model may write `**Question 1** (15 marks)` in bold, write "(3m)", nest a part at the wrong level, or helpfully put the solution in the starter text. The first three are caught by the warning about marks on a line that is not a heading, the warning about numbered headings without marks, and the sums. The last is caught by the check that no scheme text appears above the line.
 
 **Three builder messages, as a teacher reads them:**
 
 > **Line 91 · Question 2 · marks don't add up**
 > Question 2's parts add up to 11 marks, but its heading says (10 marks).
 > 2(a) is 6 marks and 2(b) is 5 marks.
-> Change one part's marks, or change the heading. The paper's total is checked once this is fixed.
+> Change one part's marks, or change the heading.
 
 > **Line 123 · Question 3 · students would see this**
 > This line starts "Model answer:", but it is above the # Marking scheme line, so every student would read it.
@@ -805,17 +733,18 @@ Write the paper as it would be printed. Write the marking scheme underneath it.
    module code: 5N2746
    total marks: 100
    time allowed: 2 hours
-   hand in: Upload your file to "Biology exam" on Moodle, then raise your hand.
+   timer: shown                       (or none, or enforced)
+   hand in: Upload your PDF and answer file to "Biology exam" on Moodle.
    ---
 
-2  THE FRONT PAGE is anything you write before the first question: the instructions.
+2  THE FRONT PAGE is anything before the first question: the instructions.
 
 3  NUMBERS AND MARKS GO IN HEADINGS. A heading with marks is a question or a part.
-   # Section B: Answer any two questions (40 marks)       optional; "any two" is understood
+   # Section B: Answer any two questions (40 marks)    optional; "any two" is understood
    ## Question 3: Enzymes (20 marks)
-   ### 3(a): Reading the graph (5 marks)                   or just ### (a) …
-   #### (i) The optimum (2 marks)                          only if a sub-part has its own marks
-   Parts must add up to their question, and questions to the total. dewmark checks.
+   ### 3(a): Reading the graph (5 marks)                or just ### (a) ...
+   #### (i) The optimum (2 marks)                       only if a sub-part has its own marks
+   Parts must add up to their question, questions to the total. dewmark checks.
 
 4  AN ANSWER BOX is a fence under its part: three backticks and one word.
    ```answer    a written answer (anything inside is what the box starts with)
@@ -829,14 +758,15 @@ Write the paper as it would be printed. Write the marking scheme underneath it.
    ```choice    options A. B. C. D.   add (choose 2) for more than one
    ```match     1. 2. 3. to be matched with A. B. C. D.
    ```order     A. B. C. to put in order
+   ```photo     a photograph of handwritten work
    ```on-paper  the student answers on paper; you type the mark in later
    End every box with three backticks on a line of their own.
-   Two boxes in one part? Label them:  ```python 4(b): your function   ```python 4(b): your tests
+   Two boxes in one part? Label them:  ```python 4(b): your function
    A box with no marks (rough work, a plan): add (not marked).
 
 5  THINGS STUDENTS READ BUT CANNOT CHANGE
    ```text      code with line numbers      ```pseudo    pseudocode
-   ![say what the picture shows](pictures/cell.svg)       $x^2 - 4$ for maths
+   ![say what the picture shows](pictures/cell.svg)    $x^2 - 4$ for maths
    A table or picture right under a question heading stays in view for all its parts.
 
 6  THE MARKING SCHEME comes after the paper, under one line:
@@ -851,9 +781,8 @@ Write the paper as it would be printed. Write the marking scheme underneath it.
    - 2 marks: a point to tick        the part's marks are the limit
    - **Argument** (15 marks)         a criteria grid, bands indented under it
      - 13 to 15: ...
-   Hint: ...                         practice papers only
    Anything else is guidance for the marker.
-   Put (draft) after a heading you have not checked; an exam cannot be issued until you remove it.
+   Put (draft) after a heading you have not checked; an exam can't be issued until you remove it.
 
 AFTER STUDENTS HAVE SAT A PAPER, DO NOT RENUMBER IT. For next year, change version: 1 to version: 2.
 ````
@@ -862,58 +791,27 @@ AFTER STUDENTS HAVE SAT A PAPER, DO NOT RENUMBER IT. For next year, change versi
 
 ## 10. Self-critique
 
-**1. Meaning depends on small written conventions.** Each of these is quick to learn:
+**1. Meaning rests on small written conventions**: "(3 marks)" and not "(3m)"; "any two" in a heading; `2 marks:` with a colon; " / " with spaces for alternatives; `____` for a gap; "(not marked)". The prototype catches every slip tried, but they are all the same kind of error, something written slightly differently that means something else, and one slip can set off several messages (deleting one heading's marks produced four). The builder must list the cause first, and the preview must say what it read, with an outline of marks and "Marked by …" labels. **What breaks first** is a scheme pasted from Word or written by a model: "Award 2 marks for …", "(2)" and "2m" are read as guidance, not tick-box points. That is safe, since the marker still types a number, but the tick boxes disappear without comment unless the builder warns when a guidance line starts with a number of marks.
 
-- "(3 marks)" and not "(3m)";
-- "any two" in a heading;
-- `2 marks:` with a colon, and not "2 marks for";
-- " / " with spaces for alternatives;
-- `____` for a gap;
-- "(not marked)".
+**2. Two halves joined by numbers, and names that are numbers.** The scheme sits away from its question (the studio's split view helps). Renumbering before issue means editing two places, both cross-checked. After a sitting, renumbering is refused outright unless the version changes; comparing a question across years then needs a "2(c) was 2(b)" map, which is not built. Captions are part of names, so fixing a caption after a sitting depends on the caption-only rule, one more piece of logic that has to be right.
 
-The prototype catches every slip I tried. But all of these errors are the same kind: something written slightly differently that means something else. A single slip also sets off several messages. Deleting one heading's marks produced four, so the builder must list the cause first, and the preview must say what it read, including the outline with marks and "Marked by …" labels. **What breaks first** is real schemes pasted from Word or written by a model. Lines such as "Award 2 marks for …", "(2)" or "2m" will be read as guidance rather than tick-box points. That is safe, because the marker still types a number, but the tick boxes disappear without comment. The builder should warn when a guidance line starts with a number of marks.
-
-**2. Two halves joined by numbers, and names that are numbers.** Four costs follow:
-
-- The scheme sits away from its question, although the studio's split view helps.
-- Renumbering before issue means editing two places, although both are cross-checked.
-- After a sitting, renumbering is refused outright unless the version changes. That is right for the sitting, but comparing a question across years needs the "was" map, which is not built yet.
-- Captions are part of names, so fixing a caption after a sitting depends on the caption-only rule. That rule is one more piece of logic that has to be right.
-
-**3. Light syntax grows into a set of small languages.** Numeric keys already have their own phrasing (±, to, %, d.p., s.f., units). Tests have a second and bands a third. Each new need would add another phrase: stricter significant figures, a separate unit box, per-cell table marks, mechanical error carried forward, randomised versions. The typed-blocks design would add a key for each, which is easier to check and harder to write. Without discipline, by the tenth question type this format would be harder to learn than YAML. The rule must be that each phrase belongs to one registry type, with its own tests and one line on the cheat sheet, and that a need which cannot be said in one short line waits. The format also parts company with dewlab's `question` fence, which writes `{word}` gaps with the answer inline: right for a tutorial, wrong for an exam. Moving a tutorial self-check into a paper therefore takes a mechanical rewrite.
+**3. Light syntax grows into small languages.** Numeric keys have their own phrasing (±, to, %, d.p., s.f., units); tests have a second, bands a third. Each new need adds a phrase: stricter significant figures, per-cell table marks, randomised versions. A typed-block format would add a key for each, easier to check and harder to write. Without discipline this format would be harder to learn than YAML by its tenth question type. The rule must be one phrase per question type, each with its own tests and one line on the cheat sheet; a need that cannot be said in one short line waits. The format also departs from dewlab's `question` fence, which writes `{word}` gaps with the answer inline (`build.py` `parse_question`, line 1515; `DECISIONS_LOG.md` 7.179): right for a tutorial, wrong for an exam, so moving a tutorial self-check into a paper takes a mechanical rewrite.
 
 ---
 
 ## What ships first, and what waits
 
-**First,** alongside the move and the data-loss fixes. The format freezes before the first sitting (`ROADMAP.md`), so this step includes:
+**First**, with the move and the data-loss fixes, because the format must freeze before the first sitting: the whole grammar written down, including kinds whose renderers come later (an unknown kind is refused, so adding a renderer never changes the format); the reader, with settings, headings, sums, names and the lock; the kinds the PDP papers and samples use (`answer`, `python`, `boxes`, `essay`, `choice`, `blanks`, `table`, `text`, `pseudo`, `python setup`, with `maths` shown as plain text until its preview exists); the marker's half (`Answer:`, `Model answer:`, points, criteria, guidance, `(draft)`); `timer` and `breaks`; the PDP converter; and the cheat sheet plus specimen as the paste-route package.
 
-- the whole grammar, written down, including kinds whose renderers come later (an unknown kind is refused, so adding a renderer never changes the format);
-- the reader, with settings, headings, sums, names and the lock;
-- the kinds the PDP papers and the samples use: `answer`, `python`, `boxes`, `essay`, `choice`, `blanks`, `table`, `text`, `pseudo` and `python setup`, with `maths` shown as `answer` until its preview exists;
-- the marker's half: `Answer:`, `Model answer:`, points, criteria, guidance and `(draft)`;
-- the PDP converter.
+**Second**: `match`, `order`, `photo`, `on-paper` and `Choose from:` banks; the maths preview, palette and MathLive; number-key proposals and `tests` in the workbench and practice pages; `show answers`; the samples converter.
 
-**Second:**
-
-- `match`, `order`, `on-paper` and `Choose from:` banks;
-- the maths preview and palette;
-- numeric suggestions and `tests` in the workbench;
-- `Hint:` and `show answers` in practice papers;
-- the samples converter.
-
-**Later:**
-
-- the companion scheme file;
-- the "was" map across versions;
-- rubric tables pasted from Word;
-- checks on the form of an expression;
-- paper variants.
+**Later**: the companion scheme file; the "was" map across versions; rubric tables pasted from Word; paper variants.
 
 ## Decisions for Josh
 
-1. **Where the scheme lives:** at the end of the same file, under `# Marking scheme` (recommended), in a companion file, or inline after each box.
-2. **Names are the printed numbers** (recommended). This means a paper that has been sat cannot be renumbered without a new version.
-3. **Gaps are written `____`, with the answers in the scheme** (recommended). This departs from dewlab's `{word}`.
+1. **Where the scheme lives**: at the end of the same file under `# Marking scheme` (recommended), in a companion file, or inline after each box.
+2. **Names are the printed numbers** (recommended). A paper that has been sat cannot be renumbered without a new version.
+3. **Gaps are `____` with answers in the scheme** (recommended), departing from dewlab's `{word}`.
 4. **`fields` becomes `boxes`** (recommended), and PDP's `text` keeps its meaning of a numbered code listing.
-5. **Set-up code is shown to students, collapsed, by default** (recommended). The hvit paper's instructions already describe it to students.
+5. **When practice tests run**: after the student finishes, matching decision 14 (recommended), or while working, which decision 16 allows but which gives question-by-question feedback.
+6. **Set-up code is shown to students, collapsed** (recommended); the HVIT paper's instructions already describe it.
