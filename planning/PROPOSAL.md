@@ -32,6 +32,8 @@ Each decision gives the question, the options, a recommendation, and what follow
 
 ### D1. Adopt the unified exam format as written (blocks step 3)
 
+**Decided 28 September: yes, paper-first and strict.**
+
 **Question.** Should `format.md` become the format dewmark freezes before any paper is sat?
 
 **Options and recommendation.** The format's own ten choices, with the recommendation first in each:
@@ -53,6 +55,8 @@ Each decision gives the question, the options, a recommendation, and what follow
 
 ### D2. What "practice" means (blocks step 3)
 
+**Decided 28 September: (c) both.** Every exam file also builds a practice page with `hint` blocks the exam build strips out, and Make a practice copy exists too.
+
 **Question.** Today every exam file also builds a practice page with hints, and the studio mockup's Issue screen asks "exam, practice or sample?". The unified format instead puts `kind: exam | practice | sample` in the file, and has no hints. Which?
 
 **Options.**
@@ -68,6 +72,8 @@ Either way, **answers in a practice page are hidden from view, not secret**: a p
 
 ### D3. Where the PDF in every hand-in comes from (blocks step 4)
 
+**Decided 28 September: (c).**
+
 **Question.** Decision 10 requires a PDF with every submission. No design says how an offline page makes one.
 
 **Options.**
@@ -80,6 +86,8 @@ Either way, **answers in a practice page are hidden from view, not secret**: a p
 **What follows.** (a) and (c) cost a PDF library and a font covering Irish and maths characters inside every page (sizes to be measured in step 4), and by my estimate two to three weeks: code with line numbers, photographs, page breaks, and the fingerprint and receipt on every page all take work. The font cannot cover every script, so a student name or answer with a character the font lacks (Arabic, Chinese, Ukrainian) makes the page say so and offer the print button instead. Maths appears in the PDF as its plain-text "reads as" line, never as LaTeX (the typesetting code, such as `\frac{3}{4}`), which a marker in Moodle's grader could not read. (b) costs nothing and keeps the failures above. In Chrome and Edge the student chooses a folder once and both files go there; Firefox and Safari download both (decision 8).
 
 ### D4. What `timer: enforced` does (blocks step 4)
+
+**Decided 28 September: (a).**
 
 **Question.** Decision 11 allows an enforced timer. `student-flow.md` §6 argues that a hard lock is wrong for a student who started late or lost ten minutes to a crash, and its extra time is declared by the student, which only works when nothing is enforced.
 
@@ -96,6 +104,8 @@ Under `enforced`, the time the student began is kept per paper and student numbe
 
 ### D5. What shares the combined start screen (blocks step 4)
 
+**Decided 28 September: (a), two screens.**
+
 **Question.** Decision 9 puts name, number and reading settings on one screen. Josh's own words also put the loading screen there. Should the candidate instructions, the choice of where the answer file goes, extra time and Begin join it?
 
 **Options.**
@@ -110,6 +120,8 @@ Under `enforced`, the time the student began is kept per paper and student numbe
 
 ### D6. The order of steps 3 to 9, and the first paper to be sat (sets the plan)
 
+**Decided 28 September: (a), with a PDP practice paper sat in class first.**
+
 **Question.** The designs proposed four orders: the studio before Python in the room (`architecture.md` §7), the start screens with the data-loss fixes (`student-flow.md` §12), the registry refactor first (`question-types.md` §10), the assistant after the studio (`assistant.md` §8).
 
 **Options.**
@@ -122,6 +134,8 @@ Under `enforced`, the time the student began is kept per paper and student numbe
 
 ### D7. When practice tests run (step 8)
 
+**Decided 28 September: (a).**
+
 **Question.** Decision 16 lets hidden code tests run in practice pages "so students see which pass"; decision 14 shows practice answers only after the whole paper is finished.
 
 **Options.** (a) **`practice tests: after finishing` by default, with `while working` available per paper**; (b) after finishing only; (c) while working only.
@@ -130,6 +144,8 @@ Under `enforced`, the time the student began is kept per paper and student numbe
 
 ### D8. Where a photograph comes from in an exam room (step 8)
 
+**Decided 28 September: (a).**
+
 **Question.** Decision 15 offers photographs of handwritten working. Phones are normally banned in exams, and Safe Exam Browser turns uploads off (`question-types.md` §4.1).
 
 **Options.** (a) **In exams, only from college equipment**: a webcam on the PC, captured by the page, or a picture file from a college tablet or scanner; students' phones only for practice. (b) Students' phones, in exams too. (c) Photographs for practice only.
@@ -137,6 +153,8 @@ Under `enforced`, the time the student began is kept per paper and student numbe
 **Recommendation: (a)**, shipped first for practice papers, with the room check reporting each PC's camera, and exam use after a rehearsal. Photographs are shrunk so answer files stay small. Where PCs have no camera, the teacher uses `on-paper`. (b) raises integrity and data-protection questions for the college.
 
 ### D9. Whether a cloud endpoint may receive student text (step 9)
+
+**Decided 28 September: (c), and permanently: cloud endpoints never receive student text, even after the DPO has answered.**
 
 **Question.** Decision 18 allows local and approved cloud endpoints, at the teacher's responsibility. Two workbench tasks involve student-related text: wording the marker's feedback notes, and (later) comparing two answers that received different marks.
 
@@ -147,7 +165,7 @@ Under `enforced`, the time the student began is kept per paper and student numbe
 
 **Recommendation: (c) now, (b) once the data protection officer has answered.** Decision 18 makes the choice of service the teacher's; it does not move the ETB's duties under GDPR. The ETB is the controller of student data, and only the controller can bring in an outside processor, which needs a signed processing agreement and often a risk assessment first. A teacher's tick creates neither. When the DPO has answered the seven questions in `assistant.md` §6.2, (b) becomes available for the services the college names.
 
-### Also assumed: veto if you disagree
+### Also assumed: confirmed 28 September
 
 These are recommendations the proposal builds on that you have not decided: dewmark **copies** what it takes from dewlab, with a record of the source commit, rather than linking to it (§3.3); **Issue** asks the teacher to confirm "I have sat this paper myself" (§4, stage 6); and the assistant speaks the **OpenAI Chat Completions** format, switching to Ollama's own when it finds Ollama (§8.2). The last is the direct answer to your question about which API to call.
 

@@ -88,3 +88,46 @@ the design's recommendation, the design gives way.
     the format's markdown guide, and the teacher's exam) to give to any
     assistant, and checks the reply. It contains no student data. It is
     also a small exercise in AI literacy.
+
+# Decisions, 28 September 2026
+
+Josh's answers to the nine decisions in `planning/PROPOSAL.md` §2 and the
+three recommendations listed there as assumed.
+
+21. **D1, the exam format: paper-first, strict**, as `format.md` sets
+    out. Headings carry numbers and marks, one short fenced block per
+    answer box, the scheme at the end under `# Marking scheme`, with the
+    strict checks grafted on. `format.md`'s ten smaller choices take
+    their recommended options unless Josh says otherwise.
+22. **D2, practice: both routes.** Every exam file also builds a practice
+    page automatically, with `hint` blocks that the exam build strips out
+    (the leak search covers them, and the practice build has its own save
+    slot); and **Make a practice copy** also exists for a separate
+    practice file. Answers in any practice page are hidden from view,
+    not secret.
+23. **D3, the PDF: the page writes it, with a print button as backup.**
+24. **D4, enforced timer: lock with an invigilator override** by a short
+    code on the sitting card; extra time under an enforced timer uses the
+    same code; Start again does not restart the clock.
+25. **D5, start: two screens.** *Start* (details, four key settings with
+    More settings, the loading checklist) and *Before you begin*
+    (instructions, answer folder, time, Begin).
+26. **D6, order: the student page first**, as `PROPOSAL.md` §9 sets out:
+    format and checker page, exam page, Python in the room, workbench,
+    then the studio.
+27. **First paper: a PDP practice paper sat in class**; a counted exam
+    only after one clean practice sitting.
+28. **D7, practice tests: after finishing by default**, with a per-paper
+    option to run them while working.
+29. **D8, photographs: college equipment only in exams** (the PC's
+    webcam, or a file from a college tablet or scanner); students' phones
+    for practice only. Practice first; exam use after a rehearsal.
+30. **D9, cloud endpoints never receive student text**, even after the
+    data protection officer has answered. Cloud endpoints may run the
+    studio tasks, which hold no student data. This narrows decision 18.
+31. **Sharing with dewlab: copy, with a source record** (the dewlab
+    commit and a checksum per file; CI refuses hand edits).
+32. **Issue requires "I have sat this paper myself"**, after a sitting in
+    the studio's Sit it mode.
+33. **The API: OpenAI Chat Completions**, switching to Ollama's own
+    `/api/chat` when Ollama is found. (Listed as assumed; not vetoed.)
