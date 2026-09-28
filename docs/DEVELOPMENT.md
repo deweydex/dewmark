@@ -47,6 +47,7 @@ python build_exam.py samples/sample-mixed-paper.exam.md \
 python -m pytest
 
 # the browser smoke tests (need Playwright and a Chromium; see each file)
+python -m pytest tests/browser   # the saving rehearsals (Playwright + Chromium)
 python dev/smoke_pages.py
 python dev/smoke_python_page.py
 ```
@@ -61,8 +62,14 @@ Python system, runs cells that query the embedded database, draw a
 chart, and read a spreadsheet, checks the recorded outputs inside the
 submission, and confirms the workbench displays a code answer.
 Together they are the closest thing to a rehearsal that runs without a
-person. The repository's continuous checks run the builder's tests and
-build every sample exam; the browser rehearsals stay hand-run.
+person. `tests/browser/` holds the rehearsals for how the page saves:
+each reproduces a way today's page once lost or mixed up answers
+(a reload on the start screen, pages of one exam sharing a save slot,
+a second window, the workbench counting its own files as students) and
+fails if it returns. The repository's continuous checks run the
+builder's tests, build every sample and the site, and run
+`tests/browser/` and the first smoke test in Chromium; the Python smoke
+test stays hand-run, since it downloads Pyodide.
 
 ## Where the draft falls short of the design
 
@@ -103,6 +110,16 @@ decision against the design documents. The documents remain the target.
   the parser treats every such line as a settings block. Code shown in
   prose must use indented blocks instead, as the reference blocks in
   the two sample papers with code do.
+- **Saved work from before September 2026 is not offered.** The page
+  used to keep one browser slot per exam, shared by its pages
+  (`dewmark:<exam code>`); each page now has its own
+  (`dewmark:<exam code>:<page>`). Work left in the old slot stays in
+  the browser but is no longer offered for restore. No class had sat a
+  dewmark paper, so nothing real was stranded.
+- **Starting again keeps earlier work aside, but nothing yet shows it.**
+  It is stored under `dewmark:<exam code>:<page>:set-aside:<time>`;
+  the invigilator's view that lists and recovers it comes with the new
+  start screens (step 4 of the plan).
 - **Two markers, one folder, is unhandled.** The marking record is a
   single file with no merging; the last save wins.
 - **The accessibility baseline is only partly met.** Answer spaces have

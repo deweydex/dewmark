@@ -196,7 +196,24 @@ async function readZipStoredEntries(bytes) {
   return entries;
 }
 
+/* Files in a submissions folder that are not submissions: the marking
+   scheme a teacher keeps beside them, and the marking record this page
+   itself saves into the folder it is given. Counting them as students
+   put "(no name)" rows in the class list. */
+const NOT_SUBMISSIONS = /_marking_(scheme|record)\.json$/;
+let skippedFiles = [];
+
+function isSubmission(data) {
+  return data && typeof data === "object" && !Array.isArray(data)
+    && data.answers && typeof data.answers === "object"
+    && !data.sections && !data.papers;
+}
+
 async function ingestSubmissionFile(file) {
+  if (NOT_SUBMISSIONS.test(file.name)) {
+    skippedFiles.push(file.name);
+    return;
+  }
   let answersText = null;
   if (file.name.endsWith(".zip")) {
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -211,6 +228,11 @@ async function ingestSubmissionFile(file) {
     return;
   }
   const data = JSON.parse(answersText);
+  if (!isSubmission(data)) {
+    skippedFiles.push(file.name);
+    return;
+  }
+  data.sourceFile = file.name;
   if (scheme && data.exam_code !== scheme.exam_code) {
     problem(file.name + " belongs to a different exam ("
       + data.exam_code + ") and was set aside.");
@@ -223,14 +245,13 @@ async function ingestSubmissionFile(file) {
     const kept = keepNew ? data : existing;
     const other = keepNew ? existing : data;
     kept.others = (existing.others || []).concat(
-      [{ file: other.sourceFile || file.name, saved_at: other.saved_at }]);
+      [{ file: other.sourceFile, saved_at: other.saved_at }]);
     submissions[number] = kept;
     problem("Two submissions for student " + number
       + "; the newest (saved " + kept.saved_at + ") is being marked.");
   } else {
     submissions[number] = data;
   }
-  submissions[number].sourceFile = file.name;
   if (data.exam_version && scheme
       && data.exam_version !== scheme.exam_version) {
     problem("Student " + number + " sat version " + data.exam_version
@@ -240,6 +261,14 @@ async function ingestSubmissionFile(file) {
     problem("Student " + number + "'s file was collected without the "
       + "finish step; it can be marked as normal.");
   }
+}
+
+function reportSkipped() {
+  if (skippedFiles.length) {
+    problem("Not submissions, so not counted as students: "
+      + skippedFiles.join(", ") + ".");
+  }
+  skippedFiles = [];
 }
 
 $("load-subs").addEventListener("click", async () => {
@@ -255,6 +284,7 @@ $("load-subs").addEventListener("click", async () => {
           problem(entry.name + ": " + err.message);
         }
       }
+      reportSkipped();
       renderClassList();
       return;
     } catch (err) { /* fall through to plain file selection */ }
@@ -264,6 +294,7 @@ $("load-subs").addEventListener("click", async () => {
       try { await ingestSubmissionFile(file); }
       catch (err) { problem(file.name + ": " + err.message); }
     }
+    reportSkipped();
     renderClassList();
   });
 });

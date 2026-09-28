@@ -18,13 +18,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 
-# What each built file is. Only the student paper is published for now:
-# today's page gives the student, practice and answer-key builds of one
-# paper a single save slot, so hosting them side by side lets one offer its
-# saved work to another (CLAUDE.md, third trap). Step 2 of the plan fixes
-# that; the practice version and answer key join this list then.
+# What each built file is, in the order a teacher would want them. Each
+# page keeps its own save slot and the answer key saves nothing
+# (DECISIONS_LOG.md, entry 0.6), so all three can sit side by side.
 VARIANTS = (
     (".student.html", "Student paper"),
+    (".practice.html", "Practice version"),
+    (".answer-key.html", "Answer key"),
 )
 
 
@@ -149,9 +149,8 @@ question, and export graded papers and a marks spreadsheet. Nothing leaves
 your computer.</p>
 
 <h2>Try a sample</h2>
-<p>Each sample is built fresh from its exam file in the repository. The
-practice versions and answer keys will join them once the drafts stop
-sharing one save slot between them.</p>
+<p>Each sample is built fresh from its exam file in the repository, as a
+student paper, a practice version with hints, and an answer key.</p>
 <ul>{samples}</ul>
 
 <h2>Before dewmark</h2>

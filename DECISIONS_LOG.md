@@ -64,3 +64,34 @@ They remain in history at commit `b3823f91799f` (the last commit that
 holds them), and the proposal's links point there. A tag,
 `design-round-2026-09`, can be added to that commit from any clone with
 push rights.
+
+**0.6 — Step 2: the page writes only once the student is in, and each
+page of an exam keeps its own saved work.** The code audit found four
+ways the drafts lost or mixed up answers, and a browser rehearsal in
+`tests/browser/test_saving.py` now reproduces each (every one failed
+before the fix):
+
+- *A reload, a closed tab, or Begin on the start screen wiped the
+  saved work being offered for restore*, because the unload handler and
+  the first save wrote the start screen's blank state. Now nothing is
+  written until Begin or Continue (`canWrite`), and Begin with saved
+  work present asks first and copies the earlier work to
+  `dewmark:<exam code>:<page>:set-aside:<time>` before starting afresh:
+  set aside, never deleted.
+- *The student paper, the practice paper and the answer key shared one
+  save slot* (`dewmark:<exam code>`), so a practice attempt was offered
+  as the student's exam work. Each page now has its own
+  (`dewmark:<exam code>:<page>`), the saved record names its page, and
+  the answer key saves nothing at all. Work in the old shared slot is
+  no longer offered; no class had sat a dewmark paper.
+- *A second window, told it "will not save", still wrote over the first
+  window's work when it closed.* It now never writes.
+- *The workbench counted the marking scheme and its own marking record
+  as students* when they sat in the submissions folder, and it saves the
+  record into that folder itself. It now skips any file that is not a
+  submission, by name and by content, and says which it skipped.
+
+With the shared slot gone, the site publishes each sample's practice
+version and answer key again. *Changing it:* the per-page key is part of
+the saved-data contract from now on; renaming it strands saved work.
+
