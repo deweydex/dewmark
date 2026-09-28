@@ -60,5 +60,7 @@ two recreated real papers in `samples/` will not be reused as live exams
 `main`** (decision 2). The seven research reports, four designs, three
 format proposals, the review, screenshots and probe scripts were removed
 from `main` once `planning/PROPOSAL.md` and `docs/EXAM_FORMAT.md` existed.
-They remain at the tag `design-round-2026-09`, and the proposal's links
-point there.
+They remain in history at commit `b3823f91799f` (the last commit that
+holds them), and the proposal's links point there. A tag,
+`design-round-2026-09`, can be added to that commit from any clone with
+push rights.

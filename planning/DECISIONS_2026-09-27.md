@@ -1,7 +1,8 @@
 # Decisions, 27 September 2026
 
 Josh's answers to the questions raised by the four designs in
-`planning/research-2026-09-27/design/`. Where Josh's answer differs from
+`planning/research-2026-09-27/design/` (kept in history at
+commit `b3823f91799f`; the exam format is now `docs/EXAM_FORMAT.md`). Where Josh's answer differs from
 the design's recommendation, the design gives way.
 
 ## The move and the repository

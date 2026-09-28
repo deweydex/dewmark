@@ -1,5 +1,18 @@
 # The exam file: the unified format
 
+> **Status.** Adopted on 28 September 2026 (decision 21 in
+> `planning/DECISIONS_2026-09-27.md`), with the ten choices in
+> "Decisions for Josh" at the end taking their recommended options. The
+> builder does not read this format yet: it arrives with step 3 of the
+> plan (`planning/PROPOSAL.md` §9), and until then `build_exam.py` reads
+> the older format in `planning/THE_EXAM_FILE.md`. The three rival
+> proposals this document judges, and the other files it names, are kept
+> in history at commit `b3823f91799f` under
+> `planning/research-2026-09-27/design/`. Decision 22 later added an
+> automatic practice build with `hint` blocks (see the proposal's D2);
+> this document does not yet describe those.
+
+
 *Design round 2, 2026-09-27. This document judges the three rival proposals (`format-paper-first.md`, `format-typed-blocks.md`, `format-one-fence-family.md`) and sets out the one format dewmark should build. It follows Josh's twenty decisions (`planning/DECISIONS_2026-09-27.md`); where a proposal and a decision differ, the decision wins. Every claim marked **(run)** was checked with one of the three prototypes, or with `unified.py`, a patched copy of the paper-first reader that implements the changes below. Scratch files, including the hostile test papers, are in `/tmp/claude-0/-home-user/9d1373ae-0961-5985-b2c8-adad08e8b8ed/scratchpad/design-round/format-judge/` (`pf/`, `tb/`, `of/`, `unified.py`, `specimen.exam.md`, `pdp-sample.exam.md`). None of it is in either repository.*
 
 ## The verdict in brief
