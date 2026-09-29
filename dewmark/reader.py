@@ -90,6 +90,7 @@ def read(text):
     return {
         "reader": READER_VERSION,
         "settings": {k: v for k, v in settings.items() if not k.startswith("_")},
+        "setting_lines": settings.get("_lines", {}),
         "front": state.front,
         "sections": state.sections,
         "units": state.units,
@@ -381,9 +382,11 @@ class _Paper:
                     f"The box labelled \"{label}\" sits under {owner_unit['label']}.",
                     f"Label it with {owner_unit['label']}'s number, or move it.",
                     owner_unit["label"])
-            name = name_of(num, caption)
+            stem = name_of(num)
         else:
-            name = owner + ("." + slug(caption) if caption and slug(caption) else "")
+            stem = owner
+        # The stem is the number's name; a caption, if any, follows it.
+        name = stem + ("." + slug(caption) if caption and slug(caption) else "")
         if name in self.boxes:
             self.messages.problem(
                 "duplicate-name", number,
@@ -410,7 +413,7 @@ class _Paper:
                     "Move it below # Marking scheme, under the part it marks.",
                     self.units[owner]["label"])
         self.boxes[name] = {
-            "name": name, "kind": kind, "unit": owner, "line": number,
+            "name": name, "stem": stem, "kind": kind, "unit": owner, "line": number,
             "label": label or self.units[owner]["label"], "caption": caption,
             "notes": notes, "unmarked": unmarked, "body": "\n".join(body),
             "inner": inner_parts(kind, body),

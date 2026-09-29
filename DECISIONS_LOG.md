@@ -126,5 +126,40 @@ Two departures from the format's text:
 *Changing it:* the names this reader makes (`dewmark/numbers.py`) become
 the keys saved answers are stored under once a paper in this format is
 sat; changing how a printed number becomes a name after that strands
-saved work, which is what the names lock, next, will enforce.
+saved work, which is what the names lock (entry 0.8) enforces.
 
+**0.8 — The names lock.** `dewmark/lock.py` holds an issued paper's
+names still (`docs/EXAM_FORMAT.md` §4.4). The first issue of a version
+records every part and box with its kind, marks, printed label and title,
+and the text of every option and match item; after that, renumbering,
+removing, re-marking or retyping a locked part or box, changing an
+option's text or the number of gaps in a box, and changing the paper's
+`code` are refused until `version` changes. A caption fix keeps the
+stored name, and moving whole questions warns. `tests/test_lock.py` makes
+each change to a small issued paper.
+
+Where it goes beyond or departs from the format's text:
+
+- *One lock file per folder, holding each paper under its code.* The
+  proposal draws `names.lock.json` in a folder of one paper, and
+  `architecture.md` §6 sketches one paper to a file. The four PDP papers
+  share one folder, so a teacher's folder may well hold several; each
+  paper's entry also records its file name, which is how a changed
+  `code` is caught.
+- *How a renumbered part is recognised* is not in the format: by its
+  title, now under another number, or, when the title changed too, by a
+  new number standing in its place among the parts. A question
+  renumbered with its parts is reported once.
+- *Adding an option to a locked box is refused*, although it misplaces
+  no stored answer: students chose from a different set.
+- *Until the studio's Issue button (step 7), a command writes the lock*:
+  `python -m dewmark lock FILE --sitting NAME`. It refuses a paper with
+  problems but not one with `(draft)` scheme entries, since the scheme
+  is not locked. The date recorded is the day of locking.
+- *A lock written by another reader version warns rather than refuses.*
+  The names are compared with the lock either way, so a reader change
+  that moved a name is still caught as a change.
+
+*Changing it:* the lock file's shape, `dewmark-names/1`, is a contract
+from the first real issue; a lock written for a sat paper must stay
+readable by every later dewmark.

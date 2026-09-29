@@ -10,13 +10,15 @@
 > marks and sums (§4.2), fences, kinds and notes (§4.3), permanent names
 > (§4.4), the marker's half with keys, points, criteria, model answers,
 > tests and drafts (§4.6, §4.7), and gives the messages of §7 with stable
-> codes. Not yet built: the names lock (§4.4), the page search and the
-> mutation test (§4.5 layers 3 and 4, which need the renderer), the
-> dewlab import form (§4.11), and the JSON schema for a connected model
-> (§4.10). No page is built from this format yet; until the exam page
-> of step 4, `build_exam.py` builds pages from the older format in
-> `planning/THE_EXAM_FILE.md`. Two places where the reader departs from
-> the text below are in `DECISIONS_LOG.md`, entry 0.7. The three rival
+> codes. **The names lock** (§4.4) is `dewmark/lock.py`: `python -m
+> dewmark lock FILE --sitting NAME` writes it, and `check` reads it.
+> Not yet built: the page search and the mutation test (§4.5 layers 3
+> and 4, which need the renderer), the dewlab import form (§4.11), and
+> the JSON schema for a connected model (§4.10). No page is built from
+> this format yet; until the exam page of step 4, `build_exam.py`
+> builds pages from the older format in `planning/THE_EXAM_FILE.md`.
+> Where the reader and the lock depart from the text below is in
+> `DECISIONS_LOG.md`, entries 0.7 and 0.8. The three rival
 > proposals this document judges, and the other files it names, are kept
 > in history at commit `b3823f91799f` under
 > `planning/research-2026-09-27/design/`. Decision 22 later added an
@@ -219,6 +221,8 @@ A box noted `(not marked)` is rough work: saved, printed and shown to the marker
 - adding a box is always allowed.
 
 A practice page restores saved work only from the same version, so a practice paper edited mid-term never puts an old answer in a new part.
+
+**As built** (`dewmark/lock.py`; `DECISIONS_LOG.md` 0.8). The lock is `names.lock.json` beside the exam file. It holds each paper in the folder under its `code`, each version under its `version`, and each version's sittings. Until the studio's Issue button exists (step 7), `python -m dewmark lock FILE --sitting "2026-10-20 Group A"` writes it, and refuses a paper with problems; issuing the same version again adds the sitting and locks any new boxes. `python -m dewmark check` reads the lock whenever one sits beside the file. A part counts as renumbered when its title now sits under another number, or, if its title changed too, when a new number stands in its place; a question renumbered with its parts is reported once. Changing the `code` of a file that has been issued is refused. The problems are `renumbered-after-sitting`, `locked-part-removed`, `locked-box-removed`, `locked-marks-changed`, `locked-kind-changed`, `locked-options-changed`, `locked-inner-changed` (the number of gaps, lines or cells) and `code-changed-after-issue`; the warnings are `caption-changed`, `questions-moved` and `lock-reader-changed`.
 
 **Why printed numbers, not written names.** The number is what the student, the scheme, the graded paper, the appeal and the external authenticator all quote. A written name is a second identity a teacher cannot see on the paper and a model must invent; that was typed blocks' price. The case it guards against, renumbering after a sitting, is exactly the case that should be refused: the student saw "2(b)".
 
@@ -951,9 +955,9 @@ Every message has three parts: where (line, number, short title), what is wrong,
 > The `choice` box that starts on line 22 was closed by the three backticks on line 30, which look like the end of a code listing inside option C.
 > Open the box with four backticks (```` ```` ````) and close it with four.
 
-> **Line 113 · 2(b) · already sat** (`renumbered-after-sitting`)
-> Students sat this paper on 20 October 2026 (Group A), and their answers to 2(b) are stored under that number. The part on line 113 is now numbered 2(c).
-> If this is next year's paper, change `version: 1` to `version: 2`. The October sitting keeps its own copy and its marks. If the change was a slip, put the number back.
+> **Line 113 · 2(c) · already sat** (`renumbered-after-sitting`)
+> This paper was issued for "2026-10-20 Group A", and the answers to 2(b), "Height", are stored under that number. It is now numbered 2(c).
+> If that was a slip, put it back. If this is a new version of the paper, change "version: 1" to "version: 2"; the earlier sittings keep their own record.
 
 > **Line 201 · 1(c) · the key and the options disagree** (`key-check-phrase`)
 > The key says `B (range(1, 6))`, but option B reads `for n in range(5): print(n)`. Option A contains "range(1, 6)".
