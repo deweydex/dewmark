@@ -1,5 +1,7 @@
 """python -m dewmark check EXAM_FILE [EXAM_FILE ...]
 python -m dewmark lock EXAM_FILE --sitting "2026-10-20 Group A"
+python -m dewmark package MODE FILE [--set "key: value" ...] [-o OUT]
+python -m dewmark reply MODE ORIGINAL REPLY [--set "key: value" ...] [-o OUT]
 
 check reads each exam file in the format of docs/EXAM_FORMAT.md and prints
 what it found and every problem and warning. If names.lock.json sits beside
@@ -10,6 +12,15 @@ lock records that a paper has been issued for a sitting, in
 names.lock.json beside the file (§4.4). It refuses a paper with problems.
 After that, check refuses a change that would strand stored answers,
 unless the paper's version setting changes.
+
+package makes the text to give an assistant (the paste route, §4.10): MODE
+is copy, tidy, plain, udl or invite. copy reads a Word paper and needs its
+details, as --set "code: my-paper" and so on; the others read an exam file
+and leave its marking scheme out.
+
+reply checks what the assistant returned against the paper it was given,
+refuses a change to anything but wording, lists each change of wording,
+and with -o writes the file with every change made.
 """
 
 import datetime
@@ -17,7 +28,9 @@ import os
 import sys
 
 from . import lock as names_lock
+from .package import ABOUT_KEYS, MODES, build_package
 from .reader import read
+from .reply import check_reply
 
 
 def summary(paper):
@@ -87,11 +100,84 @@ def lock(path, sitting, on=None):
     return 0
 
 
+def _options(argv):
+    """Split `--set "key: value"` and `-o OUT` from the other arguments."""
+    rest, about, out, index = [], {}, None, 0
+    while index < len(argv):
+        if argv[index] == "--set" and index + 1 < len(argv):
+            key, _, value = argv[index + 1].partition(":")
+            about[key.strip()] = value.strip()
+            index += 2
+        elif argv[index] == "-o" and index + 1 < len(argv):
+            out = argv[index + 1]
+            index += 2
+        else:
+            rest.append(argv[index])
+            index += 1
+    return rest, about, out
+
+
+def _read_text(path):
+    with open(path, encoding="utf-8") as handle:
+        return handle.read()
+
+
+def package(argv):
+    rest, about, out = _options(argv)
+    if len(rest) != 2 or rest[0] not in MODES:
+        print("package needs a mode (" + ", ".join(MODES) + ") and a file.")
+        return 2
+    made = build_package(rest[0], _read_text(rest[1]), about)
+    for problem in made["problems"]:
+        print("  " + problem)
+    if made["problems"]:
+        print("  (for copy, give each with --set: " + ", ".join(ABOUT_KEYS) + ")")
+        return 1
+    for finding in made["findings"]:
+        print(f"  Check line {finding['line']}: {finding['what']} ({finding['excerpt']}). "
+              "Is it student information?")
+    if out:
+        with open(out, "w", encoding="utf-8") as handle:
+            handle.write(made["text"])
+        print(f"{out}: {len(made['text'].splitlines())} lines for the \"{rest[0]}\" mode.")
+    else:
+        print(made["text"])
+    return 0
+
+
+def reply(argv):
+    rest, about, out = _options(argv)
+    if len(rest) != 3 or rest[0] not in MODES:
+        print("reply needs a mode (" + ", ".join(MODES) + "), the paper and the reply.")
+        return 2
+    result = check_reply(_read_text(rest[1]), _read_text(rest[2]), rest[0], about)
+    for message in result["messages"]:
+        print("  " + str(message).replace("\n", "\n  "))
+    for hunk in result["hunks"]:
+        print(f"  Change at line {hunk['line']}" + (f" ({hunk['where']})" if hunk["where"] else ""))
+        print("".join(f"    - {l}\n" for l in hunk["before"]) +
+              "".join(f"    + {l}\n" for l in hunk["after"]), end="")
+    if result["kept"] is not None:
+        print(f"  The reply keeps {result['kept']:.0%} of your words, in order.")
+    if result["notes"]:
+        print("  The assistant's notes:\n    " + result["notes"].replace("\n", "\n    "))
+    print("  " + ("Accepted." if result["ok"] else "Refused: nothing was written."))
+    if result["ok"] and out:
+        with open(out, "w", encoding="utf-8") as handle:
+            handle.write(result["text"])
+        print(f"  {out}: written with {len(result['hunks'])} change(s) made.")
+    return 0 if result["ok"] else 1
+
+
 def main(argv):
     if len(argv) >= 2 and argv[0] == "check":
         return check(argv[1:])
     if len(argv) == 4 and argv[0] == "lock" and argv[2] == "--sitting":
         return lock(argv[1], argv[3])
+    if argv and argv[0] == "package":
+        return package(argv[1:])
+    if argv and argv[0] == "reply":
+        return reply(argv[1:])
     print(__doc__.strip())
     return 2
 

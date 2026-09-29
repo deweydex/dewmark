@@ -163,3 +163,62 @@ Where it goes beyond or departs from the format's text:
 *Changing it:* the lock file's shape, `dewmark-names/1`, is a contract
 from the first real issue; a lock written for a sat paper must stay
 readable by every later dewmark.
+
+**0.9 — The paste route: a package to give an assistant, and a check of
+its reply.** `dewmark/package.py` builds the text a teacher gives any
+assistant the college allows, and `dewmark/reply.py` checks what comes
+back (decisions 19 and 20; `docs/EXAM_FORMAT.md` §4.10). The five modes are
+decision 19's: `copy` (a Word paper into the format, changing no word),
+`tidy`, `plain` (accessible language), `udl` and `invite` (commands as
+invitations). The last four change wording only, and a reply is refused,
+not flagged, if it changes a setting, a heading's number, marks or "any
+N", a line of an answer box or listing, a number, a formula or a picture's
+file name, or carries a scheme. Every change of wording that passes is
+shown for the teacher to take or leave, one by one; leaving all of them
+gives the teacher's file back byte for byte. `tests/test_paste.py` makes
+each kind of bad reply, and has a fake assistant reword the four real PDP
+papers.
+
+Where it departs from, or settles, what the plan left open:
+
+- *A whole reply is refused, never part of one.* A reply with a good
+  rewording and a changed number could otherwise be half accepted into a
+  paper that no longer matches what the assistant was asked to keep. The
+  teacher sees every reason at once, in one round.
+- *Wording inside an answer box is out of reach for now.* The options of
+  a `choice`, the sentences of `blanks` and the lines of `boxes` are
+  fixed, because the scheme's keys, the stored answers and the names lock
+  are all tied to them. A tidy of an option's spelling has to be made by
+  hand until a mode can promise to keep letters, item numbers and gap
+  counts.
+- *`copy` warns about words and refuses only a lost number.* §4.10 says
+  the studio can check a copy "by matching paragraphs"; the check matches
+  words in order, ignoring "marks", "Question" and "Section", which a
+  conversion adds. A number missing from the reply entirely is refused
+  (`reply-number-lost`); one that appears fewer times is a warning,
+  because a Word paper often marks a question twice and a paper in this
+  format marks it once.
+- *`copy` adds a marking scheme of `(draft)` entries to what it returns*,
+  one for each part with marks of its own, as the PDP converter does, so
+  an exam that has none does not fail on that alone and the teacher has a
+  list of what to write.
+- *The student-information scan asks; it never refuses.* A paper has
+  numbers of its own (a mark, a year, a formula), so a long number or a
+  PPS-shaped one is a question for the teacher. The package itself can
+  hold no submission, since dewmark holds none at this step.
+- *Drafting model answers and schemes stays in step 9.* The scheme is
+  never put in a package, and the assistant is told not to write one.
+- *One short specimen paper stands in for every subject.* `copy` sends
+  `dewmark/data/specimen.exam.md`, which has a coding question and a
+  short-answer one; biology and maths specimens arrive with the subject
+  waves of step 8. The cheat sheet is `docs/EXAM_FORMAT.md` §8, kept in
+  `dewmark/data/cheat-sheet.txt` and checked against it by a test.
+
+The words that ask an assistant to change wording (each mode's task text
+in `package.py`) follow the voice section of dewlab's style guide: plain
+words, no idioms, and a question's verb kept so its demand does not
+change; they are addressed to an assistant, and the paper's students see
+only what a teacher accepts. *Changing it:* the two pairs of marker lines
+(`=== BEGIN PAPER ===`, `=== BEGIN NOTES ===` and their ends) join a
+package to the check of its reply; changing them only affects packages
+already handed to an assistant.

@@ -1,0 +1,67 @@
+THE DEWMARK EXAM FILE ON ONE PAGE
+Write the paper as it would be printed. Write the marking scheme underneath it.
+
+1  SETTINGS go at the very top, between two lines of three dashes.
+   ---
+   code: bio-5n2746-jan-2027       never change this once students have sat it
+   kind: exam                      or practice, or sample
+   title: January Examination
+   module: Biology
+   module code: 5N2746
+   total marks: 100
+   time allowed: 2 hours
+   timer: shown                    or none, or enforced
+   hand in: Upload your PDF and answer file to "Biology exam" on Moodle.
+   ---
+
+2  THE FRONT PAGE is anything before the first question: the instructions.
+
+3  NUMBERS AND MARKS GO IN HEADINGS. A heading with marks is a question or a part.
+   # Section B: Answer any two questions (40 marks)   optional; "any two" is understood
+   ## Question 3: Enzymes (20 marks)
+   ### 3(a): Reading the graph (5 marks)               or ### (a) ...
+   #### (i) The optimum (2 marks)                      only if a sub-part has its own marks
+   Parts must add up to their question, questions to the total. dewmark checks.
+
+4  AN ANSWER BOX is a fence under its part: three backticks and one word.
+   ```answer      a written answer (anything inside is what the box starts with)
+   ```maths       written maths, with a preview and symbols
+   ```essay (about 800 words)
+   ```boxes       one box per line; ____ shows where the box goes;
+                  a last line "Choose from: a / b / c" makes drop-downs
+   ```blanks      sentences with ____ gaps, or [a / b / c] to choose from
+   ```table       a table with ____ in the cells to fill
+   ```choice      options A. B. C. D.    add (choose 2) for more than one
+   ```match       1. 2. 3. to be matched with A. B. C. D.
+   ```order       A. B. C. to put in order
+   ```photo       a photograph of handwritten work
+   ```on-paper    answered on paper; you type the mark in later
+   ```python exec code the student writes and runs (inside: the starting code)
+   ```code        code or pseudocode the student writes but cannot run
+   End every box with three backticks on a line of their own.
+   Two boxes in one part? Label them:   ```python exec 4(b): your tests
+   A box with no marks (rough work, a plan): add (not marked).
+
+5  THINGS STUDENTS READ BUT CANNOT CHANGE
+   ```python   ```sql   ```text   ```pseudo     code with line numbers
+   ![say what the picture shows](pictures/cell.svg)     $x^2 - 4$ for maths
+   A table or picture right under a question heading stays in view for all its parts.
+   ```material Figure 2    for something only the later parts use
+
+6  THE MARKING SCHEME comes after the paper, under one line:
+   # Marking scheme
+   ### 3(a)                          the part's number, as printed
+   Answer: B                         a letter, a word, a phrase
+   Answer: 4.88 ± 0.01 m             a number, how close counts, the unit
+   Answers:                          one per box or gap, in order
+   1. cell wall
+   2. vacuole / large vacuole        " / " separates accepted answers
+   Model answer: ...                 or a ```python block
+   - 2 marks: a point to tick        the part's marks are the limit
+   - **Argument** (15 marks)         a criteria grid, bands indented under it
+     - 13 to 15: ...
+   Anything else is guidance for the marker.
+   Put (draft) after a heading you have not checked; an exam can't be issued until you remove it.
+
+PRESS CHECK. Every problem has a line number and a fix.
+AFTER STUDENTS HAVE SAT A PAPER, DO NOT RENUMBER IT. For next year, change version: 1 to version: 2.
