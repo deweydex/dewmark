@@ -12,6 +12,8 @@ pip install -r requirements.txt -r requirements-dev.txt   # first time only
 python -m pytest                                           # the builder's tests
 python build_exam.py samples/sample-mixed-paper.exam.md --output /tmp/out
 python dev/build_site.py                                   # the Pages site, into site/
+python -m dewmark check samples/pdp-5n2927/*.exam.md       # the new reader (docs/EXAM_FORMAT.md)
+python -m dewmark lock FILE --sitting "2026-10-20 Group A"  # the names lock, at issue
 python dev/smoke_pages.py                                  # browser rehearsal (Playwright + Chromium)
 ```
 
@@ -52,7 +54,8 @@ precedent.
 **Names are a contract.** An exam's code, its answer names and the
 format version are what saved answers and marking records are keyed on.
 Once a paper has been sat, renaming any of them strands that work. The
-same lesson as dewlab's cell ids.
+same lesson as dewlab's cell ids. For papers in the new format,
+`names.lock.json` beside the file enforces it (`dewmark/lock.py`).
 
 **The start screen must never write.** The page holds a blank state
 until the student presses Begin or Continue, and writing it (from a

@@ -95,3 +95,71 @@ With the shared slot gone, the site publishes each sample's practice
 version and answer key again. *Changing it:* the per-page key is part of
 the saved-data contract from now on; renaming it strands saved work.
 
+**0.7 — The reader for the new exam format, and where it departs from the
+format's text.** Step 3 begins with `dewmark/reader.py`, which reads a
+file in the format of `docs/EXAM_FORMAT.md` into its settings, sections,
+questions, parts, answer boxes with their permanent names, and marking
+scheme, with a coded message for every problem. It grew from the format
+judge's prototype (`unified.py`, kept in history with the research) and
+is tested with the judge's hostile cases (`tests/test_reader.py`). The
+four PDP papers convert with `dewmark/convert_pdp.py` and read with no
+problems; the converted files are in `samples/pdp-5n2927/`, each with a
+marking-scheme skeleton of `(draft)` entries to fill.
+
+Two departures from the format's text:
+
+- *Structure is read line by line, not with markdown-it-py.* §4.1 says
+  one CommonMark reader in pure Python reads the file. The reader follows
+  CommonMark's fence rules (a fence closes on a line of at least as many
+  of its own character, so four backticks hold a three-backtick listing)
+  but reads headings, fences and scheme lines itself, with only Python's
+  standard library, so nothing need be installed for the studio to run it
+  in the browser. A CommonMark renderer is still the plan for turning
+  prose into the page, in step 4.
+- *A key for a word bank or a drop-down needs one choosable answer, not
+  all.* §5(c) says "every keyed label in 5(d) is in its bank", but its own
+  key for 5(d) accepts "vacuole / large vacuole / permanent vacuole"
+  against a bank offering only "vacuole". The reader refuses a key none of
+  whose alternatives a student could choose, and leaves harmless extra
+  alternatives alone.
+
+*Changing it:* the names this reader makes (`dewmark/numbers.py`) become
+the keys saved answers are stored under once a paper in this format is
+sat; changing how a printed number becomes a name after that strands
+saved work, which is what the names lock (entry 0.8) enforces.
+
+**0.8 — The names lock.** `dewmark/lock.py` holds an issued paper's
+names still (`docs/EXAM_FORMAT.md` §4.4). The first issue of a version
+records every part and box with its kind, marks, printed label and title,
+and the text of every option and match item; after that, renumbering,
+removing, re-marking or retyping a locked part or box, changing an
+option's text or the number of gaps in a box, and changing the paper's
+`code` are refused until `version` changes. A caption fix keeps the
+stored name, and moving whole questions warns. `tests/test_lock.py` makes
+each change to a small issued paper.
+
+Where it goes beyond or departs from the format's text:
+
+- *One lock file per folder, holding each paper under its code.* The
+  proposal draws `names.lock.json` in a folder of one paper, and
+  `architecture.md` §6 sketches one paper to a file. The four PDP papers
+  share one folder, so a teacher's folder may well hold several; each
+  paper's entry also records its file name, which is how a changed
+  `code` is caught.
+- *How a renumbered part is recognised* is not in the format: by its
+  title, now under another number, or, when the title changed too, by a
+  new number standing in its place among the parts. A question
+  renumbered with its parts is reported once.
+- *Adding an option to a locked box is refused*, although it misplaces
+  no stored answer: students chose from a different set.
+- *Until the studio's Issue button (step 7), a command writes the lock*:
+  `python -m dewmark lock FILE --sitting NAME`. It refuses a paper with
+  problems but not one with `(draft)` scheme entries, since the scheme
+  is not locked. The date recorded is the day of locking.
+- *A lock written by another reader version warns rather than refuses.*
+  The names are compared with the lock either way, so a reader change
+  that moved a name is still caught as a change.
+
+*Changing it:* the lock file's shape, `dewmark-names/1`, is a contract
+from the first real issue; a lock written for a sat paper must stay
+readable by every later dewmark.

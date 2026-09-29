@@ -18,6 +18,28 @@ working habits:
 plain-spoken documents, why-comments in code, and tests beside every
 program.
 
+## The new reader
+
+`dewmark/` is the new builder, growing beside `build_exam.py` one step of
+the plan at a time. Today it holds the reader for the exam format in
+`docs/EXAM_FORMAT.md` (`dewmark/reader.py`, with `settings.py`,
+`numbers.py`, `kinds.py` and `scheme.py`), the names lock that holds an
+issued paper's names still (`dewmark/lock.py`), and the converter for the
+hand-built PDP pages (`dewmark/convert_pdp.py`). It uses only Python's
+standard library, so the studio can run it unchanged in the browser.
+
+```sh
+python -m dewmark check samples/pdp-5n2927/*.exam.md
+python -m dewmark lock FILE --sitting "2026-10-20 Group A"
+python -m dewmark.convert_pdp samples/pdp-5n2927 experiments/pdp-5n2927/*.html
+```
+
+`tests/test_reader.py` holds the format's hostile cases as tests, reads
+the specimen paper in `tests/fixtures/`, and fails if the converted PDP
+papers in `samples/pdp-5n2927/` drift from what the converter writes.
+`tests/test_lock.py` issues a small paper, changes it the ways a teacher
+might after a sitting, and checks what the lock refuses and allows.
+
 ## Layout
 
 ```text

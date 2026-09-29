@@ -124,6 +124,7 @@ computers or in private storage.
   planning/         the design documents listed above
   experiments/      the hand-built exams that came before dewmark
   build_exam.py     the exam builder: exam file in, finished pages out
+  dewmark/          the new builder, starting with the reader for docs/EXAM_FORMAT.md
   assets/           the styles and behaviour built into every exam page
   workbench/        the marking workbench page
   samples/          openly shareable sample exams
