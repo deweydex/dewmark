@@ -126,6 +126,7 @@ computers or in private storage.
   build_exam.py     the exam builder: exam file in, finished pages out
   dewmark/          the new builder, starting with the reader for docs/EXAM_FORMAT.md
   assets/           the styles and behaviour built into every exam page
+  checker/          the exam file checker page (a template; dev/build_site.py builds it)
   workbench/        the marking workbench page
   samples/          openly shareable sample exams
   tests/            the builder's automated tests

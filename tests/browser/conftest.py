@@ -41,20 +41,30 @@ def find_chromium():
     return None
 
 
+def _proxy():
+    """Behind a proxy that re-signs HTTPS (a sandbox, not CI), Chromium has to
+    be told to use it and to trust it. Only the checker page reaches out, to
+    load Python from a CDN; every other page here is a file."""
+    return os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+
+
 @pytest.fixture(scope="session")
 def browser():
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
         _unavailable("playwright is not installed")
+    options = {}
+    if _proxy():
+        options = {"proxy": {"server": _proxy()}, "args": ["--ignore-certificate-errors"]}
     with sync_playwright() as playwright:
         try:
-            launched = playwright.chromium.launch()
+            launched = playwright.chromium.launch(**options)
         except Exception:
             chromium = find_chromium()
             if not chromium:
                 _unavailable("no Chromium to launch")
-            launched = playwright.chromium.launch(executable_path=chromium)
+            launched = playwright.chromium.launch(executable_path=chromium, **options)
         yield launched
         launched.close()
 
@@ -77,6 +87,38 @@ def built(tmp_path_factory):
 def context(browser):
     """A fresh browser profile: its own storage, shared by every page
     opened in it, as the pages of one college PC's browser are."""
-    ctx = browser.new_context(accept_downloads=True)
+    ctx = browser.new_context(accept_downloads=True, ignore_https_errors=bool(_proxy()))
     yield ctx
     ctx.close()
+
+
+class Checker:
+    """The checker page, open and ready, and every request it has made."""
+
+    def __init__(self, page, requests):
+        self.page, self.requests = page, requests
+
+
+@pytest.fixture(scope="session")
+def checker_file(tmp_path_factory):
+    sys.path.insert(0, str(ROOT / "dev"))
+    import build_site
+    return build_site.build_checker(tmp_path_factory.mktemp("checker"))
+
+
+@pytest.fixture
+def checker(context, checker_file):
+    """The built checker page, once Python has loaded into it. Python comes
+    from a CDN, so where there is no network the rehearsal is skipped, as a
+    missing browser is, unless DEWMARK_REQUIRE_BROWSER is set."""
+    page = context.new_page()
+    requests = []
+    page.on("request", lambda request: requests.append(request))
+    page.on("dialog", lambda dialog: dialog.accept())
+    page.goto(checker_file.as_uri())
+    try:
+        page.wait_for_function(
+            "document.getElementById('load').textContent.startsWith('Ready')", timeout=120000)
+    except Exception:
+        _unavailable("Python did not load into the checker page: " + page.text_content("#load"))
+    return Checker(page, requests)

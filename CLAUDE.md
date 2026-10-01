@@ -17,6 +17,7 @@ python -m dewmark lock FILE --sitting "2026-10-20 Group A"  # the names lock, at
 python -m dewmark package tidy FILE -o package.txt           # the paste route: what to give an assistant
 python -m dewmark reply tidy FILE REPLY.txt                # ...and the check of what it returned
 python dev/smoke_pages.py                                  # browser rehearsal (Playwright + Chromium)
+python -m pytest tests/browser/test_checker.py              # the checker page; Python loads from a CDN, so it needs a network
 ```
 
 `site/` is generated and gitignored. Never edit it.
@@ -25,8 +26,8 @@ python dev/smoke_pages.py                                  # browser rehearsal (
 
 Student-facing text lives in `build_exam.py`, `assets/exam-page.js`,
 `assets/exam-page.css` and the built pages; teacher-facing text in
-`workbench/index.html`, `docs/FOR_TEACHERS.md`, the builder's messages and the
-paste route's mode names and notices in `dewmark/package.py`.
+`workbench/index.html`, `checker/index.html`, `docs/FOR_TEACHERS.md`, the builder's
+messages and the paste route's mode names and notices in `dewmark/package.py`.
 Follow dewlab's style guide for student text,
 <https://github.com/deweydex/dewlab/blob/main/planning/PEDAGOGICAL_STYLE_GUIDE.md#voice>:
 plain words, a term defined the first time it is used.

@@ -15,14 +15,15 @@
 > **The paste route** (§4.10) is `dewmark/package.py` and
 > `dewmark/reply.py`: `python -m dewmark package MODE FILE` makes the
 > text to give an assistant, and `python -m dewmark reply MODE PAPER
-> REPLY` checks what came back.
+> REPLY` checks what came back. **The checker page** (`checker/`, on the
+> dewmark site) runs the reader and the paste route in a browser.
 > Not yet built: the page search and the mutation test (§4.5 layers 3
 > and 4, which need the renderer), the dewlab import form (§4.11), and
 > the JSON schema for a connected model (§4.10). No page is built from
 > this format yet; until the exam page of step 4, `build_exam.py`
 > builds pages from the older format in `planning/THE_EXAM_FILE.md`.
 > Where the reader, the lock and the paste route depart from the text
-> below is in `DECISIONS_LOG.md`, entries 0.7, 0.8 and 0.9. The three rival
+> below is in `DECISIONS_LOG.md`, entries 0.7, 0.8, 0.9 and 0.10. The three rival
 > proposals this document judges, and the other files it names, are kept
 > in history at commit `b3823f91799f` under
 > `planning/research-2026-09-27/design/`. Decision 22 later added an

@@ -222,3 +222,53 @@ only what a teacher accepts. *Changing it:* the two pairs of marker lines
 (`=== BEGIN PAPER ===`, `=== BEGIN NOTES ===` and their ends) join a
 package to the check of its reply; changing them only affects packages
 already handed to an assistant.
+
+**0.10 — The checker page.** `checker/index.html` puts the reader and the
+paste route in front of a teacher: paste or open an exam file and read each
+problem with its line, what is wrong and what to do; click a problem to land
+on its line; or have an assistant reword or convert a paper and take or
+leave each change it made (planning/PROPOSAL.md §4, stages 2 to 4 of the
+journey). The page runs the reader unchanged in Pyodide through
+`dewmark/web.py`, which takes text and returns JSON, and `dev/build_site.py`
+writes the page with the reader's own source files in a data block, so it
+cannot check with other code than the command line runs.
+`tests/browser/test_checker.py` is the probe the plan asked for from the
+first commit: in Chromium it compares what the browser and the command line
+return, string for string, over the specimen and the four PDP papers.
+
+What it settles:
+
+- *Python comes from jsDelivr, not from this repository.* The page needs a
+  connection the first time, at the same Pyodide version the exam page pins
+  (0.27.4); a failed load says so and offers to try again. Vendoring about
+  10 MB of runtime would let the checker work offline, and is left to the
+  studio (step 7) unless asked for sooner.
+- *The content security policy includes `'unsafe-eval'`*, because Pyodide
+  does not start without it (tried: the page stays on "Loading Python").
+  What protects the paper is the rest of the policy: `connect-src` is
+  jsDelivr alone, `form-action` and `default-src` are `'none'`, and
+  `img-src` is `data:`. A policy does not stop the page's own script from
+  navigating away, so the rehearsal also lists every request the page makes
+  and fails on anything but a GET for the file or the CDN.
+- *Nothing is saved.* A paper before it is sat is secret, and the checker
+  may be open on a shared college computer, so it writes nothing to browser
+  storage or cookies (a rehearsal checks) and a closed tab forgets the paper.
+  **Save this file** downloads it.
+- *A reply is checked against the paper the package was made from*, held in
+  the page, not against whatever the editor holds by then, so editing the
+  file between the two cannot make a good reply look like a bad one.
+- *A package with something that may be student information waits for a
+  tick* before it can be copied or saved, so the question is answered, not
+  scrolled past.
+- *The reader now says "Question 1", not "1",* where a message means a
+  question: "Question 1's parts add up to 13 marks". The most common message
+  on the page read "1's parts add up…". Names and the lock's labels are
+  unchanged.
+- *The check runs on the page's own thread, 400 ms after typing stops.* The
+  plan says a background worker; a worker waits until a paper is long enough
+  to make the page hesitate, which the 4,000-line limit keeps from being
+  long.
+
+*Changing it:* the JSON that `dewmark/web.py` returns is the contract between
+the page and the reader. They ship in one file, so a built page cannot hold
+one without the other.

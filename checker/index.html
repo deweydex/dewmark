@@ -1,0 +1,541 @@
+<!doctype html>
+<!--
+  The checker page. This is the template: dev/build_site.py writes the real
+  page to site/checker/index.html, with the reader's own source files put
+  into the data block at the bottom, so the page checks with the same code
+  the command line runs. Opened as it stands, the page says it was not built.
+-->
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src https://cdn.jsdelivr.net; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>dewmark checker</title>
+<style>
+:root {
+  --bg: #fdfcfa; --panel: #ffffff; --ink: #1a1a1a; --muted: #5f6b7a;
+  --line: #ddd7cd; --navy: #1b2a4a; --accent: #1b2a4a; --on-accent: #ffffff;
+  --problem: #8a2a1f; --problem-bg: #faf0ee; --warn: #7a5f12; --warn-bg: #faf3dc;
+  --good: #1f6b3f; --good-bg: #edf7f0; --ins: #d9f0e0; --del: #f8d9d4;
+  --serif: Georgia, "Iowan Old Style", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181b; --panel: #1e2125; --ink: #e8e6e1; --muted: #a3a8ae;
+    --line: #3a3e44; --accent: #8cb8e6; --on-accent: #101820;
+    --problem: #f2a89e; --problem-bg: #3a1f1c; --warn: #e6cf86; --warn-bg: #352e16;
+    --good: #8fd3a8; --good-bg: #17301f; --ins: #1f4a2e; --del: #5a2a24;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 var(--sans); }
+header { background: #1b2a4a; color: #fdfcfa; padding: 14px 16px; }
+header .in { max-width: 60rem; margin: 0 auto; }
+header h1 { font: 600 1.25rem var(--serif); margin: 0; }
+header p { margin: .25rem 0 0; font-size: .9rem; opacity: .9; }
+main { max-width: 60rem; margin: 0 auto; padding: 1rem 16px 5rem; }
+h2 { font: 600 1.15rem var(--serif); margin: 1.6rem 0 .4rem; }
+h3 { font: 600 1rem var(--sans); margin: 1.2rem 0 .3rem; }
+p { margin: .4rem 0; }
+.muted { color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 1rem 1.1rem; margin: .8rem 0; }
+label.field { display: block; font-weight: 600; margin: 0 0 .3rem; }
+textarea, input[type=text], select {
+  width: 100%; font: 14px/1.5 var(--mono); color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 4px; padding: .5rem .6rem; }
+input[type=text], select { font-family: var(--sans); font-size: 15px; }
+textarea { min-height: 16rem; resize: vertical; white-space: pre; overflow: auto; tab-size: 4; }
+textarea.short { min-height: 9rem; }
+textarea.package { min-height: 11rem; white-space: pre-wrap; }
+button { font: 600 15px var(--sans); border-radius: 4px; padding: .5rem .9rem; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .6rem 0; }
+.chip { display: inline-block; font-weight: 600; font-size: .85rem; border-radius: 999px;
+  padding: .15rem .7rem; }
+.chip.good { color: var(--good); background: var(--good-bg); }
+.chip.bad { color: var(--problem); background: var(--problem-bg); }
+.chip.warn { color: var(--warn); background: var(--warn-bg); }
+.chip.wait { color: var(--muted); background: var(--line); }
+ol.messages { list-style: none; margin: .6rem 0; padding: 0; }
+.msg { border: 1px solid var(--line); border-left-width: 5px; border-radius: 4px;
+  padding: .55rem .8rem; margin: .45rem 0; background: var(--panel); }
+.msg.problem { border-left-color: var(--problem); }
+.msg.warning { border-left-color: var(--warn); }
+.msg .head { display: flex; flex-wrap: wrap; gap: .3rem .7rem; align-items: baseline; }
+.msg .level { font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+.msg.problem .level { color: var(--problem); }
+.msg.warning .level { color: var(--warn); }
+.msg button.jump { font-size: .85rem; padding: .1rem .5rem; }
+.msg .fix { margin: .2rem 0 0; color: var(--muted); }
+.msg code { font: .8rem var(--mono); color: var(--muted); }
+fieldset { border: 1px solid var(--line); border-radius: 6px; margin: .8rem 0; padding: .6rem .9rem; }
+legend { font-weight: 600; padding: 0 .3rem; }
+.modes { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+label.mode { display: block; border: 1px solid var(--line); border-radius: 6px; padding: .6rem .8rem;
+  cursor: pointer; background: var(--panel); }
+label.mode:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+label.mode .name { font-weight: 600; }
+label.mode .what { display: block; color: var(--muted); font-size: .9rem; margin-top: .2rem; }
+.grid2 { display: grid; gap: .6rem 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.hunk { border: 1px solid var(--line); border-radius: 6px; margin: .7rem 0; background: var(--panel); }
+.hunk .top { display: flex; flex-wrap: wrap; gap: .4rem 1rem; padding: .5rem .8rem;
+  border-bottom: 1px solid var(--line); align-items: center; }
+.hunk .where { color: var(--muted); font-size: .9rem; }
+.hunk pre { margin: 0; padding: .6rem .8rem; white-space: pre-wrap; word-wrap: break-word;
+  font: 14px/1.55 var(--sans); }
+.hunk pre + pre { border-top: 1px dashed var(--line); }
+.hunk .tag { display: block; font: 700 .7rem var(--sans); text-transform: uppercase;
+  letter-spacing: .05em; color: var(--muted); margin-bottom: .2rem; }
+ins { background: var(--ins); text-decoration: none; }
+del { background: var(--del); }
+.notes { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; padding: .6rem .8rem; }
+#load { font-size: .9rem; }
+.hidden { display: none !important; }
+.notice { background: var(--warn-bg); color: var(--warn); border-radius: 6px; padding: .6rem .9rem; margin: .6rem 0; }
+.notice ul { margin: .3rem 0 .3rem 1.1rem; padding: 0; }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>dewmark checker</h1>
+  <p>Check an exam file, or have an assistant reword or convert one. This page came from the
+  internet; your paper never goes back to it. Nothing you type is saved when you close it.</p>
+</div></header>
+
+<main>
+<p id="load" role="status" class="muted">Loading the checker…</p>
+<noscript><p class="notice">The checker needs JavaScript.</p></noscript>
+<p id="unbuilt" class="notice hidden">This copy of the page was not built, so it has no reader in it.
+Use the one on the dewmark site, or run <code>python dev/build_site.py</code>.</p>
+
+<h2 id="file-h">Your exam file</h2>
+<div class="card">
+  <label class="field" for="editor">Paste or type the file, or open one</label>
+  <textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off"
+    aria-describedby="status"></textarea>
+  <div class="row">
+    <button id="open" type="button">Open a file…</button>
+    <input id="open-file" type="file" accept=".md,.txt,text/plain,text/markdown" class="hidden">
+    <button id="example" type="button">Show me an example</button>
+    <button id="save" type="button">Save this file</button>
+    <button id="check" type="button" class="primary">Check</button>
+    <span id="status" role="status" aria-live="polite"></span>
+  </div>
+  <div id="summary" class="muted"></div>
+  <ol id="messages" class="messages" aria-label="What the checker found"></ol>
+  <div class="row"><button id="copy-problems" type="button" class="hidden">Copy these problems</button></div>
+</div>
+
+<details id="help">
+<summary><strong>Get help from an assistant</strong>
+  <span class="muted">(optional: a package to paste into the assistant your college allows)</span></summary>
+
+<p>dewmark makes one block of text for you to paste into an assistant. You then paste its reply back
+here, and dewmark checks it before you use a word of it. The package holds your exam paper and
+never your marking scheme, and no student information.</p>
+
+<fieldset>
+  <legend>What should the assistant do?</legend>
+  <div class="modes" id="modes"></div>
+</fieldset>
+
+<div id="copy-box" class="hidden card">
+  <label class="field" for="word-paper">Your paper, pasted from Word</label>
+  <textarea id="word-paper" class="short" spellcheck="false"></textarea>
+  <h3>About this paper</h3>
+  <p class="muted">These become the settings at the top of the file. The assistant is asked to use
+  them exactly.</p>
+  <div class="grid2" id="about"></div>
+</div>
+<p id="paper-note" class="muted">This uses the exam file above. Its marking scheme stays here.</p>
+
+<div class="row"><button id="make" type="button" class="primary">Make the package</button>
+  <span id="make-status" role="status" aria-live="polite" class="muted"></span></div>
+
+<div id="package-box" class="hidden">
+  <div id="findings" class="notice hidden" role="alert"></div>
+  <label class="field" for="package">The package</label>
+  <textarea id="package" class="package" readonly></textarea>
+  <div class="row">
+    <button id="copy-package" type="button" class="primary">Copy the package</button>
+    <button id="save-package" type="button">Save as a text file</button>
+    <span id="package-info" class="muted"></span>
+  </div>
+</div>
+
+<h3>The assistant's reply</h3>
+<label class="field" for="reply">Paste everything the assistant returned</label>
+<textarea id="reply" class="short" spellcheck="false"></textarea>
+<div class="row"><button id="check-reply" type="button" class="primary">Check the reply</button>
+  <span id="reply-status" role="status" aria-live="polite" class="muted"></span></div>
+<div id="reply-result"></div>
+</details>
+</main>
+
+<script type="application/json" id="reader-sources">__READER_SOURCES__</script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const BASE = window.DEWMARK_PYTHON_BASE || "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/";
+
+function el(tag, attrs, ...kids) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (key === "class") node.className = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value);
+  }
+  for (const kid of kids) node.append(kid);
+  return node;
+}
+
+/* ---- Python, loaded once ------------------------------------------------ */
+
+let api = null;
+let resolveReady, rejectReady;
+const ready = new Promise((ok, no) => { resolveReady = ok; rejectReady = no; });
+ready.catch(() => {});
+
+function loadScript(src) {
+  return new Promise((ok, no) => {
+    const tag = document.createElement("script");
+    tag.src = src; tag.onload = ok; tag.onerror = () => no(new Error("could not load " + src));
+    document.head.append(tag);
+  });
+}
+
+async function boot() {
+  const raw = $("reader-sources").textContent.trim();
+  if (raw === "__READER_SOURCES__") {
+    $("unbuilt").classList.remove("hidden");
+    $("load").textContent = "";
+    rejectReady(new Error("not built"));
+    return;
+  }
+  const sources = JSON.parse(raw);
+  window.READER_SOURCES = sources;
+  try {
+    $("load").textContent = "Loading Python (about 10 MB the first time; your browser keeps it)…";
+    await loadScript(BASE + "pyodide.js");
+    const py = await loadPyodide({ indexURL: BASE });
+    $("load").textContent = "Loading the reader…";
+    for (const [path, text] of Object.entries(sources)) {
+      const full = "/reader/" + path;
+      py.FS.mkdirTree(full.slice(0, full.lastIndexOf("/")));
+      py.FS.writeFile(full, text);
+    }
+    py.runPython("import sys; sys.path.insert(0, '/reader')");
+    const web = py.pyimport("dewmark.web");
+    api = {
+      check: web.check_json, modes: web.modes_json, version: web.version,
+      pack: web.package_json, reply: web.reply_json, followUp: web.follow_up_json,
+    };
+    $("load").textContent = "Ready. dewmark reader " + api.version() + ".";
+    resolveReady();
+  } catch (error) {
+    $("load").replaceChildren(
+      "The checker could not load Python (" + error.message + "). It needs a connection this once. ",
+      el("button", { type: "button", onclick: () => location.reload() }, "Try again"));
+    rejectReady(error);
+  }
+}
+
+/* ---- the exam file ------------------------------------------------------- */
+
+const editor = $("editor");
+let checkTimer = null;
+let lastMessages = [];
+
+function download(name, text) {
+  const link = el("a", { href: URL.createObjectURL(new Blob([text], { type: "text/plain" })), download: name });
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+async function copyText(text, note) {
+  try { await navigator.clipboard.writeText(text); note.textContent = "Copied."; }
+  catch (_) {
+    const probe = el("textarea", {}); probe.value = text; document.body.append(probe);
+    probe.select(); const done = document.execCommand("copy"); probe.remove();
+    note.textContent = done ? "Copied." : "Your browser would not copy. Select the text and copy it.";
+  }
+}
+
+function jumpTo(area, line) {
+  const text = area.value.split("\n");
+  let start = 0;
+  for (let i = 0; i < Math.min(line - 1, text.length); i++) start += text[i].length + 1;
+  const end = start + (text[line - 1] || "").length;
+  area.focus();
+  area.setSelectionRange(start, end);
+  const height = parseFloat(getComputedStyle(area).lineHeight) || 20;
+  area.scrollTop = Math.max(0, (line - 4) * height);
+}
+
+function renderMessages(list, messages, area) {
+  list.replaceChildren();
+  for (const m of messages) {
+    const jump = m.line ? el("button", { type: "button", class: "jump",
+      onclick: () => jumpTo(area, m.line) }, "Line " + m.line) : "";
+    list.append(el("li", { class: "msg " + m.level },
+      el("div", { class: "head" },
+        el("span", { class: "level" }, m.level === "problem" ? "Problem" : "Warning"),
+        jump, m.where ? el("span", { class: "muted" }, m.where) : "", el("code", {}, m.code)),
+      el("div", {}, m.what),
+      m.fix ? el("div", { class: "fix" }, m.fix) : ""));
+  }
+}
+
+function chip(text, kind) { return el("span", { class: "chip " + kind }, text); }
+
+async function runCheck() {
+  clearTimeout(checkTimer);
+  const text = editor.value;
+  if (!text.trim()) {
+    $("status").replaceChildren(); $("summary").textContent = "";
+    $("messages").replaceChildren(); $("copy-problems").classList.add("hidden");
+    return;
+  }
+  try { await ready; } catch (_) { return; }
+  const result = JSON.parse(api.check(text));
+  const problems = result.messages.filter((m) => m.level === "problem").length;
+  const warnings = result.messages.length - problems;
+  lastMessages = result.messages;
+  const s = result.summary;
+  $("status").replaceChildren(
+    problems ? chip(problems + (problems === 1 ? " problem" : " problems"), "bad")
+             : chip("No problems", "good"),
+    warnings ? chip(" " + warnings + (warnings === 1 ? " warning" : " warnings"), "warn") : "");
+  $("summary").textContent = (s.title ? s.title + ": " : "") + s.marks + " marks, " + s.questions +
+    " questions, " + s.boxes + " answer boxes; " + s.entries + " marking scheme entries" +
+    (s.drafts ? " (" + s.drafts + " still draft)" : "") + ".";
+  renderMessages($("messages"), result.messages, editor);
+  $("copy-problems").classList.toggle("hidden", !result.messages.length);
+}
+
+editor.addEventListener("input", () => { clearTimeout(checkTimer); checkTimer = setTimeout(runCheck, 400); });
+$("check").addEventListener("click", runCheck);
+$("open").addEventListener("click", () => $("open-file").click());
+$("open-file").addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  if (file) { editor.value = await file.text(); runCheck(); }
+  event.target.value = "";
+});
+$("example").addEventListener("click", () => {
+  const sources = window.READER_SOURCES;
+  if (!sources) return;
+  editor.value = sources["dewmark/data/specimen.exam.md"]; runCheck();
+});
+$("save").addEventListener("click", () => {
+  const code = (editor.value.match(/^code:\s*(\S+)/m) || [])[1] || "exam";
+  download(code + ".exam.md", editor.value);
+});
+$("copy-problems").addEventListener("click", async () => {
+  await ready;
+  copyText(api.followUp(JSON.stringify(lastMessages)), $("status"));
+});
+
+/* ---- the paste route ------------------------------------------------------ */
+
+let modes = [], aboutKeys = [], pkg = null;
+
+function chosenMode() {
+  const picked = document.querySelector("input[name=mode]:checked");
+  return picked ? picked.value : "tidy";
+}
+
+function showMode() {
+  const copy = chosenMode() === "copy";
+  $("copy-box").classList.toggle("hidden", !copy);
+  $("paper-note").classList.toggle("hidden", copy);
+}
+
+async function setUpModes() {
+  try { await ready; } catch (_) { return; }
+  const all = JSON.parse(api.modes());
+  aboutKeys = all.pop().about;
+  modes = all;
+  const box = $("modes");
+  for (const m of modes) {
+    box.append(el("label", { class: "mode" },
+      el("input", { type: "radio", name: "mode", value: m.key, onchange: showMode,
+        ...(m.key === "tidy" ? { checked: "" } : {}) }),
+      " ", el("span", { class: "name" }, m.label), el("span", { class: "what" }, m.summary)));
+  }
+  const fields = $("about");
+  for (const key of aboutKeys) {
+    const id = "about-" + key.replace(/\s+/g, "-");
+    const input = key === "kind"
+      ? el("select", { id }, ...["exam", "practice", "sample"].map((v) => el("option", { value: v }, v)))
+      : el("input", { type: "text", id, autocomplete: "off" });
+    fields.append(el("div", {}, el("label", { class: "field", for: id }, key[0].toUpperCase() + key.slice(1)), input));
+  }
+  showMode();
+}
+
+function aboutValues() {
+  const about = {};
+  for (const key of aboutKeys) about[key] = $("about-" + key.replace(/\s+/g, "-")).value;
+  return about;
+}
+
+$("make").addEventListener("click", async () => {
+  const mode = chosenMode();
+  const note = $("make-status");
+  const source = mode === "copy" ? $("word-paper").value : editor.value;
+  if (!source.trim()) {
+    note.textContent = mode === "copy" ? "Paste your Word paper first." : "Put an exam file in the box above first.";
+    return;
+  }
+  try { await ready; } catch (_) { note.textContent = "The checker has not loaded."; return; }
+  const about = aboutValues();
+  const made = JSON.parse(api.pack(mode, source, JSON.stringify(about)));
+  $("package-box").classList.add("hidden");
+  if (made.problems.length) {
+    note.textContent = "Fill in the details first: " + made.problems.join(" ");
+    return;
+  }
+  note.textContent = "";
+  pkg = { mode, original: source, about };
+  $("package").value = made.text;
+  const findings = $("findings");
+  findings.replaceChildren();
+  const copyButton = $("copy-package"), saveButton = $("save-package");
+  if (made.findings.length) {
+    const gate = el("input", { type: "checkbox", id: "gate" });
+    findings.append(
+      el("strong", {}, "Check these before you give the package to an assistant."),
+      el("ul", {}, ...made.findings.map((f) =>
+        el("li", {}, "Line " + f.line + ": " + f.what + " (" + f.excerpt + ")"))),
+      el("label", {}, gate, " I have looked, and none of these is student information."));
+    findings.classList.remove("hidden");
+    copyButton.disabled = saveButton.disabled = true;
+    gate.addEventListener("change", () => { copyButton.disabled = saveButton.disabled = !gate.checked; });
+  } else {
+    findings.classList.add("hidden");
+    copyButton.disabled = saveButton.disabled = false;
+  }
+  $("package-info").textContent = made.text.split("\n").length + " lines. " +
+    (made.left_out ? "Your marking scheme is not in it." : "");
+  $("package-box").classList.remove("hidden");
+});
+
+$("copy-package").addEventListener("click", () => copyText($("package").value, $("package-info")));
+$("save-package").addEventListener("click", () => download("dewmark-package-" + pkg.mode + ".txt", $("package").value));
+
+/* ---- the reply ---------------------------------------------------------------- */
+
+function wordDiff(before, after) {
+  const a = before.split(/(\s+)/), b = after.split(/(\s+)/);
+  if (a.length * b.length > 400000) return { a: [["del", before]], b: [["ins", after]] };
+  const table = Array.from({ length: a.length + 1 }, () => new Uint16Array(b.length + 1));
+  for (let i = a.length - 1; i >= 0; i--)
+    for (let j = b.length - 1; j >= 0; j--)
+      table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
+  const left = [], right = [];
+  let i = 0, j = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { left.push(["same", a[i]]); right.push(["same", b[j]]); i++; j++; }
+    else if (table[i + 1][j] >= table[i][j + 1]) left.push(["del", a[i++]]);
+    else right.push(["ins", b[j++]]);
+  }
+  while (i < a.length) left.push(["del", a[i++]]);
+  while (j < b.length) right.push(["ins", b[j++]]);
+  return { a: left, b: right };
+}
+
+function marked(parts) {
+  const out = [];
+  for (const [kind, text] of parts)
+    out.push(kind === "same" ? text : el(kind === "del" ? "del" : "ins", {}, text));
+  return out;
+}
+
+let replyResult = null;
+let accepted = new Set();
+
+// A change ticked or unticked draws the list again; keep the keyboard where it was.
+async function runReply(accept) {
+  const focused = document.activeElement && document.activeElement.id;
+  await renderReply(accept);
+  if (focused && $(focused)) $(focused).focus();
+}
+
+async function renderReply(accept) {
+  const out = $("reply-result");
+  const note = $("reply-status");
+  if (!pkg) { note.textContent = "Make a package first, so there is a paper to check the reply against."; return; }
+  if (!$("reply").value.trim()) { note.textContent = "Paste the assistant's reply first."; return; }
+  try { await ready; } catch (_) { return; }
+  note.textContent = "";
+  const result = JSON.parse(api.reply(pkg.mode, pkg.original, $("reply").value,
+    JSON.stringify(pkg.about), accept === null ? "null" : JSON.stringify([...accept])));
+  replyResult = result;
+  if (accept === null) accepted = new Set(result.hunks.map((h) => h.id));
+  out.replaceChildren();
+  const problems = result.messages.filter((m) => m.level === "problem");
+  if (!result.ok) {
+    out.append(el("p", {}, chip(problems.length === 1 ? "1 problem" : problems.length + " problems", "bad"),
+      " The reply was not used. Nothing in your file has changed."));
+  }
+  const list = el("ol", { class: "messages", "aria-label": "What the check found in the reply" });
+  renderMessages(list, result.messages, $("reply"));
+  if (result.messages.length) out.append(list);
+  if (!result.ok && result.messages.length) {
+    const copyBack = el("button", { type: "button" }, "Copy these problems");
+    copyBack.addEventListener("click", () => copyText(api.followUp(JSON.stringify(result.messages)), note));
+    out.append(el("div", { class: "row" }, copyBack));
+    return;
+  }
+  if (!result.ok) return;
+  if (result.kept !== null) {
+    out.append(el("p", {}, "The reply keeps " + Math.round(result.kept * 100) + "% of your words, in order."));
+  }
+  if (result.hunks.length) {
+    out.append(el("h3", {}, result.hunks.length === 1 ? "1 change of wording" : result.hunks.length + " changes of wording"),
+      el("p", { class: "muted" }, "Tick the changes you want. Anything you leave unticked stays as you wrote it."));
+    for (const h of result.hunks) {
+      const diff = wordDiff(h.before.join("\n"), h.after.join("\n"));
+      const box = el("input", { type: "checkbox", id: "hunk-" + h.id });
+      box.checked = accepted.has(h.id);
+      box.addEventListener("change", () => {
+        if (box.checked) accepted.add(h.id); else accepted.delete(h.id);
+        runReply(accepted);
+      });
+      out.append(el("div", { class: "hunk" },
+        el("div", { class: "top" }, el("label", {}, box, " Use change " + h.id),
+          el("span", { class: "where" }, "line " + h.line + (h.where ? ", under " + h.where : ""))),
+        el("pre", {}, el("span", { class: "tag" }, "You wrote"), ...marked(diff.a)),
+        el("pre", {}, el("span", { class: "tag" }, "The assistant wrote"), ...(h.after.length ? marked(diff.b) : ["(removed)"]))));
+    }
+    out.append(el("div", { class: "row" },
+      el("button", { type: "button", id: "use-all", onclick: () => { runReply(new Set(replyResult.hunks.map((h) => h.id))); } }, "Use all"),
+      el("button", { type: "button", id: "use-none", onclick: () => { runReply(new Set()); } }, "Use none")));
+  } else {
+    out.append(el("p", {}, chip("No changes of wording", "good")));
+  }
+  if (result.notes) out.append(el("h3", {}, "What the assistant says it changed"), el("div", { class: "notes" }, result.notes));
+  const use = el("button", { type: "button", class: "primary" }, "Use this paper");
+  use.addEventListener("click", () => {
+    if (editor.value.trim() && editor.value !== pkg.original &&
+        !confirm("This replaces the exam file in the box above, which you have changed. Carry on?")) return;
+    editor.value = replyResult.text; runCheck(); editor.scrollIntoView({ behavior: "smooth" });
+  });
+  out.append(el("div", { class: "row" }, use));
+}
+
+$("check-reply").addEventListener("click", () => runReply(null));
+
+boot();
+setUpModes();
+</script>
+</body>
+</html>
