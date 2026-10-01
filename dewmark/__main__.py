@@ -1,5 +1,6 @@
 """python -m dewmark check EXAM_FILE [EXAM_FILE ...]
 python -m dewmark lock EXAM_FILE --sitting "2026-10-20 Group A"
+python -m dewmark scheme EXAM_FILE [-o OUT]
 python -m dewmark package MODE FILE [--set "key: value" ...] [-o OUT]
 python -m dewmark reply MODE ORIGINAL REPLY [--set "key: value" ...] [-o OUT]
 
@@ -12,6 +13,11 @@ lock records that a paper has been issued for a sitting, in
 names.lock.json beside the file (§4.4). It refuses a paper with problems.
 After that, check refuses a change that would strand stored answers,
 unless the paper's version setting changes.
+
+scheme writes the marking scheme of a paper as dewmark-scheme/1 JSON, the
+file the marking workbench reads (§4.6). It holds the paper's secrets: keep
+it with the teacher's files, never in a folder students receive. It refuses
+a paper with problems.
 
 package makes the text to give an assistant (the paste route, §4.10): MODE
 is copy, tidy, plain, udl or invite. copy reads a Word paper and needs its
@@ -31,6 +37,7 @@ from . import lock as names_lock
 from .package import ABOUT_KEYS, MODES, build_package
 from .reader import read
 from .reply import check_reply
+from .scheme_json import dumps, scheme_json
 
 
 def summary(paper):
@@ -122,6 +129,28 @@ def _read_text(path):
         return handle.read()
 
 
+def scheme(argv):
+    rest, _, out = _options(argv)
+    if len(rest) != 1:
+        print("scheme needs an exam file.")
+        return 2
+    paper = read(_read_text(rest[0]))
+    if paper["messages"].problems:
+        print(f"{rest[0]}: no scheme written, because the paper has problems:")
+        for message in paper["messages"].problems:
+            print("  " + str(message).replace("\n", "\n  "))
+        return 1
+    text = dumps(scheme_json(paper))
+    if out:
+        with open(out, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        print(f"{out}: {len(paper['scheme']['entries'])} entries, "
+              f"{len(paper['scheme']['drafts'])} still draft. Keep it away from students.")
+    else:
+        print(text, end="")
+    return 0
+
+
 def package(argv):
     rest, about, out = _options(argv)
     if len(rest) != 2 or rest[0] not in MODES:
@@ -174,6 +203,8 @@ def main(argv):
         return check(argv[1:])
     if len(argv) == 4 and argv[0] == "lock" and argv[2] == "--sitting":
         return lock(argv[1], argv[3])
+    if argv and argv[0] == "scheme":
+        return scheme(argv[1:])
     if argv and argv[0] == "package":
         return package(argv[1:])
     if argv and argv[0] == "reply":

@@ -14,6 +14,7 @@ python build_exam.py samples/sample-mixed-paper.exam.md --output /tmp/out
 python dev/build_site.py                                   # the Pages site, into site/
 python -m dewmark check samples/pdp-5n2927/*.exam.md       # the new reader (docs/EXAM_FORMAT.md)
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"  # the names lock, at issue
+python -m dewmark scheme FILE -o scheme.json                 # the marker's half as JSON (secret: never in a folder students get)
 python -m dewmark package tidy FILE -o package.txt           # the paste route: what to give an assistant
 python -m dewmark reply tidy FILE REPLY.txt                # ...and the check of what it returned
 python dev/smoke_pages.py                                  # browser rehearsal (Playwright + Chromium)

@@ -272,3 +272,52 @@ What it settles:
 *Changing it:* the JSON that `dewmark/web.py` returns is the contract between
 the page and the reader. They ship in one file, so a built page cannot hold
 one without the other.
+
+**0.11 — The marker's half as JSON, and the search and the mutation test
+that keep it off a student page.** `dewmark/scheme_json.py` writes the
+scheme as `dewmark-scheme/1` (`python -m dewmark scheme FILE -o OUT`), and
+`dewmark/secrecy.py` holds layers 3 and 4 of `docs/EXAM_FORMAT.md` §4.5:
+`find_leaks` searches a whole built page for the scheme's strings, and
+`mutation_test` writes the scheme again in nonsense and demands the page not
+change. `tests/test_secrecy.py` tries both on renderers written here, one right
+and nine each leaking the scheme a different way, and shows what each layer
+catches: the search finds a string wherever it is written, and the mutation
+test finds the key that is too short to search for, implied by a class on an
+option, or encoded.
+
+What it settles:
+
+- *The layers take `build(text)`, not a renderer.* No page is built from the
+  new format yet (step 4), so there is nothing to run them against. A function
+  from the text of an exam file to a page is all they ask, which keeps them
+  from caring how step 4 renders. **Not done, and owed to step 4:** run
+  `mutation_test` and `find_leaks` over every sample and stop the build on a
+  leak. Until then the layers are proved on renderers made to leak, not on the
+  one that will matter.
+- *The search covers the whole page.* The check it replaces
+  (`check_for_leaks` in `build_exam.py`) removes `<script>` and `<style>`
+  before looking, so a key put in the page's data for its own script to use
+  was invisible to it. Strings are looked for as written, HTML-escaped and
+  JSON-escaped, ignoring capitals and spacing, and a long string by its first
+  and last 30 characters too.
+- *A string the paper itself shows, or shorter than eight characters, is not
+  searched.* Searching for it would flag a question that quotes its own
+  answer's word, or any page containing "8". The mutation test, which needs
+  no list, covers both.
+- *The mutation test varies a key to a different valid one.* A choice,
+  match or order key moves to the next option, a drop-down to another of its
+  choices, and anything a student writes becomes nonsense, so the mutated
+  file still reads as the paper does; a mutation that did not would be the
+  test's fault, and is reported as that, not as a leak.
+- *A marking scheme as JSON is refused by CI's privacy step* wherever it is
+  committed and whatever it is called (a tracked `.json` file containing
+  `dewmark-scheme/`). `.gitignore` already keeps out `dewmark_*`, but
+  `scheme.json` would have gone in.
+- *The JSON leaves out the question's own words*, though a marker will want
+  them beside the answer. What the workbench shows is for step 6's design to
+  decide, and a field may be added to `dewmark-scheme/1` without a new number.
+
+*Changing it:* `dewmark-scheme/1` is a contract with the workbench from the
+first marking that uses it; a field is not renamed or taken away without a new
+format number. The nonsense that `mutate` writes (`zqx0001vjk`) must never be
+a word a real scheme could contain.

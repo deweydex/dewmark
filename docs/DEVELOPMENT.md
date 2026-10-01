@@ -24,7 +24,8 @@ program.
 the plan at a time. Today it holds the reader for the exam format in
 `docs/EXAM_FORMAT.md` (`dewmark/reader.py`, with `settings.py`,
 `numbers.py`, `kinds.py` and `scheme.py`), the names lock that holds an
-issued paper's names still (`dewmark/lock.py`), the paste route
+issued paper's names still (`dewmark/lock.py`), the marker's half as JSON (`dewmark/scheme_json.py`) and the two layers
+that keep it off a student page (`dewmark/secrecy.py`), the paste route
 (`dewmark/package.py` builds what a teacher gives an assistant,
 `dewmark/reply.py` checks what comes back, and `dewmark/data/` holds the
 cheat sheet and the specimen paper it sends), and the converter for the
@@ -34,6 +35,7 @@ standard library, so the studio can run it unchanged in the browser.
 ```sh
 python -m dewmark check samples/pdp-5n2927/*.exam.md
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"
+python -m dewmark scheme FILE -o scheme.json
 python -m dewmark package tidy FILE -o package.txt
 python -m dewmark reply tidy FILE REPLY.txt -o reworded.exam.md
 python -m dewmark.convert_pdp samples/pdp-5n2927 experiments/pdp-5n2927/*.html
@@ -54,6 +56,16 @@ the specimen and the four PDP papers, string for string; it needs a network
 for Python, and skips without one unless `DEWMARK_REQUIRE_BROWSER` is set, as
 it is in CI. `tests/test_web.py` runs the embedded sources in a bare
 interpreter (`python -S -I`, an empty folder) to prove they need nothing else.
+
+`tests/test_secrecy.py` tries the search and the mutation test on small
+renderers written there: one that builds a page as it should be built and
+nine that each let the scheme through a different way (a comment, a data
+block, escaped, in capitals, by its start, a class on the right option, a
+short key, base64). It shows which layer catches which: the search cannot see
+a key too short to look for, one implied by a class, or one encoded, and the
+mutation test finds them. When step 4's renderer exists, add
+`mutation_test(sample, build_student_page)` and `find_leaks` over every sample
+to the tests, and stop the build on a leak.
 
 `tests/test_lock.py` issues a small paper, changes it the ways a teacher
 might after a sitting, and checks what the lock refuses and allows.

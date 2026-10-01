@@ -49,8 +49,10 @@ jobs:
         run: |
           bad=$(git ls-files | grep -E '^private/|\.zip$|(^|/)dewmark_[^/]*$' || true)
           strays=$(git ls-files '*.exam.md' | grep -vE '^(samples|experiments|tests/fixtures|dewmark/data)/' || true)
-          if [ -n "$bad$strays" ]; then
-            echo "These files must not be committed:"; echo "$bad"; echo "$strays"; exit 1
+          # A marking scheme as JSON holds a paper's secrets, whatever it is called.
+          schemes=$(git ls-files '*.json' | xargs -r grep -l 'dewmark-scheme/' || true)
+          if [ -n "$bad$strays$schemes" ]; then
+            echo "These files must not be committed:"; echo "$bad"; echo "$strays"; echo "$schemes"; exit 1
           fi
 
   # The page's worst bugs live in the browser, not the builder: what is
