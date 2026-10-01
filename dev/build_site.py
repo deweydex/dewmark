@@ -10,6 +10,7 @@ files they come from.
 """
 
 import html
+import json
 import shutil
 import subprocess
 import sys
@@ -58,6 +59,35 @@ def title_of(exam: Path) -> str:
         if line.startswith("title:"):
             return line.partition(":")[2].strip().strip("\"'")
     return exam.name
+
+
+# The reader, as the browser runs it: every file of the dewmark package the
+# checker page calls, put into the page so it checks with the same code the
+# command line runs. The converter for the old hand-built pages and the
+# command-line entry point are not needed there.
+NOT_IN_THE_PAGE = {"__main__.py", "convert_pdp.py"}
+
+
+def reader_sources() -> dict[str, str]:
+    sources = {}
+    for path in sorted((ROOT / "dewmark").rglob("*")):
+        if (path.is_file() and path.suffix in {".py", ".md", ".txt"}
+                and "__pycache__" not in path.parts and path.name not in NOT_IN_THE_PAGE):
+            sources[path.relative_to(ROOT).as_posix()] = path.read_text(encoding="utf-8")
+    return sources
+
+
+def build_checker(out: Path) -> Path:
+    """Write the checker page, with the reader's sources in its data block.
+    `<` is written as \\u003c so no source can end the block early."""
+    blob = json.dumps(reader_sources(), ensure_ascii=False).replace("<", "\\u003c")
+    template = (ROOT / "checker" / "index.html").read_text(encoding="utf-8")
+    marker = ">__READER_SOURCES__</script>"
+    assert template.count(marker) == 1, "the data block's marker is missing from checker/index.html"
+    out.mkdir(parents=True, exist_ok=True)
+    page = out / "index.html"
+    page.write_text(template.replace(marker, ">" + blob + "</script>"), encoding="utf-8")
+    return page
 
 
 def copy_folders() -> None:
@@ -142,6 +172,12 @@ teacher marks the submissions on their own computer.</p>
 What is here today are working drafts: try them, but do not sit a real class
 on them yet.</p>
 
+<h2>Write and check</h2>
+<p class=big><a href="checker/">The exam file checker</a></p>
+<p>Paste an exam file and see every problem, with its line and what to do.
+Or have an assistant reword or convert a paper, and check what it sends back
+before you use a word of it.</p>
+
 <h2>Mark</h2>
 <p class=big><a href="workbench/">The marking workbench</a></p>
 <p>Open a folder of submissions and a marking scheme, mark by student or by
@@ -179,6 +215,7 @@ def main() -> None:
     SITE.mkdir()
     samples = build_samples()
     copy_folders()
+    build_checker(SITE / "checker")
     write_home(samples)
     print(f"built {sum(len(p) for _, p in samples)} sample pages into {SITE}")
 

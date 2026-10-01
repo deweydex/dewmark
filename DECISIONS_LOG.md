@@ -163,3 +163,112 @@ Where it goes beyond or departs from the format's text:
 *Changing it:* the lock file's shape, `dewmark-names/1`, is a contract
 from the first real issue; a lock written for a sat paper must stay
 readable by every later dewmark.
+
+**0.9 — The paste route: a package to give an assistant, and a check of
+its reply.** `dewmark/package.py` builds the text a teacher gives any
+assistant the college allows, and `dewmark/reply.py` checks what comes
+back (decisions 19 and 20; `docs/EXAM_FORMAT.md` §4.10). The five modes are
+decision 19's: `copy` (a Word paper into the format, changing no word),
+`tidy`, `plain` (accessible language), `udl` and `invite` (commands as
+invitations). The last four change wording only, and a reply is refused,
+not flagged, if it changes a setting, a heading's number, marks or "any
+N", a line of an answer box or listing, a number, a formula or a picture's
+file name, or carries a scheme. Every change of wording that passes is
+shown for the teacher to take or leave, one by one; leaving all of them
+gives the teacher's file back byte for byte. `tests/test_paste.py` makes
+each kind of bad reply, and has a fake assistant reword the four real PDP
+papers.
+
+Where it departs from, or settles, what the plan left open:
+
+- *A whole reply is refused, never part of one.* A reply with a good
+  rewording and a changed number could otherwise be half accepted into a
+  paper that no longer matches what the assistant was asked to keep. The
+  teacher sees every reason at once, in one round.
+- *Wording inside an answer box is out of reach for now.* The options of
+  a `choice`, the sentences of `blanks` and the lines of `boxes` are
+  fixed, because the scheme's keys, the stored answers and the names lock
+  are all tied to them. A tidy of an option's spelling has to be made by
+  hand until a mode can promise to keep letters, item numbers and gap
+  counts.
+- *`copy` warns about words and refuses only a lost number.* §4.10 says
+  the studio can check a copy "by matching paragraphs"; the check matches
+  words in order, ignoring "marks", "Question" and "Section", which a
+  conversion adds. A number missing from the reply entirely is refused
+  (`reply-number-lost`); one that appears fewer times is a warning,
+  because a Word paper often marks a question twice and a paper in this
+  format marks it once.
+- *`copy` adds a marking scheme of `(draft)` entries to what it returns*,
+  one for each part with marks of its own, as the PDP converter does, so
+  an exam that has none does not fail on that alone and the teacher has a
+  list of what to write.
+- *The student-information scan asks; it never refuses.* A paper has
+  numbers of its own (a mark, a year, a formula), so a long number or a
+  PPS-shaped one is a question for the teacher. The package itself can
+  hold no submission, since dewmark holds none at this step.
+- *Drafting model answers and schemes stays in step 9.* The scheme is
+  never put in a package, and the assistant is told not to write one.
+- *One short specimen paper stands in for every subject.* `copy` sends
+  `dewmark/data/specimen.exam.md`, which has a coding question and a
+  short-answer one; biology and maths specimens arrive with the subject
+  waves of step 8. The cheat sheet is `docs/EXAM_FORMAT.md` §8, kept in
+  `dewmark/data/cheat-sheet.txt` and checked against it by a test.
+
+The words that ask an assistant to change wording (each mode's task text
+in `package.py`) follow the voice section of dewlab's style guide: plain
+words, no idioms, and a question's verb kept so its demand does not
+change; they are addressed to an assistant, and the paper's students see
+only what a teacher accepts. *Changing it:* the two pairs of marker lines
+(`=== BEGIN PAPER ===`, `=== BEGIN NOTES ===` and their ends) join a
+package to the check of its reply; changing them only affects packages
+already handed to an assistant.
+
+**0.10 — The checker page.** `checker/index.html` puts the reader and the
+paste route in front of a teacher: paste or open an exam file and read each
+problem with its line, what is wrong and what to do; click a problem to land
+on its line; or have an assistant reword or convert a paper and take or
+leave each change it made (planning/PROPOSAL.md §4, stages 2 to 4 of the
+journey). The page runs the reader unchanged in Pyodide through
+`dewmark/web.py`, which takes text and returns JSON, and `dev/build_site.py`
+writes the page with the reader's own source files in a data block, so it
+cannot check with other code than the command line runs.
+`tests/browser/test_checker.py` is the probe the plan asked for from the
+first commit: in Chromium it compares what the browser and the command line
+return, string for string, over the specimen and the four PDP papers.
+
+What it settles:
+
+- *Python comes from jsDelivr, not from this repository.* The page needs a
+  connection the first time, at the same Pyodide version the exam page pins
+  (0.27.4); a failed load says so and offers to try again. Vendoring about
+  10 MB of runtime would let the checker work offline, and is left to the
+  studio (step 7) unless asked for sooner.
+- *The content security policy includes `'unsafe-eval'`*, because Pyodide
+  does not start without it (tried: the page stays on "Loading Python").
+  What protects the paper is the rest of the policy: `connect-src` is
+  jsDelivr alone, `form-action` and `default-src` are `'none'`, and
+  `img-src` is `data:`. A policy does not stop the page's own script from
+  navigating away, so the rehearsal also lists every request the page makes
+  and fails on anything but a GET for the file or the CDN.
+- *Nothing is saved.* A paper before it is sat is secret, and the checker
+  may be open on a shared college computer, so it writes nothing to browser
+  storage or cookies (a rehearsal checks) and a closed tab forgets the paper.
+  **Save this file** downloads it.
+- *A reply is checked against the paper the package was made from*, held in
+  the page, not against whatever the editor holds by then, so editing the
+  file between the two cannot make a good reply look like a bad one.
+- *A package with something that may be student information waits for a
+  tick* before it can be copied or saved, so the question is answered, not
+  scrolled past.
+- *The reader now says "Question 1", not "1",* where a message means a
+  question: "Question 1's parts add up to 13 marks". The most common message
+  on the page read "1's parts add up…". Names and the lock's labels are
+  unchanged.
+- *The check runs on the page's own thread, 400 ms after typing stops.* The
+  plan says a background worker; a worker waits until a paper is long enough
+  to make the page hesitate, which the 4,000-line limit keeps from being
+  long.
+
+*Changing it:* the JSON that `dewmark/web.py` returns is the contract between
+the page and the reader. They ship in one file, so a built page cannot hold
+one without the other.

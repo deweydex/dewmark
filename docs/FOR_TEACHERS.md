@@ -6,6 +6,16 @@ knowledge. Where a step differs between browsers, the guide says so;
 Chrome and Edge support everything below, and the differences on other
 browsers are noted where they occur.
 
+**The exam file is changing.** The [exam file checker](https://deweydex.github.io/dewmark/checker/)
+reads a newer, simpler exam file (described in `docs/EXAM_FORMAT.md`). It
+shows every problem with its line and what to do, and it can make a text for
+an assistant your college allows, to reword a paper or to put a Word paper
+into the new format, and then check what the assistant sends back before you
+use any of it. The builder in this guide still reads the older format until the
+new exam page is built, so a file that passes the checker cannot be built into
+an exam yet. Use the checker to write and tidy papers now. Build only papers
+in the older format.
+
 ## 1. Get your exam into a dewmark exam file
 
 A dewmark exam lives in one plain-text file called the exam file. There

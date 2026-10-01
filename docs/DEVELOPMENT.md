@@ -24,21 +24,46 @@ program.
 the plan at a time. Today it holds the reader for the exam format in
 `docs/EXAM_FORMAT.md` (`dewmark/reader.py`, with `settings.py`,
 `numbers.py`, `kinds.py` and `scheme.py`), the names lock that holds an
-issued paper's names still (`dewmark/lock.py`), and the converter for the
+issued paper's names still (`dewmark/lock.py`), the paste route
+(`dewmark/package.py` builds what a teacher gives an assistant,
+`dewmark/reply.py` checks what comes back, and `dewmark/data/` holds the
+cheat sheet and the specimen paper it sends), and the converter for the
 hand-built PDP pages (`dewmark/convert_pdp.py`). It uses only Python's
 standard library, so the studio can run it unchanged in the browser.
 
 ```sh
 python -m dewmark check samples/pdp-5n2927/*.exam.md
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"
+python -m dewmark package tidy FILE -o package.txt
+python -m dewmark reply tidy FILE REPLY.txt -o reworded.exam.md
 python -m dewmark.convert_pdp samples/pdp-5n2927 experiments/pdp-5n2927/*.html
 ```
 
 `tests/test_reader.py` holds the format's hostile cases as tests, reads
 the specimen paper in `tests/fixtures/`, and fails if the converted PDP
 papers in `samples/pdp-5n2927/` drift from what the converter writes.
+The checker page, `checker/index.html`, is a template. `python
+dev/build_site.py` writes the real page to `site/checker/`, with every file
+of the `dewmark` package the page calls (not `__main__.py` or the PDP
+converter) in a data block, so the page checks with the code the command
+line runs. The page loads Pyodide from jsDelivr, at the version the exam page
+pins, and calls `dewmark/web.py`, which takes text and returns JSON. Opened
+without being built, it says so. `tests/browser/test_checker.py` runs the
+page in Chromium and compares what the browser and the command line say over
+the specimen and the four PDP papers, string for string; it needs a network
+for Python, and skips without one unless `DEWMARK_REQUIRE_BROWSER` is set, as
+it is in CI. `tests/test_web.py` runs the embedded sources in a bare
+interpreter (`python -S -I`, an empty folder) to prove they need nothing else.
+
 `tests/test_lock.py` issues a small paper, changes it the ways a teacher
 might after a sitting, and checks what the lock refuses and allows.
+
+`tests/test_paste.py` makes replies that go wrong one way at a time (a
+setting, a number, a line of code, a scheme slipped in) and checks each
+is refused; it also has a fake assistant reword the four real PDP papers
+and checks the rewording is accepted, all rejected gives the papers back
+byte for byte, and one changed digit is refused. It also fails if the
+cheat sheet in `dewmark/data/` drifts from §8 of `docs/EXAM_FORMAT.md`.
 
 ## Layout
 

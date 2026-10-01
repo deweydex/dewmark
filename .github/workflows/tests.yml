@@ -41,14 +41,14 @@ jobs:
       # The new reader (docs/EXAM_FORMAT.md), on the papers already written
       # in the new format. It exits 1 on any problem.
       - name: Check the papers in the new format
-        run: python -m dewmark check samples/pdp-5n2927/*.exam.md tests/fixtures/specimen.exam.md
+        run: python -m dewmark check samples/pdp-5n2927/*.exam.md tests/fixtures/specimen.exam.md dewmark/data/specimen.exam.md
 
       # .gitignore keeps real papers and submissions out, but `git add -f`
       # gets past it; this is the second lock (DECISIONS_LOG.md, entry 0.4).
       - name: Refuse real papers and submissions
         run: |
           bad=$(git ls-files | grep -E '^private/|\.zip$|(^|/)dewmark_[^/]*$' || true)
-          strays=$(git ls-files '*.exam.md' | grep -vE '^(samples|experiments|tests/fixtures)/' || true)
+          strays=$(git ls-files '*.exam.md' | grep -vE '^(samples|experiments|tests/fixtures|dewmark/data)/' || true)
           if [ -n "$bad$strays" ]; then
             echo "These files must not be committed:"; echo "$bad"; echo "$strays"; exit 1
           fi

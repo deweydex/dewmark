@@ -12,13 +12,18 @@
 > tests and drafts (§4.6, §4.7), and gives the messages of §7 with stable
 > codes. **The names lock** (§4.4) is `dewmark/lock.py`: `python -m
 > dewmark lock FILE --sitting NAME` writes it, and `check` reads it.
+> **The paste route** (§4.10) is `dewmark/package.py` and
+> `dewmark/reply.py`: `python -m dewmark package MODE FILE` makes the
+> text to give an assistant, and `python -m dewmark reply MODE PAPER
+> REPLY` checks what came back. **The checker page** (`checker/`, on the
+> dewmark site) runs the reader and the paste route in a browser.
 > Not yet built: the page search and the mutation test (§4.5 layers 3
 > and 4, which need the renderer), the dewlab import form (§4.11), and
 > the JSON schema for a connected model (§4.10). No page is built from
 > this format yet; until the exam page of step 4, `build_exam.py`
 > builds pages from the older format in `planning/THE_EXAM_FILE.md`.
-> Where the reader and the lock depart from the text below is in
-> `DECISIONS_LOG.md`, entries 0.7 and 0.8. The three rival
+> Where the reader, the lock and the paste route depart from the text
+> below is in `DECISIONS_LOG.md`, entries 0.7, 0.8, 0.9 and 0.10. The three rival
 > proposals this document judges, and the other files it names, are kept
 > in history at commit `b3823f91799f` under
 > `planning/research-2026-09-27/design/`. Decision 22 later added an
@@ -315,6 +320,12 @@ The student's name and number are always asked, on the one combined start screen
 **The paste route** (decision 20) ships first. The studio prepares a package for any assistant: the cheat sheet (§8), a specimen paper for the subject, and the teacher's exam, with no student data. The reply is pasted back and checked by the same builder; a "Copy these problems" button hands the messages back to the assistant. The model's output looks like its input: Word papers are already numbered headings with "(15 marks)", and Word schemes already read "1(a) … 2 marks". The model invents no names.
 
 **With a connected endpoint** (decision 18), the model returns JSON under a schema generated from the registry (typed blocks §8): closed kind lists, fixed notes, a key shape per kind. Local model servers turn such a schema into a grammar the model cannot step outside (`local-llm.md` §1). dewmark then writes the JSON out as the text format, so the teacher still reads a paper.
+
+**As built** (`dewmark/package.py`, `dewmark/reply.py`; `DECISIONS_LOG.md` 0.9). The modes are `copy`, `tidy`, `plain`, `udl` and `invite`. A package opens with the notice, then says what to do, gives the rules for the reply, the cheat sheet (§8) and the paper, and for `copy` also a short specimen and the settings block the teacher filled in. The wording modes send the paper half only: `# Reference` and `# Marking scheme` and everything after them stay on the teacher's computer and are joined back unchanged. The assistant is asked to return the paper between `=== BEGIN PAPER ===` and `=== END PAPER ===`, and its notes between `=== BEGIN NOTES ===` and `=== END NOTES ===`; a reply without markers, in a code fence, or with chat above the settings is still found.
+
+A wording mode's reply is refused, with every reason listed, if it changes a setting (`reply-settings-changed`); a heading's number, marks or "any N" (`reply-heading-changed`); any line of an answer box or listing, including the text inside (`reply-box-changed`); a number in the prose (`reply-number-changed`); a formula, a piece of code in backticks or a picture's file name (`reply-formula-changed`); or if it carries a scheme or reference cards (`reply-has-scheme`). A reply that keeps all of these is shown as a list of changes, each with the passage before and after, the part it is under and an id. The teacher takes or leaves each one; leaving them all gives the teacher's file back exactly. A numbered list turned into bullets is not a change of number. Wording inside an answer box, such as the options of a `choice` or the sentences of `blanks`, is not reachable yet; it is fixed, because the scheme and the lock key on it.
+
+A `copy` reply must begin with the settings the teacher gave (`reply-settings-changed`). Its words are compared with the Word text in order: every difference is a warning naming the words (`reply-words-changed`), a number in the Word text that the reply lacks entirely is refused (`reply-number-lost`), and one it has fewer times is a warning (`reply-number-fewer`). The paper is then read by the reader, whose messages come back with their own codes, and a marking scheme of `(draft)` entries is added, as the PDP converter does. A scan for e-mail addresses, PPS numbers, phone numbers, long numbers and "student number:" runs before a package is offered; it asks the teacher to check, and never refuses, since a paper has numbers of its own.
 
 **Decision 19's modes** change only prose above the line. A mode's reply that changes a heading's number or marks, a fence line, or anything below the line is refused, not merely flagged, and every wording change is shown as a plain difference the teacher reads line by line. "Copy without composing" should produce a paper half almost identical to the source text, which the studio can check by matching paragraphs.
 

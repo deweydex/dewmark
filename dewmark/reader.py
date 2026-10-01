@@ -250,7 +250,7 @@ class _Paper:
         if name in self.units:
             self.messages.problem(
                 "duplicate-number", number,
-                f"{label_of(num)} appears twice (lines {self.units[name]['line']} and {number}).",
+                f"{self._named(num, level)} appears twice (lines {self.units[name]['line']} and {number}).",
                 "Renumber one of them.", where)
         parent = None
         for up in range(level - 1, 1, -1):
@@ -300,8 +300,17 @@ class _Paper:
     def _where(self):
         for level in (4, 3, 2):
             if self.current.get(level):
-                return self.units[self.current[level]]["label"]
+                return self._say(self.current[level])
         return ""
+
+    @staticmethod
+    def _named(num, level):
+        return f"Question {label_of(num)}" if level == 2 else label_of(num)
+
+    def _say(self, name):
+        """How a message names a question or part: "Question 1", or "1(a)"."""
+        unit = self.units[name]
+        return f"Question {unit['label']}" if unit["level"] == 2 else unit["label"]
 
     def _fence(self, number, info, body, opener="```"):
         words = info.split()
@@ -379,9 +388,9 @@ class _Paper:
             if target not in ancestors and not target.startswith(owner):
                 self.messages.problem(
                     "box-label-mismatch", number,
-                    f"The box labelled \"{label}\" sits under {owner_unit['label']}.",
-                    f"Label it with {owner_unit['label']}'s number, or move it.",
-                    owner_unit["label"])
+                    f"The box labelled \"{label}\" sits under {self._say(owner)}.",
+                    f"Label it with {self._say(owner)}'s number, or move it.",
+                    self._say(owner))
             stem = name_of(num)
         else:
             stem = owner
@@ -432,30 +441,30 @@ class _Paper:
             if unit["children"] and not box["unmarked"]:
                 self.messages.problem(
                     "box-outside-parts", box["line"],
-                    f"The ```{box['kind']} box is in {unit['label']} but outside all of its "
-                    "parts, so it has no marks.",
+                    f"The ```{box['kind']} box is in {self._say(box['unit'])} but outside all of "
+                    "its parts, so it has no marks.",
                     "Move it under a part's heading, or add (not marked) if it is rough work.",
-                    unit["label"])
+                    self._say(box["unit"]))
         for name in self.order:
             unit = self.units[name]
             if not unit["children"]:
                 if not unit["boxes"]:
                     self.messages.warning(
                         "no-answer-box", unit["line"],
-                        f"{unit['label']} has marks but no answer box.",
+                        f"{self._say(name)} has marks but no answer box.",
                         "Add a box under it, or ```on-paper if it is answered on paper.",
-                        unit["label"])
+                        self._say(name))
                 continue
             marks = [self.units[c]["marks"] for c in unit["children"]]
-            added = self._choose(unit["any"], marks, unit["line"], unit["label"])
+            added = self._choose(unit["any"], marks, unit["line"], self._say(name))
             if added is not None and added != unit["marks"]:
                 shown = ", ".join(f"{self.units[c]['label']} is {self.units[c]['marks']:g}"
                                   for c in unit["children"])
                 self.messages.problem(
                     "marks-sum", unit["line"],
-                    f"{unit['label']}'s parts add up to {added:g} marks, but its heading says "
+                    f"{self._say(name)}'s parts add up to {added:g} marks, but its heading says "
                     f"({unit['marks']:g} marks): {shown}.",
-                    "Change one part's marks, or the heading.", unit["label"])
+                    "Change one part's marks, or the heading.", self._say(name))
         total = 0
         for section in self.sections:
             if not section["questions"]:
@@ -524,9 +533,9 @@ def _both_halves(paper, scheme, split_line, messages):
         if name not in entries and not any(b in entries for b in unit["boxes"]) and split_line:
             messages.warning(
                 "no-scheme-entry", unit["line"],
-                f"{unit['label']} has no entry in the marking scheme, so it will be marked "
+                f"{paper._say(name)} has no entry in the marking scheme, so it will be marked "
                 "out of its total with no guidance.",
-                f"Add \"### {unit['label']}\" below # Marking scheme.", unit["label"])
+                f"Add \"### {unit['label']}\" below # Marking scheme.", paper._say(name))
     for name, box in paper.boxes.items():
         if box["unmarked"] or not box["body"].strip():
             continue
