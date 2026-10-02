@@ -355,7 +355,7 @@ def test_a_paper_with_problems_is_not_tested_and_says_why():
 
 
 def test_a_mutation_that_breaks_the_paper_is_the_testers_fault_not_the_renderers(monkeypatch):
-    monkeypatch.setattr(secrecy, "mutate", lambda text, only=None: (text.replace("Answer: 8", "Answer: ", 1)
+    monkeypatch.setattr(secrecy, "mutate", lambda text, only=None, hints=False: (text.replace("Answer: 8", "Answer: ", 1)
                                                                     .replace("### 1(b)", "### 9(z)"), 1))
     result = mutation_test(SPECIMEN, clean)
     assert result["ok"] is False and result["reason"].startswith("the nonsense version of the scheme")

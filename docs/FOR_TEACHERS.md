@@ -84,6 +84,17 @@ things:
 - `dewmark_my-exam-code_marking_scheme.json` — the file the marking
   workbench reads. Keep this one to yourself.
 
+**A newer builder is being made, and is not ready for a class.** If your
+paper is written in the new format ([EXAM_FORMAT.md](EXAM_FORMAT.md)),
+`python -m dewmark build my-exam.exam.md -o finished/` builds the same four
+files from it, and stops, writing nothing, if a page it made would show
+students the marking scheme or a hint. What it makes does not yet have a
+timer, breaks or a PDF, cannot draw four kinds of question (matching,
+ordering, photographs and "answer on paper"; it tells you which), and saves
+an answer file the marking workbench cannot read yet
+([ANSWER_FILE.md](ANSWER_FILE.md)). Use it to try the new format, and use
+`build_exam.py` for a real sitting.
+
 Before the real sitting, open the student page and sit the paper
 yourself. Reading your own exam as a student finds more problems than
 any automatic check.

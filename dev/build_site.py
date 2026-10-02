@@ -53,6 +53,37 @@ def build_samples() -> list[tuple[str, list[tuple[str, str]]]]:
     return listing
 
 
+# The papers in the new format that are published as pages to try. The four
+# papers under samples/pdp-5n2927 are built by the tests and not published here;
+# their trial runs are already published, as they were first made, below.
+NEW_FORMAT_SAMPLES = (ROOT / "dewmark" / "data" / "specimen.exam.md",)
+
+
+def build_new_pages() -> list[tuple[str, list[tuple[str, str]]]]:
+    """Build each new-format sample into site/new/<code>/ with the new builder
+    (dewmark/build.py) and return, per sample, its title and the pages written.
+    The marking scheme the builder also writes is a secret and stays out of
+    the site, as every file that is not a page does."""
+    sys.path.insert(0, str(ROOT))
+    from dewmark.build import build
+
+    listing = []
+    for exam in NEW_FORMAT_SAMPLES:
+        scratch = SITE / "new" / ".building"
+        build(exam, scratch)
+        pages = []
+        for suffix, label in VARIANTS:
+            for page in sorted(scratch.glob("*" + suffix)):
+                code = page.name.removesuffix(suffix)
+                target = SITE / "new" / code
+                target.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(page), target / page.name)
+                pages.append((f"new/{code}/{page.name}", label))
+        shutil.rmtree(scratch)
+        listing.append((title_of(exam), pages))
+    return listing
+
+
 def title_of(exam: Path) -> str:
     """The exam's title from its exam block, or its file name if none."""
     for line in exam.read_text(encoding="utf-8").splitlines():
@@ -64,8 +95,10 @@ def title_of(exam: Path) -> str:
 # The reader, as the browser runs it: every file of the dewmark package the
 # checker page calls, put into the page so it checks with the same code the
 # command line runs. The converter for the old hand-built pages and the
-# command-line entry point are not needed there.
-NOT_IN_THE_PAGE = {"__main__.py", "convert_pdp.py"}
+# command-line entry point are not needed there, and neither is the builder
+# of the pages: it needs the markdown and maths libraries, which the checker
+# page has no way to load, and nothing a checker does builds a page.
+NOT_IN_THE_PAGE = {"__main__.py", "convert_pdp.py", "build.py", "render.py"}
 
 
 def reader_sources() -> dict[str, str]:
@@ -116,7 +149,7 @@ def links(items: list[tuple[str, str]]) -> str:
                    for href, text in items)
 
 
-def write_home(samples) -> None:
+def write_home(samples, new_pages) -> None:
     # While only the student paper is published, a sample's title is its
     # link; with several variants each gets a link under the title.
     sample_rows = "".join(
@@ -128,7 +161,10 @@ def write_home(samples) -> None:
                          for p in (SITE / "experiments").rglob("*.html"))
     exp_items = [(p, EXPERIMENT_NAMES.get(Path(p).name, Path(p).stem))
                  for p in experiments]
-    page = HOME.format(samples=sample_rows, experiments=links(exp_items))
+    new_rows = "".join(
+        f"<li><span class=t>{html.escape(title)}</span><ul class=row>{links(pages)}</ul></li>"
+        for title, pages in new_pages)
+    page = HOME.format(samples=sample_rows, new_pages=new_rows, experiments=links(exp_items))
     (SITE / "index.html").write_text(page, encoding="utf-8")
 
 
@@ -189,6 +225,13 @@ your computer.</p>
 student paper, a practice version with hints, and an answer key.</p>
 <ul>{samples}</ul>
 
+<h2>The new page, a first draft</h2>
+<p>The page that will replace the ones above, built from an exam file in the
+<a href="https://github.com/deweydex/dewmark/blob/main/docs/EXAM_FORMAT.md">new format</a>.
+It has every kind of answer box but the few still to come, and saves as the
+others do. It has no timer, breaks or PDF yet, so it cannot be sat as an exam.</p>
+<ul>{new_pages}</ul>
+
 <h2>Before dewmark</h2>
 <p>Hand-built exam pages that dewmark learnt from, kept as they were.</p>
 <ul>{experiments}</ul>
@@ -214,10 +257,11 @@ def main() -> None:
     shutil.rmtree(SITE, ignore_errors=True)
     SITE.mkdir()
     samples = build_samples()
+    new_pages = build_new_pages()
     copy_folders()
     build_checker(SITE / "checker")
-    write_home(samples)
-    print(f"built {sum(len(p) for _, p in samples)} sample pages into {SITE}")
+    write_home(samples, new_pages)
+    print(f"built {sum(len(p) for _, p in samples + new_pages)} sample pages into {SITE}")
 
 
 if __name__ == "__main__":

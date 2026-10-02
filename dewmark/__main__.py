@@ -1,5 +1,6 @@
 """python -m dewmark check EXAM_FILE [EXAM_FILE ...]
 python -m dewmark lock EXAM_FILE --sitting "2026-10-20 Group A"
+python -m dewmark build EXAM_FILE [-o DIR]
 python -m dewmark scheme EXAM_FILE [-o OUT]
 python -m dewmark package MODE FILE [--set "key: value" ...] [-o OUT]
 python -m dewmark reply MODE ORIGINAL REPLY [--set "key: value" ...] [-o OUT]
@@ -13,6 +14,12 @@ lock records that a paper has been issued for a sitting, in
 names.lock.json beside the file (§4.4). It refuses a paper with problems.
 After that, check refuses a change that would strand stored answers,
 unless the paper's version setting changes.
+
+build makes the pages of a paper: a student page, a practice page and an answer
+key, and the marking scheme as JSON, into DIR. It refuses a paper with problems,
+a paper that uses a kind of box no page draws yet, and any page that would give
+away the scheme or a hint (§4.5); and with no -o it only checks. It needs the
+`markdown` and `latex2mathml` packages (requirements.txt).
 
 scheme writes the marking scheme of a paper as dewmark-scheme/1 JSON, the
 file the marking workbench reads (§4.6). It holds the paper's secrets: keep
@@ -129,6 +136,29 @@ def _read_text(path):
         return handle.read()
 
 
+def build(argv):
+    from .build import BuildError, build as build_files    # needs markdown: only when asked
+    rest, _, out = _options(argv)
+    if len(rest) != 1:
+        print("build needs an exam file.")
+        return 2
+    paper, _, _, _ = read_with_lock(rest[0])
+    try:
+        if paper["messages"].problems:
+            raise BuildError(paper["messages"].problems)
+        names = build_files(rest[0], out)
+    except BuildError as error:
+        print(f"{rest[0]}: not built.")
+        for message in error.messages:
+            print("  " + message.replace("\n", "\n  "))
+        return 1
+    print(f"{rest[0]}: " + (f"built {len(names)} files into {out}." if out else
+                            "builds cleanly; no files written (give -o DIR to write them)."))
+    for name in names:
+        print("  " + name)
+    return 0
+
+
 def scheme(argv):
     rest, _, out = _options(argv)
     if len(rest) != 1:
@@ -203,6 +233,8 @@ def main(argv):
         return check(argv[1:])
     if len(argv) == 4 and argv[0] == "lock" and argv[2] == "--sitting":
         return lock(argv[1], argv[3])
+    if argv and argv[0] == "build":
+        return build(argv[1:])
     if argv and argv[0] == "scheme":
         return scheme(argv[1:])
     if argv and argv[0] == "package":

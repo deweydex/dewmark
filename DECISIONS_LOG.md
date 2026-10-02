@@ -321,3 +321,99 @@ What it settles:
 first marking that uses it; a field is not renamed or taken away without a new
 format number. The nonsense that `mutate` writes (`zqx0001vjk`) must never be
 a word a real scheme could contain.
+
+**0.12 — The page for written papers, first slice: a builder that refuses a
+leak and a page that saves.** `python -m dewmark build FILE -o DIR` makes a
+paper's student page, practice page and answer key, and its marking scheme as
+JSON (`dewmark/render.py`, `dewmark/build.py`, `assets/page.js`,
+`assets/page.css`; the file format is `docs/ANSWER_FILE.md`). It is the first
+of five slices of step 4, in this order: this one (the page draws the kinds of
+box and saves what students write); the two start screens, reading settings,
+branding and the Get ready list; the timer, with its invigilator's code, and
+breaks; the PDF the page writes, the finish sheet and the receipt; print
+headers and footers. Josh chose to finish step 4 before Python in the room
+(step 5), and said there is plenty of time before anyone sits an exam, so the
+slices are ordered for being right, not for the earliest sitting.
+
+What it settles:
+
+- *The builder is the one door.* Every page a student receives comes through
+  `build_pages`, which refuses, writing nothing, a paper with problems, a paper
+  that uses a kind no page draws, and a paper whose pages give away the scheme
+  or a hint. That settles the debt entry 0.11 recorded: the search and the
+  mutation test now run over the real student and practice pages of the
+  specimen and of the four PDP papers, in the tests and in CI. The search runs
+  over the page's data block and scripts as well as its text, and the mutation
+  test rebuilds the page with the scheme (and, for the student page, the hints)
+  made nonsense and demands the same bytes. The practice page has the hints on
+  purpose, so only the scheme is searched for in it; the answer key is the one
+  page that shows the scheme and is never built for a student.
+- *A kind no page draws is refused, not drawn as a stand-in.* `match`,
+  `order`, `photo` and `on-paper` stop the build, with a message that names the
+  kind and says what to do instead. A page with a box a student cannot answer
+  would be found in the exam room, not at the desk. They are built in step 8.
+- *The page is a new file beside the old.* `assets/page.js` does not replace
+  `assets/exam-page.js`: the old page's submissions are what the marking
+  workbench reads, and the old builder still builds the samples and the
+  papers already written. Two page scripts exist until step 6 rebuilds the
+  workbench; the cost is a second thing to keep consistent, and the benefit is
+  that nothing marked today is stranded.
+- *The page is organised around a registry of kinds.* Each kind of box says how
+  to collect an answer from its controls and how to put a saved one back, and
+  nothing else, so a kind added in step 8 adds one entry. What each stores is
+  fixed in `docs/ANSWER_FILE.md`. A box that is empty, or that holds only its
+  starting text, is absent from the saved answers, not an empty answer, which
+  is what lets "answered" mean "present" for the progress panel, the finish
+  report and, later, the marks.
+- *The answer file is JSON, `dewmark-answers/1`, not a zip.* The zip was the
+  old page's way of carrying the readable copy and the data together. Decision
+  23 makes the PDF the thing a student hands in for reading, and this file the
+  thing the workbench reads, so the file need hold only the work. It carries no
+  scheme and no marks. The old workbench does not read it; step 6 does.
+- *The step-2 guards come over whole.* Nothing is written before Begin or
+  Continue (`canWrite`); each page of a paper has its own slot,
+  `dewmark:<code>:<page>`; starting again sets earlier work aside under
+  `:set-aside:<time>`; a second window in the same browser steps back; the
+  answer key saves nothing. `tests/browser/test_page.py` repeats each of the
+  step-2 rehearsals against the new page, and the page was broken two ways (a
+  start screen that writes, one slot for every page) to see them fail.
+- *A built page connects to nothing.* Its content security policy is
+  `default-src 'none'` with its own script and style, pictures as data
+  addresses, `form-action 'none'` and `base-uri 'none'`. That holds whatever a
+  paper's wording tries, and is why the page shows a link as text and an
+  address, shows raw HTML as text, and takes a picture only from inside the
+  paper's own folder. The rehearsal tells the page to fetch, load a picture and
+  submit a form to a made-up address and checks that none gets through.
+  Python in the room (step 5) will need `'unsafe-eval'` and a source for
+  Pyodide's files; that is a change to this policy, made then, and written here
+  then.
+- *An answer file is checked, not trusted.* A file for another paper, another
+  kind of page or in another shape is refused with a message. Of a file
+  accepted, each answer goes back by `.value` or `.checked`, never as markup,
+  and an answer of the wrong shape for its box is ignored; `__proto__` and
+  markup in a name or an answer are inert. The rehearsal feeds a file of
+  these.
+- *The readable copy is made from the live page* (as the older page's is, and
+  `docs/DEVELOPMENT.md` still lists it as the weaker construction): the page
+  is cloned, each control is replaced by what the student gave, and every
+  script and button is dropped. The rehearsal checks it holds no script and no
+  control, and that an answer holding `</textarea><script>` stays text.
+- *The site publishes the specimen's three pages* under `new/`, not the PDP
+  papers (they are built by the tests and CI, and their trial runs are
+  already published as they were first made) and never the scheme.
+  `build.py` and `render.py` are left out of the checker page's bundle: they
+  need the markdown and maths libraries, which Pyodide does not carry, and
+  nothing a checker does builds a page.
+
+Not done in this slice, and owed to the next: the start screens (the page asks
+for a name and a number and says where the file will be kept, and nothing
+more), reading settings, branding and the Get ready list; the timer and
+breaks; the PDF, the finish sheet's receipt and print headers; Run on
+`python exec`; and the accessibility checks the plan asks for (keyboard alone,
+NVDA), which need a person.
+
+*Changing it:* the page's hooks (`dm-` class names and ids, `data-answer`,
+`data-kind`, `data-slot`) are what `tests/browser/test_page.py` selects by and
+what the CSS and script share; a rename is a change to all three. The names in
+an answer file are the paper's permanent names, and the file's shapes follow
+`docs/ANSWER_FILE.md`'s rule for changing.

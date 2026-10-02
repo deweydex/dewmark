@@ -31,7 +31,7 @@ import re
 from types import SimpleNamespace
 
 from .package import split_halves
-from .reader import HEADING_RE, _tidy, read
+from .reader import FENCE_RE, HEADING_RE, _is_closing, _tidy, read
 from .scheme import CHOICE_KEY_RE, MATCH_PAIR_RE, _keyed_box
 
 MIN_SEARCH = 8      # a shorter string would match innocent text
@@ -45,9 +45,48 @@ def _norm(text):
     return re.sub(r"\s+", " ", text.translate(CURLY).lower()).strip()
 
 
+# --- hints ---------------------------------------------------------------------------
+# A hint is shown on the practice page and never on the student's. It sits in
+# the paper half, so the format's own split does not keep it off the student
+# page; these two layers do, and they treat a hint as they treat the scheme.
+
+def _hint_spans(lines):
+    """Where the hint fences of a paper's lines are, as (first body line,
+    after the last body line) pairs: the lines between the fence marks."""
+    spans, fence, opener, start = [], None, None, None
+    for index, line in enumerate(lines):
+        if fence:
+            if _is_closing(line, fence):
+                if opener == "hint":
+                    spans.append((start, index))
+                fence = None
+            continue
+        found = FENCE_RE.match(line)
+        if found:
+            fence, start = found.group(1), index + 1
+            words = found.group(2).split()
+            opener = words[0].lower() if words else ""
+    return spans
+
+
+def hint_lines(head):
+    """The lines inside every hint fence of a paper half."""
+    lines = head.split("\n")
+    return [l for a, b in _hint_spans(lines) for l in lines[a:b]]
+
+
+def without_hints(head):
+    """The paper half as the student page shows it: no hint fence."""
+    lines = head.split("\n")
+    drop = set()
+    for a, b in _hint_spans(lines):
+        drop.update(range(a - 1, b + 1))
+    return "\n".join(l for i, l in enumerate(lines) if i not in drop)
+
+
 # --- layer 3: the search -------------------------------------------------------
 
-def scheme_strings(text):
+def scheme_strings(text, student=False):
     """Every piece of the marking scheme a page could give away, as a list of
     {"text", "where", "kind", "searchable", "looking for"}. The pieces are
     what a renderer would print: keys, model answers, tests, points,
@@ -56,10 +95,15 @@ def scheme_strings(text):
     line that is not in an entry. A string that also appears in the paper
     students are given, or is shorter than MIN_SEARCH, is listed but not
     searchable: finding it would prove nothing. "looking for" is what the
-    search takes from it, normalised."""
+    search takes from it, normalised.
+
+    With `student=True` the strings are those that must not be on the student
+    page: the scheme's, and the hints', which the paper half holds but the
+    student page does not show, so what the student is given is the paper
+    half without them."""
     paper = read(text)
     head, rest = split_halves(text, reference=False)
-    visible = _norm(head)
+    visible = _norm(without_hints(head) if student else head)
     found = []
 
     def add(piece, where, kind):
@@ -97,6 +141,9 @@ def scheme_strings(text):
         if HEADING_RE.match(line):
             break
         add(line, "the marking scheme", "scheme text")
+    if student:
+        for line in hint_lines(head):
+            add(line, "a hint", "hint")
     return found
 
 
@@ -221,28 +268,45 @@ def _entry_lines(entry, paper, make):
     return lines + [""]
 
 
-def mutate(text, only=None):
+def _nonsense_hints(lines, make):
+    """The lines of a paper half with the inside of each hint fence replaced by
+    one line of nonsense. Returns (lines, how many hints were changed)."""
+    spans = _hint_spans(lines)
+    lines = list(lines)
+    for a, b in reversed(spans):
+        lines[a:b] = [make("hint")]
+    return lines, len(spans)
+
+
+def mutate(text, only=None, hints=False):
     """The exam file with its marking scheme said again in nonsense. The
     paper half is not touched, and the scheme keeps its entries, marks and
     structure, so the mutated file reads as the original does. With `only`
     (a set of entry names) the other entries are kept as they were written.
-    Returns (text, the number of entries made nonsense)."""
+    With `hints=True` the inside of every hint fence is made nonsense too,
+    for testing the student page, which must show none of it.
+    Returns (text, the number of entries and hints made nonsense)."""
     text = _tidy(text)
     paper = read(text)
     lines = text.split("\n")
     head, rest = split_halves(text, reference=False)
     entries = list(paper["scheme"]["entries"].values())
-    if not rest.strip() or not entries:
-        return text, 0
     counter = iter(range(1, 10 ** 6))
 
     def make(kind):
         return f"zqx{next(counter):04d}vjk"
 
+    head_lines, changed = head.split("\n"), 0
+    if hints:
+        head_lines, changed = _nonsense_hints(head_lines, make)
+    if not rest.strip() or not entries:
+        mutated = "\n".join(head_lines) + ("\n" + rest if rest.strip() else "")
+        return (mutated if changed else text), changed
+
     first = len(head.split("\n"))              # index of the "# Marking scheme" line
-    out = head.split("\n") + [lines[first], ""]
+    out = head_lines + [lines[first], ""]
+    at = len(head_lines) + 1                     # where the scheme's text begins in `out`
     starts = [e["line"] - 1 for e in entries] + [len(lines)]
-    changed = 0
     for entry, start, stop in zip(entries, starts, starts[1:]):
         if only is None or entry["name"] in only:
             out += _entry_lines(entry, paper, make)
@@ -250,21 +314,22 @@ def mutate(text, only=None):
         else:
             out += lines[start:stop]
     if only is not None and starts[0] > first + 1:       # text before the first entry
-        out[first + 2:first + 2] = lines[first + 1:starts[0]]
+        out[at:at] = lines[first + 1:starts[0]]
     return "\n".join(out).rstrip("\n") + "\n", changed
 
 
-def mutation_test(text, build):
+def mutation_test(text, build, hints=False):
     """Build the student page from the exam file and from the file with its
     marking scheme replaced by nonsense, and compare. `build(text)` is the
-    renderer, returning the page. Returns {"ok", "reason", "culprits"}: the
-    page must not change, and if it does, `culprits` names the entries of
-    the scheme it changed with."""
+    renderer, returning the page. With `hints=True` the hints are made
+    nonsense too. Returns {"ok", "reason", "culprits"}: the page must not
+    change, and if it does, `culprits` names the entries of the scheme (or "the
+    hints") it changed with."""
     original = read(text)
     if original["messages"].problems:
         return {"ok": False, "reason": "the paper has problems, so it cannot be built",
                 "culprits": []}
-    mutated, changed = mutate(text)
+    mutated, changed = mutate(text, hints=hints)
     if not changed:
         return {"ok": True, "reason": "the paper has no marking scheme entries to change",
                 "culprits": []}
@@ -281,6 +346,10 @@ def mutation_test(text, build):
         one, _ = mutate(text, only={entry["name"]})
         if build(one) != page:
             culprits.append(entry["label"])
+    if hints:
+        only_hints, count = mutate(text, only=set(), hints=True)
+        if count and build(only_hints) != page:
+            culprits.append("the hints")
     return {"ok": False, "culprits": culprits,
             "reason": "the student page changed when the marking scheme did"
                       + ("" if culprits else ", but not for any one entry alone")}
