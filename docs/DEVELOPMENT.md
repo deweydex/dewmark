@@ -29,12 +29,21 @@ that keep it off a student page (`dewmark/secrecy.py`), the paste route
 (`dewmark/package.py` builds what a teacher gives an assistant,
 `dewmark/reply.py` checks what comes back, and `dewmark/data/` holds the
 cheat sheet and the specimen paper it sends), and the converter for the
-hand-built PDP pages (`dewmark/convert_pdp.py`). It uses only Python's
-standard library, so the studio can run it unchanged in the browser.
+hand-built PDP pages (`dewmark/convert_pdp.py`). All of that uses only
+Python's standard library, so the studio can run it unchanged in the browser.
+
+The two exceptions are the files that make pages: `dewmark/render.py` draws a
+paper's blocks as HTML and `dewmark/build.py` assembles the pages and refuses a
+paper that leaks, and both need the `markdown` and `latex2mathml` packages. Nothing
+in the pure core imports them, and `dev/build_site.py` leaves them out of the
+checker page's bundle (`NOT_IN_THE_PAGE`), which `tests/test_web.py` checks. The
+page they build is `assets/page.css` and `assets/page.js` (not `exam-page.*`,
+which belong to `build_exam.py`), and its answer file is `docs/ANSWER_FILE.md`.
 
 ```sh
 python -m dewmark check samples/pdp-5n2927/*.exam.md
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"
+python -m dewmark build FILE -o DIR
 python -m dewmark scheme FILE -o scheme.json
 python -m dewmark package tidy FILE -o package.txt
 python -m dewmark reply tidy FILE REPLY.txt -o reworded.exam.md
@@ -63,9 +72,17 @@ nine that each let the scheme through a different way (a comment, a data
 block, escaped, in capitals, by its start, a class on the right option, a
 short key, base64). It shows which layer catches which: the search cannot see
 a key too short to look for, one implied by a class, or one encoded, and the
-mutation test finds them. When step 4's renderer exists, add
-`mutation_test(sample, build_student_page)` and `find_leaks` over every sample
-to the tests, and stop the build on a leak.
+mutation test finds them. `dewmark/build.py` runs both over the real student and
+practice pages of every paper it builds and stops on a leak; `tests/test_build.py`
+builds the specimen and the four PDP papers that way, and shows a renderer that
+lets the scheme, the right option or a hint through being caught.
+
+`tests/test_build.py` also covers the reader's blocks, each kind's markup, what
+hostile prose, links and pictures turn into, the page model, the three pages'
+differences, and the command line. `tests/browser/test_page.py` sits a paper with
+every kind of box in Chromium: the step-2 rehearsals again for the new page, what
+each kind stores and restores, the answer file's round trip and what is refused
+of a file that is not one, the readable copy, and that the page reaches nothing.
 
 `tests/test_lock.py` issues a small paper, changes it the ways a teacher
 might after a sitting, and checks what the lock refuses and allows.
@@ -80,10 +97,13 @@ cheat sheet in `dewmark/data/` drifts from §8 of `docs/EXAM_FORMAT.md`.
 ## Layout
 
 ```text
-  build_exam.py        the exam builder: exam file in, finished pages out
+  build_exam.py        the exam builder for the older format: exam file in, finished pages out
+  dewmark/             the new reader and, with `render.py` and `build.py`, the new builder
   assets/
-    exam-page.css      styles inlined into every built exam page
-    exam-page.js       behaviour inlined into every built exam page
+    exam-page.css      styles inlined into every page build_exam.py builds
+    exam-page.js       behaviour inlined into every page build_exam.py builds
+    page.css           the same, for the pages `python -m dewmark build` builds
+    page.js            ...with a registry of answer kinds (docs/ANSWER_FILE.md)
   workbench/
     index.html         the marking workbench, one self-contained page
   samples/             openly shareable exam files and their pictures
@@ -178,7 +198,13 @@ decision against the design documents. The documents remain the target.
 - **Starting again keeps earlier work aside, but nothing yet shows it.**
   It is stored under `dewmark:<exam code>:<page>:set-aside:<time>`;
   the invigilator's view that lists and recovers it comes with the new
-  start screens (step 4 of the plan).
+  start screens (the second slice of step 4).
+- **The new page is a first slice.** It draws every kind of box but
+  `match`, `order`, `photo` and `on-paper` (the build refuses those), saves in
+  the browser and, in Chrome and Edge, to a file, and hands in an answer file
+  and a readable copy. It has one plain start screen, no reading settings, no
+  branding beyond a band, no timer, breaks or PDF, and `python exec` is an
+  editor with no Run. The workbench does not read its answer file until step 6.
 - **Two markers, one folder, is unhandled.** The marking record is a
   single file with no merging; the last save wins.
 - **The accessibility baseline is only partly met.** Answer spaces have

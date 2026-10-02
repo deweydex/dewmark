@@ -19,15 +19,21 @@
 > dewmark site) runs the reader and the paste route in a browser.
 > **The marker's half as JSON** (§4.6) is `dewmark/scheme_json.py`, and
 > **the search and the mutation test** (§4.5 layers 3 and 4) are
-> `dewmark/secrecy.py`. Both layers take a function that builds a student
-> page; none exists yet for this format, so they are proved on renderers
-> written to leak. Not yet built: that renderer, the dewlab import form
-> (§4.11), and the JSON schema for a connected model (§4.10). No page is
-> built from this format yet; until the exam page of step 4,
-> `build_exam.py` builds pages from the older format in
-> `planning/THE_EXAM_FILE.md`. Where the reader, the lock, the paste route
-> and the secrecy layers depart from the text below is in
-> `DECISIONS_LOG.md`, entries 0.7 to 0.11. The three rival
+> `dewmark/secrecy.py`. **The pages** are built by `dewmark/render.py` and
+> `dewmark/build.py` (`python -m dewmark build FILE -o DIR`): a student page,
+> a practice page and an answer key, and the marking scheme as JSON, with
+> both secrecy layers run over every page built, so a paper that lets the
+> scheme or a hint through is refused (`DECISIONS_LOG.md`, entry 0.12). The
+> page draws `answer`, `maths`, `essay`, `code`, `python exec` (an editor
+> only, until step 5), `choice`, `boxes`, `blanks` and `table`; a paper using
+> `match`, `order`, `photo` or `on-paper` is refused with a message until
+> step 8. The start screens, timer, breaks and PDF of step 4 are not built.
+> Not yet built: the dewlab import form (§4.11) and the JSON schema for a
+> connected model (§4.10). `build_exam.py` still builds the pages of the
+> older format in `planning/THE_EXAM_FILE.md` for the workbench, which reads
+> only those pages' submissions until step 6. Where the reader, the lock, the
+> paste route, the secrecy layers and the pages depart from the text below is
+> in `DECISIONS_LOG.md`, entries 0.7 to 0.12. The three rival
 > proposals this document judges, and the other files it names, are kept
 > in history at commit `b3823f91799f` under
 > `planning/research-2026-09-27/design/`. Decision 22 later added an
@@ -204,6 +210,9 @@ A box noted `(not marked)` is rough work: saved, printed and shown to the marker
 | `![what it shows](pictures/cell.svg)` | A picture; the description is required |
 | `[registry.db](data/registry.db)` | A data file, listed in the side panel and placed in Python's folder |
 | raw HTML | Shown as text, never run |
+| ```` ```hint ```` | A hint for the part or question it sits under. The practice page and the answer key show it folded under the box, as "Hint"; the student page leaves it out entirely. The search covers the hints' words in the student page along with the scheme's strings, and the mutation test makes the hints nonsense too and demands the same page (decision 22). |
+
+**As built** (`dewmark/render.py`; `DECISIONS_LOG.md` 0.12). The page draws each kind of box as ordinary form controls named for the box, so the page needs nothing from a paper but its names: a `choice` is radio buttons, or check boxes when more than one may be chosen, each carrying its letter; `boxes`, `blanks` and `table` are one input or drop-down for each place to fill; `answer`, `maths`, `essay`, `code` and `python exec` are text areas that start with the body they were given, which counts as no answer until the student changes it. The height of a written box follows its marks. A picture is a `![description](path)` from inside the paper's own folder, and is built into the page as a data address; a picture that is missing, undescribed, remote, outside the folder (by `..`, a full path or a symbolic link) or not an image refuses the build. A link is shown as its text and its address, never followed. Raw HTML in prose, in a hint, in an option and in material is shown as text, never run.
 
 **Shared material** needs no syntax when it sits between a question heading and its first part: it belongs to the whole question and stays available beside every part, as on paper. The `material` fence is for anything shared by some later parts only.
 

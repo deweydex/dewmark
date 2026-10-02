@@ -106,6 +106,8 @@ def test_the_page_carries_the_readers_own_sources_and_nothing_it_does_not_need()
             "dewmark/package.py", "dewmark/data/cheat-sheet.txt",
             "dewmark/data/specimen.exam.md"} <= set(sources)
     assert "dewmark/__main__.py" not in sources and "dewmark/convert_pdp.py" not in sources
+    assert "dewmark/build.py" not in sources and "dewmark/render.py" not in sources, \
+        "the page builder needs libraries the checker page cannot load"
     assert not [name for name in sources if "__pycache__" in name]
 
 

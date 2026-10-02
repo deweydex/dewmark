@@ -47,17 +47,24 @@ def split_notes(rest):
         rest = rest[:m.start()]
 
 
-def gaps_in(text):
-    """The gaps in a line of text, in order: ("typed", None) for ____,
-    ("choose", [options]) for [a / b / c]. Gaps inside backticks or $…$
-    are not gaps."""
+def gap_spans(text):
+    """The gaps in a line of text, in order, as (start, end, gap): gap is
+    ("typed", None) for ____ and ("choose", [options]) for [a / b / c]. Gaps
+    inside backticks or $…$ are not gaps."""
     masked = PROTECTED_RE.sub(lambda m: " " * len(m.group(0)), text)
     found = []
     for m in TYPED_GAP_RE.finditer(masked):
-        found.append((m.start(), ("typed", None)))
+        found.append((m.start(), m.end(), ("typed", None)))
     for m in CHOICE_GAP_RE.finditer(masked):
-        found.append((m.start(), ("choose", [o.strip() for o in m.group(1).split(" / ")])))
-    return [g for _, g in sorted(found, key=lambda x: x[0])]
+        found.append((m.start(), m.end(),
+                      ("choose", [o.strip() for o in m.group(1).split(" / ")])))
+    return sorted(found, key=lambda g: g[0])
+
+
+def gaps_in(text):
+    """The gaps in a line of text, in order: ("typed", None) for ____,
+    ("choose", [options]) for [a / b / c]."""
+    return [gap for _, _, gap in gap_spans(text)]
 
 
 def inner_parts(kind, body):

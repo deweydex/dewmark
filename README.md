@@ -105,6 +105,13 @@ and the exam format it adopts in [`docs/EXAM_FORMAT.md`](docs/EXAM_FORMAT.md).
 Where those documents and the older ones in `planning/` disagree, the
 newer ones win until the older ones are rewritten.
 
+`python -m dewmark build FILE -o DIR` builds a paper in the new format into a
+student page, a practice page, an answer key and a marking scheme. It is a first
+slice of the page (every kind of box but four, no timer or PDF yet): try it on
+the [specimen](https://deweydex.github.io/dewmark/new/specimen-short/specimen-short.student.html),
+but sit a class on `build_exam.py`'s pages until the plan's step 4 is done. What
+the page saves is described in [`docs/ANSWER_FILE.md`](docs/ANSWER_FILE.md).
+
 ## Where exam content lives
 
 This repository is public. Real exam content is secret before students
@@ -124,7 +131,7 @@ computers or in private storage.
   planning/         the design documents listed above
   experiments/      the hand-built exams that came before dewmark
   build_exam.py     the exam builder: exam file in, finished pages out
-  dewmark/          the new builder, starting with the reader for docs/EXAM_FORMAT.md
+  dewmark/          the new builder: the reader for docs/EXAM_FORMAT.md, and the pages made from it
   assets/           the styles and behaviour built into every exam page
   checker/          the exam file checker page (a template; dev/build_site.py builds it)
   workbench/        the marking workbench page

@@ -43,6 +43,15 @@ jobs:
       - name: Check the papers in the new format
         run: python -m dewmark check samples/pdp-5n2927/*.exam.md tests/fixtures/specimen.exam.md dewmark/data/specimen.exam.md
 
+      # The new builder (dewmark/build.py) on the same papers. It refuses a
+      # paper whose pages would give away the marking scheme or a hint, so a
+      # leak in a built page fails here, on the page itself.
+      - name: Build the papers in the new format
+        run: |
+          for exam in samples/pdp-5n2927/*.exam.md dewmark/data/specimen.exam.md; do
+            python -m dewmark build "$exam" -o /tmp/dewmark-new
+          done
+
       # .gitignore keeps real papers and submissions out, but `git add -f`
       # gets past it; this is the second lock (DECISIONS_LOG.md, entry 0.4).
       - name: Refuse real papers and submissions

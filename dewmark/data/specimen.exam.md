@@ -67,7 +67,7 @@ The value `3.5` is a ____ and the value `"3.5"` is a ____.
 
 Explain why a program should check that a number has been typed before it does any sums with it.
 
-```answer 2(b) (about 2 sentences)
+```answer 2(b) (about 40 words)
 ```
 
 # Marking scheme

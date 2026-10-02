@@ -92,6 +92,7 @@ def read(text):
         "settings": {k: v for k, v in settings.items() if not k.startswith("_")},
         "setting_lines": settings.get("_lines", {}),
         "front": state.front,
+        "blocks": state.blocks,
         "sections": state.sections,
         "units": state.units,
         "boxes": state.boxes,
@@ -174,6 +175,11 @@ class _Paper:
         self.part = None
         self.started = False
         self.total = 0
+        # The paper's content in document order, for the renderer: sections
+        # and parts as they are headed, the prose between them, listings,
+        # answer boxes, shared material and hints.
+        self.blocks = []
+        self._text = []
 
     # --- reading ------------------------------------------------------
 
@@ -183,15 +189,38 @@ class _Paper:
             number, line = lines[index]
             fence = FENCE_RE.match(line)
             if fence:
+                self._flush()
                 body, index = self._fence_body(lines, index, fence.group(1))
                 self._fence(number, fence.group(2).strip(), body, fence.group(1))
                 continue
             heading = HEADING_RE.match(line)
             if heading and len(heading.group(1)) <= 4:
-                self._heading(number, len(heading.group(1)), heading.group(2))
+                self._flush()
+                if not self._heading(number, len(heading.group(1)), heading.group(2)):
+                    self._take(number, line)       # an ordinary heading is text
             else:
                 self._prose(number, line)
+                self._take(number, line)
             index += 1
+        self._flush()
+
+    def _take(self, number, line):
+        if not self._text:
+            self._text_line = number
+        self._text.append(line)
+
+    def _flush(self):
+        """Close the run of text lines being gathered as one block."""
+        lines = self._text
+        self._text = []
+        while lines and not lines[0].strip():
+            lines = lines[1:]
+            self._text_line += 1
+        while lines and not lines[-1].strip():
+            lines = lines[:-1]
+        if lines:
+            self.blocks.append({"type": "text", "lines": lines, "line": self._text_line,
+                                "front": not self.started})
 
     def _fence_body(self, lines, index, opener):
         body = []
@@ -211,14 +240,16 @@ class _Paper:
                         f"\"# {text}\" is a top-level heading, which starts a section, but it "
                         "isn't one. The paper's title comes from the settings.",
                         "Delete the line, or use ## for a heading such as \"## Instructions\".")
-                return
+                return False
             self.started = True
             section = {"title": core, "marks": marks, "any": _any_of(core),
                        "questions": [], "line": number}
             self.sections.append(section)
+            self.blocks.append({"type": "section", "title": core, "marks": marks,
+                                "any": section["any"], "line": number})
             self.current = {2: None, 3: None, 4: None}
             self.question = self.part = None
-            return
+            return True
         if marks is None:
             if LOOKS_NUMBERED_RE.match(core):
                 self.messages.warning(
@@ -232,7 +263,7 @@ class _Paper:
                 self.question = self.part = None
             if not self.started:
                 self.front.append("#" * level + " " + text)
-            return
+            return False
         numtext, title = split_title(core)
         num, rest = read_number(numtext, self.question if level > 2 else None,
                                 self.part if level > 3 else None)
@@ -242,7 +273,7 @@ class _Paper:
                 f"\"{text}\" has marks but no number, so its answers would have no "
                 "permanent name.",
                 "Start the heading with its number, such as \"### 2(a): …\".")
-            return
+            return False
         if not title and rest.strip():
             title = rest.strip()
         name = name_of(num)
@@ -266,7 +297,7 @@ class _Paper:
                 "part-outside-question", number,
                 f"{label_of(num)} is not inside a question.",
                 "Put a ## Question heading above it.", where)
-            return
+            return False
         if level == 3:
             self.part = num[2]
         self.units[name] = {
@@ -280,6 +311,8 @@ class _Paper:
         self.current[level] = name
         for deeper in range(level + 1, 5):
             self.current[deeper] = None
+        self.blocks.append({"type": "unit", "name": name, "level": level, "line": number})
+        return True
 
     def _prose(self, number, line):
         if not self.started:
@@ -329,9 +362,20 @@ class _Paper:
                 self._box(number, "python exec", info.split(None, 2)[2] if len(words) > 2 else "",
                           body, opener)
             elif first == "python" and second == "setup":
-                pass
+                self.blocks.append({"type": "setup", "body": "\n".join(body), "line": number})
+            else:
+                self.blocks.append({"type": "listing", "lang": first,
+                                    "body": "\n".join(body), "line": number})
             return
         if first == "material":
+            self.blocks.append({"type": "material", "label": info[len(words[0]):].strip(),
+                                "body": "\n".join(body), "line": number})
+            return
+        if first == "hint":
+            self.blocks.append({"type": "hint", "body": "\n".join(body), "line": number,
+                                "end": number + len(body) + 1,
+                                "unit": next((self.current[l] for l in (4, 3, 2)
+                                              if self.current.get(l)), None)})
             return
         if first == "tests":
             self.messages.problem(
@@ -341,7 +385,8 @@ class _Paper:
                 "Move it below # Marking scheme, under the part it tests.", self._where())
             return
         if first not in ANSWER_KINDS:
-            choices = list(ANSWER_KINDS) + list(LISTING_LANGUAGES) + ["material", "python exec"]
+            choices = (list(ANSWER_KINDS) + list(LISTING_LANGUAGES)
+                       + ["material", "hint", "python exec"])
             near = []
             if len(words) > 1 and words[1].lower() in ("exec", "setup"):
                 near = difflib.get_close_matches(first + " " + words[1].lower(),
@@ -428,6 +473,7 @@ class _Paper:
             "inner": inner_parts(kind, body),
         }
         self.units[owner]["boxes"].append(name)
+        self.blocks.append({"type": "box", "name": name, "line": number})
 
     # --- sums ----------------------------------------------------------
 
