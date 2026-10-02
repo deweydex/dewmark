@@ -210,7 +210,7 @@ def _entry(number, text, paper, messages, entries):
     if name not in paper.units and name not in paper.boxes:
         # "### 1B" names a part; "### 1B: answer" a labelled box in it.
         if name_of(num) in paper.units and caption:
-            name = name_of(num)
+            name, caption = name_of(num), ""
         else:
             messages.problem(
                 "scheme-unknown-part", number,
@@ -225,7 +225,8 @@ def _entry(number, text, paper, messages, entries):
             f"{entries[name]['line']} and {number}).",
             "Merge them into one.", label_of(num))
         return None
-    entry = {"name": name, "label": label_of(num), "line": number, "draft": draft,
+    entry = {"name": name, "label": label_of(num), "caption": caption, "line": number,
+             "draft": draft,
              "key": None, "key_line": None, "any_order": False, "model": "",
              "model_is_code": False, "tests": [], "points": [], "criteria": [],
              "guidance": [], "topic": "", "outcomes": []}

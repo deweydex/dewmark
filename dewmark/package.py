@@ -141,12 +141,13 @@ PHONE_RE = re.compile(r"(?<!\w)\+?\d[\d ()-]{8,}\d(?!\w)")
 STUDENT_ID_RE = re.compile(r"\bstudent\s*(?:number|no\.?|id)\b[\s:#-]*\S*\d", re.I)
 
 
-def split_halves(text):
+def split_halves(text, reference=True):
     """Split an exam file into (paper, rest): the paper half is everything
     above `# Reference` or `# Marking scheme`, whichever comes first; the
     rest starts at that line and is kept as it is, to be joined back after
-    an assistant has worked on the paper. A line inside a fence does not
-    count."""
+    an assistant has worked on the paper. With `reference=False` only the
+    marking scheme ends the paper, so the reference cards, which students
+    see, stay in it. A line inside a fence does not count."""
     lines = _tidy(text).split("\n")
     fence = None
     for index, line in enumerate(lines):
@@ -157,7 +158,7 @@ def split_halves(text):
         f = FENCE_RE.match(line)
         if f:
             fence = f.group(1)
-        elif SCHEME_LINE_RE.match(line) or REFERENCE_LINE_RE.match(line):
+        elif SCHEME_LINE_RE.match(line) or (reference and REFERENCE_LINE_RE.match(line)):
             return "\n".join(lines[:index]), "\n".join(lines[index:])
     return "\n".join(lines), ""
 

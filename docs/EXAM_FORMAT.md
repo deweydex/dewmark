@@ -17,13 +17,17 @@
 > text to give an assistant, and `python -m dewmark reply MODE PAPER
 > REPLY` checks what came back. **The checker page** (`checker/`, on the
 > dewmark site) runs the reader and the paste route in a browser.
-> Not yet built: the page search and the mutation test (§4.5 layers 3
-> and 4, which need the renderer), the dewlab import form (§4.11), and
-> the JSON schema for a connected model (§4.10). No page is built from
-> this format yet; until the exam page of step 4, `build_exam.py`
-> builds pages from the older format in `planning/THE_EXAM_FILE.md`.
-> Where the reader, the lock and the paste route depart from the text
-> below is in `DECISIONS_LOG.md`, entries 0.7, 0.8, 0.9 and 0.10. The three rival
+> **The marker's half as JSON** (§4.6) is `dewmark/scheme_json.py`, and
+> **the search and the mutation test** (§4.5 layers 3 and 4) are
+> `dewmark/secrecy.py`. Both layers take a function that builds a student
+> page; none exists yet for this format, so they are proved on renderers
+> written to leak. Not yet built: that renderer, the dewlab import form
+> (§4.11), and the JSON schema for a connected model (§4.10). No page is
+> built from this format yet; until the exam page of step 4,
+> `build_exam.py` builds pages from the older format in
+> `planning/THE_EXAM_FILE.md`. Where the reader, the lock, the paste route
+> and the secrecy layers depart from the text below is in
+> `DECISIONS_LOG.md`, entries 0.7 to 0.11. The three rival
 > proposals this document judges, and the other files it names, are kept
 > in history at commit `b3823f91799f` under
 > `planning/research-2026-09-27/design/`. Decision 22 later added an
@@ -240,6 +244,8 @@ Four layers, the first structural:
 3. **Search.** The builder searches the whole built page, **including the embedded data block today's check skips** (`code.md` §1, stage 5), for every scheme string of eight characters or more.
 4. **Mutation test.** In CI, every scheme string is replaced with nonsense and the student page rebuilt; it must be byte-identical. This guards the renderers, not the teacher: it fails when a future box kind lets a key through.
 
+**As built** (`dewmark/secrecy.py`; `DECISIONS_LOG.md` 0.11). `scheme_strings(text)` lists every string of the scheme a page could give away: keys, model answers, tests, points, criteria, bands, the marker's guidance a line at a time, and any text below the line that is in no entry. Strings shorter than eight characters, and strings the paper itself shows, are listed but not searched. `find_leaks(page, strings)` looks for each in the whole built page, data and scripts included (the check this replaces stripped scripts first), as written, escaped for HTML, and escaped for JSON, ignoring capitals and spacing; a string over 40 characters is also looked for by its first and last 30, since a page may show only an excerpt (each piece only if the paper does not already show it, as a point may open with the question's own words). `mutation_test(text, build)` writes the scheme again with nonsense in place of everything it says and a different valid key for each choice, match, order and drop-down box, builds the page from both files, and demands the same bytes; if they differ it names the entries that make the difference. Neither layer knows how a page is made: `build` is any function from the text of an exam file to a page.
+
 A practice or sample page receives keys, model answers and tests on purpose, locked until the student finishes the whole paper (decision 14). `show answers` and `practice tests` on a `kind: exam` file are refused.
 
 ### 4.6 The marker's half
@@ -263,6 +269,8 @@ Below `# Marking scheme`, entries are found by the number they mark.
 **Keys.** Alternatives are separated by ` / `, with spaces, so `3/8` is one answer. A key is **text**, compared ignoring capitals, spacing and quote style. It is compared **as a number** only when it carries a tolerance, a range or a precision: `4.88 ± 0.01 m` (`+-` also works), `± 2%`, `12.4 to 12.6 cm`, `(2 d.p.)`, `(3 s.f.)`, and `± 0` for an exact number. A number-shaped text key such as `40` also reports "agrees as a number" to the marker, as a separate fact, so `0123` and `123` are never silently treated as the same. A unit written after the number is part of the key; the student types number and unit in one box, and a missing or different unit is shown to the marker, never converted. A `choice` key may carry a check phrase: `Answer: B (range(1, 6))` makes the builder confirm that option B contains "range(1, 6)", which catches options swapped before issue. Two `Answer:` lines in one entry are refused.
 
 In line with decision 13, a key proposes a mark on a closed box and gives evidence on the rest; the marker confirms every mark.
+
+**As JSON** (`dewmark/scheme_json.py`; `python -m dewmark scheme FILE -o OUT`). The marker's half is written as `dewmark-scheme/1`: the paper's identity and total, the names (every part and box with its kind, marks and the text of each option, from the names lock's snapshot), and one entry for each heading of the scheme in file order, with its marks, the box its key belongs to, its method, key, model answer, tests, points, criteria and guidance. A number with a rule is a number (`{"number": 4.88, "tolerance": 0.01, "unit": "m"}`); everything else, `0123` included, is text. The file is stable, so a change to a scheme shows in a diff. It holds the paper's secrets and goes in the teacher's folder, never one students receive. A field may be added later; one is not renamed or taken away without a new format number.
 
 ### 4.7 Model answers, tests, drafts
 
