@@ -123,11 +123,11 @@ def test_the_first_screen_has_the_details_the_settings_and_what_the_paper_needs(
     assert 'id="dm-restore"' in start and re.search(r'id="dm-restore"[^>]*hidden', start)
 
 
-def test_the_second_screen_has_the_instructions_the_answer_file_the_time_and_begin():
+def test_the_second_screen_has_the_instructions_the_folder_the_time_and_begin():
     page = build_pages(SPECIMEN, ROOT / "dewmark" / "data")["specimen-short.student.html"]
     before = page[page.index('id="dm-before"'):page.index('id="dm-app"')]
     assert "Instructions to candidates" in before and "Answer <strong>all</strong>" in before
-    assert 'id="dm-choose-file"' in before and "Time allowed: 1 hour." in before
+    assert 'id="dm-choose-folder"' in before and "Time allowed: 1 hour." in before
     assert 'id="dm-begin"' in before and 'id="dm-back"' in before
     assert "Press Begin when your invigilator tells you to start." in before
 
@@ -139,9 +139,9 @@ def test_the_wording_under_begin_depends_on_the_page():
         assert "Press Begin when you are ready." in files[f"specimen-short.{name}.html"]
 
 
-def test_the_answer_key_has_no_place_to_choose_a_file():
+def test_the_answer_key_has_no_place_to_choose_a_folder():
     page = build_pages(SPECIMEN, ROOT / "dewmark" / "data")["specimen-short.answer-key.html"]
-    assert 'id="dm-choose-file"' not in page and "saves nothing, and has no answer file" in page
+    assert 'id="dm-choose-folder"' not in page and "saves nothing, and has no answer file" in page
 
 
 def test_the_number_example_is_the_hint_and_is_escaped():
@@ -266,9 +266,10 @@ def test_nothing_in_the_settings_or_the_screens_adds_an_address():
             assert not re.search(r"url\((?!data:)", page), name
 
 
-def test_the_script_is_the_four_files_in_order_and_never_writes_markup():
+def test_the_script_is_the_five_files_in_order_and_never_writes_markup():
     """What a student or an answer file holds goes into the page as text only."""
-    assert build_module.SCRIPTS == ("page.js", "page-reading.js", "page-pdf.js", "page-start.js")
+    assert build_module.SCRIPTS == ("page.js", "page-reading.js", "page-pdf.js", "page-finish.js",
+                                    "page-start.js")
     for name in build_module.SCRIPTS:
         script = (ROOT / "assets" / name).read_text(encoding="utf-8")
         assert not re.search(r"\.(innerHTML|outerHTML)\s*=|insertAdjacentHTML|document\.write|eval\(", script), name

@@ -5,8 +5,8 @@ What a student's work is, as the new exam page (`dewmark/build.py`, with
 the student saves and hands in. It is one JSON file, `dewmark-answers/1`.
 
 The page saves it three ways, which hold the same record: in this browser, in
-a file the student chose when they began (Chrome and Edge only), and, whenever
-the student asks, as a download. Nothing is sent anywhere. A built page's
+a folder the student chose when they began (Chrome and Edge only), where it
+is written as they work, and, whenever the student asks, as a download. Nothing is sent anywhere. A built page's
 policy allows it to connect to nothing at all.
 
 ## What is in it
@@ -39,7 +39,7 @@ policy allows it to connect to nothing at all.
 | `page` | Which page the work was done on: `student` or `practice`. A page refuses work from a page of the other kind. The answer key saves nothing. |
 | `student` | What the start screen asked: `full name` and `student number`. |
 | `started_at`, `saved_at` | When the student pressed Begin, and when the page last saved. UTC, to the millisecond. |
-| `finished_at` | When the student pressed *Save my answer file* on the finish sheet. `null` until then, and `null` again if the student changes an answer afterwards. |
+| `finished_at` | When the student pressed *Save my answer file and PDF* on the finish sheet. `null` until then, and `null` again if the student changes an answer afterwards. |
 | `receipt` | The receipt of the record (below). `null` until the student saves at the finish sheet, and `null` again if they change an answer afterwards. |
 | `answers` | One entry for each answer box that has something in it, keyed by the box's permanent name. |
 

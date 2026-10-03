@@ -101,8 +101,8 @@ paper's title, `institution`, `college`, `module`, `module code`, `session`,
 the time allowed and a `logo` if you give one (a picture file beside the exam
 file, 150 KB at most). Then two screens. On the first, the student types a name
 and a student number, chooses how the page looks, and sees a list of what the
-paper needs. On the second, they read your instructions, choose where their
-answer file goes, and press Begin. If the computer holds saved work for the
+paper needs. On the second, they read your instructions, choose a folder
+for their files, and press Begin. If the computer holds saved work for the
 number the student types, the page offers it, and offers it only for that
 number. The student's reading settings (font, text size, colours, a reading
 ruler) stay on that computer and are not in the answer file you receive. On a
@@ -113,17 +113,23 @@ settings on every screen.
 Every page built from one paper shows the same **Paper ID**, such as `7KQ-4MD`,
 on the second screen, and writes it into the answer file. Read it out to check
 that every student has the same copy of the paper; `python -m dewmark fingerprint
-my-exam.exam.md` prints it. When a student saves at the finish sheet, the page
-gives a **receipt**, such as `7F3A 92C1`, and puts it in the file. `python -m
-dewmark receipt FILE` checks a handed-in file against its receipt, and says if
-the file was changed after it was saved. On the finish sheet the student saves their answer file and a **PDF** of their
-answers (`docs/PDF_FILE.md`): each part's heading and the answer as typed, with
+my-exam.exam.md` prints it. Work saved on another version of a paper is not put
+into a new version: the page keeps it aside and starts the student again.
+
+On the screen before the paper, a student in Chrome or Edge chooses a folder (a
+folder on a USB stick, say), and the page saves their answer file into it as they
+work. On the finish sheet, one press saves the answer file and a **PDF** of their
+answers into the same folder, reads both back, and shows a **receipt**, such as
+`7F3A 92C1`, and a card for you with their name, number, paper, Paper ID, answers
+and the time. In another browser the page downloads both files and says it cannot
+look inside them. `python -m dewmark receipt FILE` checks a handed-in answer file
+against its receipt, and says if the file was changed after it was saved.
+
+The PDF (`docs/PDF_FILE.md`) has each part's heading and the answer as typed, with
 the student's name, number and the exam code on every page and the Paper ID and
-receipt at the foot. The PDF is made by the page, with no network. A student whose
-answer holds a character the PDF's fonts lack (Arabic or Chinese, say) is told, and
-offerred the browser's own print window. Work saved on another version of a paper
-is not put into a new version: the page keeps it aside and starts the student
-again.
+receipt at the foot. The page makes it with no network. A student whose answer
+holds a character the PDF's fonts lack (Arabic or Chinese, say) is told which, and
+offered the browser's own print window instead.
 
 Before the real sitting, open the student page and sit the paper
 yourself. Reading your own exam as a student finds more problems than

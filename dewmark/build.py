@@ -40,9 +40,9 @@ from .secrecy import find_leaks, mutation_test, scheme_strings, without_hints
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 
 # The page's behaviour, in the order it is joined into one script: the answer
-# kinds, saving and finishing; the reading settings; the PDF writer; then the
-# screens before the paper, which also start the page.
-SCRIPTS = ("page.js", "page-reading.js", "page-pdf.js", "page-start.js")
+# kinds, saving and finishing; the reading settings; the PDF writer; the finish
+# sheet's saving; then the screens before the paper, which also start the page.
+SCRIPTS = ("page.js", "page-reading.js", "page-pdf.js", "page-finish.js", "page-start.js")
 
 # What a built page may do: run its own script and style, show pictures it
 # carries, use the fonts it carries, and nothing else. It connects to nothing,
@@ -204,7 +204,7 @@ def needs(paper, variant):
             items.append(("setup", "Set-up code", "Runs by itself when Python is ready", "python"))
     if variant != "answer-key":
         items += [("storage", "Saving in this browser", "Tested when this page opened", "storage"),
-                  ("file", "Saving to your answer file", "Your browser decides how", "file")]
+                  ("file", "Saving into a folder you choose", "Your browser decides how", "file")]
     return items
 
 
@@ -384,9 +384,10 @@ def _before_screen(paper, variant, base_dir, code):
     if variant == "answer-key":
         where = "<p>The answer key saves nothing, and has no answer file.</p>"
     else:
-        where = ('<p id="dm-file-text">Choose where your answer file goes, for example your home folder or '
-                 'a USB stick. The page saves into it as you work. Nothing leaves this computer.</p>'
-                 '<button type="button" class="dm-secondary" id="dm-choose-file">Choose where to save…</button>'
+        where = ('<p id="dm-file-text">Choose a folder for your files, for example a folder on a USB stick. '
+                 'The page saves your answer file into it as you work, and puts your PDF there when you '
+                 'finish. Nothing leaves this computer.</p>'
+                 '<button type="button" class="dm-secondary" id="dm-choose-folder">Choose a folder…</button>'
                  '<p class="dm-hint-text" id="dm-file-status" role="status"></p>')
     time = (f'<div class="dm-card"><h3>Time</h3><p>Time allowed: {esc(settings["time allowed"])}.</p></div>'
             if settings.get("time allowed") else "")
@@ -397,7 +398,7 @@ def _before_screen(paper, variant, base_dir, code):
   <h2 id="dm-before-h" tabindex="-1">Before you begin</h2>
   <p id="dm-resume-line" class="dm-note" role="status" hidden></p>
   <div class="dm-card"><div class="dm-instructions">{instructions}</div></div>
-  <div class="dm-card"><h3>Your answer file</h3>{where}</div>
+  <div class="dm-card"><h3>Your files</h3>{where}</div>
   {time}
   <p id="dm-ready-line" class="dm-ready-line" role="status"></p>
   <p class="dm-hint-text">Paper ID {esc(code)}. Your invigilator may ask you to read it out.</p>
@@ -471,22 +472,52 @@ def build_page(paper, variant, base_dir, code=""):
 </div>
 
 <section id="dm-finish-screen" class="dm-screen" aria-labelledby="dm-finish-h" hidden>
-  <div class="dm-card">
-    <h2 id="dm-finish-h" tabindex="-1">Check before you hand in</h2>
-    <p id="dm-changed" class="dm-note" role="status" hidden>You changed your answers after you saved.
-      Save your answer file again before you hand it in.</p>
-    <div id="dm-finish-report"></div>
-    <p>{hand_in or "Save your answer file, and hand it in as your teacher has said."}</p>
-    <div class="dm-actions">
-      <button type="button" id="dm-submit" class="dm-primary">Save my answer file</button>
-      <button type="button" id="dm-save-pdf" class="dm-primary">Save a PDF</button>
-      <button type="button" id="dm-save-readable" class="dm-secondary">Save a readable copy</button>
-      <button type="button" id="dm-print" class="dm-secondary">Print or save as PDF</button>
-      <button type="button" id="dm-keep-working" class="dm-secondary">Keep working</button>
-    </div>
-    <p id="dm-saved" class="dm-restore-note" role="status" hidden></p>
-    <p id="dm-pdf-note" class="dm-note" role="status" hidden></p>
-  </div>
+  <h2 id="dm-finish-h" tabindex="-1">Finish</h2>
+  <p class="dm-lede">Three steps. Nothing ends until you choose, and you can go back to the paper at any time.</p>
+  <p id="dm-changed" class="dm-note" role="status" hidden>You changed your answers after you saved.
+    Save your files again before you hand in.</p>
+  <ol class="dm-finish-steps">
+    <li class="dm-card">
+      <h3>1. Check your answers</h3>
+      <div id="dm-finish-report"></div>
+    </li>
+    <li class="dm-card">
+      <h3>2. Save your answer file and your PDF</h3>
+      <p>One press saves both. The page checks what it saved and gives you a receipt.</p>
+      <div class="dm-actions">
+        <button type="button" id="dm-submit" class="dm-primary">Save my answer file and PDF</button>
+        <button type="button" id="dm-save-readable" class="dm-secondary">Save a readable copy</button>
+        <button type="button" id="dm-print" class="dm-secondary">Print or save as PDF</button>
+      </div>
+      <p id="dm-saved" class="dm-restore-note" role="status" hidden></p>
+      <p id="dm-problem" class="dm-problem" role="alert" hidden></p>
+      <div class="dm-actions"><button type="button" id="dm-rechoose" class="dm-secondary" hidden>Choose the folder again</button></div>
+      <p id="dm-pdf-note" class="dm-note" role="status" hidden></p>
+      <div id="dm-again-row" class="dm-actions" hidden>
+        <span class="dm-hint-text">If a file did not arrive:</span>
+        <button type="button" id="dm-again-file" class="dm-secondary">Save the answer file again</button>
+        <button type="button" id="dm-again-pdf" class="dm-secondary">Save the PDF again</button>
+      </div>
+    </li>
+    <li class="dm-card">
+      <h3>3. Hand it in</h3>
+      <p>{hand_in or "Hand in your files as your teacher has said."}</p>
+    </li>
+  </ol>
+  <section id="dm-confirm" class="dm-card dm-confirm" aria-labelledby="dm-confirm-h" hidden>
+    <h3 id="dm-confirm-h">For your invigilator</h3>
+    <dl class="dm-facts">
+      <div><dt>Name</dt><dd id="dm-c-name"></dd></div>
+      <div><dt>Student number</dt><dd id="dm-c-number"></dd></div>
+      <div><dt>Paper</dt><dd id="dm-c-paper"></dd></div>
+      <div><dt>Paper ID</dt><dd id="dm-c-id"></dd></div>
+      <div><dt>Answers</dt><dd id="dm-c-answers"></dd></div>
+      <div><dt>Saved</dt><dd id="dm-c-saved"></dd></div>
+      <div><dt>Receipt</dt><dd id="dm-c-receipt"></dd></div>
+      <div><dt>Files</dt><dd id="dm-c-files"></dd></div>
+    </dl>
+  </section>
+  <div class="dm-actions"><button type="button" id="dm-keep-working" class="dm-secondary">Keep working</button></div>
 </section>
 
 <script type="application/json" id="dewmark-page-model">{model}</script>

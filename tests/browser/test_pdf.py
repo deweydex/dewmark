@@ -19,8 +19,8 @@ import time
 import pytest
 
 from conftest import REHEARSAL_PAPER, ROOT, _unavailable
-from helpers import (EVERYTHING, FAKE_PICKER, begin, fill_everything, finish_and_download,
-                     open_page, stored, type_details, wait_for, write)
+from helpers import (EVERYTHING, FAKE_PICKER, answer_file, begin, fill_everything, folder_names, open_page,
+                     pdf_file, save_both, stored, type_details, wait_for, write)
 
 from dewmark.build import build_pages
 from dewmark.receipt import receipt
@@ -209,26 +209,20 @@ def test_the_essay_says_how_many_words_it_has(context, pages):
     assert "About 50 words" in text and "4 words" in text
 
 
-def test_the_codes_are_the_ones_in_the_answer_file_the_same_finish_gives(context, pages, tmp_path):
+def test_the_codes_are_the_ones_in_the_answer_file_the_same_finish_gives(context, pages):
     page = sitting(context, pages)
     fill_everything(page)
-    page.click("#dm-finish")
-    with page.expect_download() as caught:
-        page.click("#dm-save-pdf")
-    pdf = tmp_path / caught.value.suggested_filename
-    caught.value.save_as(pdf)
-    assert re.fullmatch(r"dewmark_rehearsal_s12345_agnes-nitt\.pdf", pdf.name)
-    with page.expect_download() as caught:
-        page.click("#dm-submit")
-    answer_file = tmp_path / caught.value.suggested_filename
-    caught.value.save_as(answer_file)
-    record = json.loads(answer_file.read_text())
-    text = text_of(pymupdf.open(pdf))
+    save_both(page)
+    record = answer_file(page)
+    pdf = opened(pdf_file(page))
+    text = text_of(pdf)
     assert f"Receipt {record['receipt']}" in text and f"Paper ID {record['exam']['fingerprint']}" in text
     assert record["receipt"] == receipt(record), "one finish sheet, one receipt, in the PDF and in the file"
     assert "Finished" in text and record["finished_at"][:16].replace("T", " ") in text
     assert "UTC" in text
-    assert "9 answers" in page.text_content("#dm-saved") and "saved" in page.text_content("#dm-pdf-note")
+    for index in range(pdf.page_count):
+        assert f"Receipt {record['receipt']}" in pdf[index].get_text(), index
+    assert "Checked: the file holds 9 answers" in page.text_content("#dm-saved")
 
 
 def test_the_practice_pdf_says_it_is_the_practice_version(context, pages):
@@ -275,9 +269,7 @@ def test_a_character_no_font_here_has_is_named_to_the_student_and_a_box_stands_f
     page = sitting(context, pages)
     page.fill('[data-answer="q1a"] textarea', "hello مرحبا 你好 end")
     page.wait_for_timeout(200)
-    page.click("#dm-finish")
-    with page.expect_download():
-        page.click("#dm-save-pdf")
+    save_both(page)
     note = page.text_content("#dm-pdf-note")
     assert "could not show these characters" in note and "你" in note and "م" in note
     assert "Print or save as PDF" in note and "exactly as you typed it" in note
@@ -407,17 +399,18 @@ def test_a_very_long_answer_is_written_in_a_reasonable_time(context, pages):
 
 # --- the page ---------------------------------------------------------------------------------------------------
 
-def test_saving_a_pdf_does_not_change_the_answers_and_a_second_save_keeps_the_receipt(context, pages, tmp_path):
+def test_saving_does_not_change_the_answers_and_a_second_save_keeps_the_receipt_and_the_files(context, pages):
     page = sitting(context, pages)
     fill_everything(page)
-    page.click("#dm-finish")
-    with page.expect_download():
-        page.click("#dm-save-pdf")
+    save_both(page)
     first = stored(page)["dewmark:rehearsal:student"]
+    first_pdf = pdf_file(page)
     assert first["answers"] == EVERYTHING and re.fullmatch(r"[0-9A-F]{4} [0-9A-F]{4}", first["receipt"])
-    with page.expect_download():
-        page.click("#dm-save-pdf")
+    page.click("#dm-submit")
+    wait_for(page, "!document.getElementById('dm-submit').disabled")
     assert stored(page)["dewmark:rehearsal:student"]["receipt"] == first["receipt"]
+    assert pdf_file(page) == first_pdf, "the same answers and receipt give the same PDF"
+    assert folder_names(page) and len(folder_names(page)) == 2
 
 
 def test_print_or_save_as_pdf_prints_the_paper_and_the_finish_sheet_comes_back(context, pages):
@@ -433,15 +426,15 @@ def test_print_or_save_as_pdf_prints_the_paper_and_the_finish_sheet_comes_back(c
     assert page.is_hidden("#dm-app") and page.is_visible("#dm-finish-screen")
 
 
-def test_a_page_with_no_way_to_make_a_pdf_says_so_and_loses_nothing(context, pages):
+def test_a_page_with_no_way_to_make_a_pdf_says_so_saves_the_answer_file_and_loses_nothing(context, pages):
     page = sitting(context, pages)
     write(page, "x")
     page.evaluate("() => { window.makePdf = async () => { throw new Error('no'); }; }")
-    page.click("#dm-finish")
-    page.click("#dm-save-pdf")
-    page.wait_for_selector("#dm-pdf-note:not([hidden])")
+    save_both(page)
     assert "could not be made on this computer" in page.text_content("#dm-pdf-note")
-    assert "Your answers are safe" in page.text_content("#dm-pdf-note")
+    assert "Your answer file is saved" in page.text_content("#dm-pdf-note")
+    assert "Checked: the file holds 1 answer." in page.text_content("#dm-saved")
+    assert [n for n in folder_names(page) if n.endswith(".json")] and not [n for n in folder_names(page) if n.endswith(".pdf")]
     assert stored(page)["dewmark:rehearsal:student"]["answers"] == {"q1a": "x"}
 
 

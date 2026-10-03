@@ -650,35 +650,3 @@ async function makePdf() {
   const fonts = pdfFonts();
   return writePdf(pdfContent(), fonts.sans, fonts.mono);
 }
-
-/* --- the buttons on the finish sheet ------------------------------------------------------ */
-
-$("dm-save-pdf").addEventListener("click", async () => {
-  fixReceipt();
-  const note = $("dm-pdf-note");
-  try {
-    const { bytes, missing, pages } = await makePdf();
-    save(new Blob([bytes], { type: "application/pdf" }), submissionBaseName() + ".pdf");
-    note.textContent = missing.length
-      ? "The PDF is saved, but it could not show " + (missing.length === 1 ? "this character" : "these characters")
-        + ": " + missing.join(" ") + ". It shows a box in " + (missing.length === 1 ? "its" : "their")
-        + " place. Your answer file has everything exactly as you typed it. Press Print or save as PDF"
-        + " for a copy that shows it."
-      : "The PDF is saved: " + pages + (pages === 1 ? " page." : " pages.");
-  } catch (err) {
-    note.textContent = "The PDF could not be made on this computer. Your answers are safe. Press Print or "
-      + "save as PDF to make one with your browser.";
-  }
-  note.hidden = false;
-  showSaved();
-});
-
-/* The browser's own print window, for a PDF as the browser would make it. It
-   prints the paper, so the finish sheet steps aside while the window is open. */
-$("dm-print").addEventListener("click", () => {
-  const app = $("dm-app"), finish = $("dm-finish-screen");
-  app.hidden = false;
-  finish.hidden = true;
-  window.addEventListener("afterprint", () => { app.hidden = true; finish.hidden = false; }, { once: true });
-  window.print();
-});

@@ -140,10 +140,19 @@ function receiptOf(record) {
   return code.slice(0, 4) + " " + code.slice(4);
 }
 
-let fileHandle = null;
+let directory = null;                 // the folder the student chose, in browsers that allow one
+let fileHandle = null;                // the answer file inside it
 let fileSaveTimer = null;
 
 const $ = (id) => document.getElementById(id);
+const plural = (n, one, many) => n + " " + (n === 1 ? one : many);
+
+/* A message on the page, set as text; an empty message hides its place. */
+function say(id, text) {
+  const el = $(id);
+  el.textContent = text;
+  el.hidden = !text;
+}
 
 /* --- the kinds of answer box ---------------------------------------------------
    An unanswered box is absent from state.answers, so "answered" means present.
@@ -280,8 +289,16 @@ function saveEverywhere() {
   refreshProgress();
 }
 
+/* A part of a file name from what a student typed: letters without their accents
+   (Síle becomes sile), lower case, and a hyphen between words. A name in
+   another alphabet has no letters left, and becomes "student"; the student
+   number, which is also in the file name, tells the files apart. */
+const UNACCENTED = { "ł": "l", "Ł": "L", "ø": "o", "Ø": "O", "đ": "d", "Đ": "D", "ð": "d", "Ð": "D",
+  "ħ": "h", "Ħ": "H", "ı": "i", "ß": "ss", "æ": "ae", "Æ": "AE", "œ": "oe", "Œ": "OE", "þ": "th", "Þ": "TH" };
+
 function safeName(text) {
-  return String(text || "").toLowerCase()
+  return String(text || "").replace(/[łŁøØđĐðÐħĦıßæÆœŒþÞ]/g, (c) => UNACCENTED[c])
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "student";
 }
 
@@ -485,10 +502,13 @@ function save(blob, name) {
   URL.revokeObjectURL(link.href);
 }
 
-function downloadAnswerFile() {
+function answerFileText() {
   gatherState();
-  save(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }),
-    submissionBaseName() + ".json");
+  return JSON.stringify(state, null, 2);
+}
+
+function downloadAnswerFile() {
+  save(new Blob([answerFileText()], { type: "application/json" }), submissionBaseName() + ".json");
 }
 
 function readableCopy() {
@@ -573,18 +593,9 @@ $("dm-keep-working").addEventListener("click", () => {
   $("dm-app").hidden = false;
   $("dm-paper").focus({ preventScroll: true });
 });
-/* Saving the answer file is what finishes the paper: the time is fixed, the
-   receipt is made from the whole record, and the page says what it saved. */
+/* Saving at the finish sheet is what hands the paper in: the time is fixed, the
+   receipt is made from the whole record (assets/page-finish.js does the saving). */
 let changedAfterFinish = false;
-
-function showSaved() {
-  const answers = Object.keys(state.answers).length;
-  const saved = $("dm-saved");
-  saved.textContent = "Saved. The file holds " + (answers === 1 ? "1 answer" : answers + " answers")
-    + ". Receipt " + state.receipt + ". Paper ID " + state.exam.fingerprint + ".";
-  saved.hidden = false;
-  $("dm-changed").hidden = true;
-}
 
 /* The paper is handed in as it now is. If it was already saved and has not
    changed since, the receipt stays the same, so every file saved from one
@@ -598,20 +609,14 @@ function fixReceipt() {
   saveEverywhere();
 }
 
-$("dm-submit").addEventListener("click", () => {
-  fixReceipt();
-  downloadAnswerFile();
-  showSaved();
-});
-
-/* A change after the paper was saved means the file and its receipt no longer
+/* A change after the paper was saved means the files and their receipt no longer
    describe the paper, so the student is asked to save again. */
 function noteChangeAfterFinish() {
   if (!state.finished_at) return;
   state.finished_at = null;
   state.receipt = null;
   changedAfterFinish = true;
-  $("dm-saved").hidden = true;
+  for (const id of ["dm-saved", "dm-problem", "dm-confirm", "dm-pdf-note", "dm-again-row"]) $(id).hidden = true;
 }
 $("dm-save-readable").addEventListener("click", downloadReadableCopy);
 

@@ -1,9 +1,11 @@
 # The PDF the page writes
 
 Every hand-in includes a PDF (decision 10). The page writes it itself, with no
-network, when the student presses **Save a PDF** on the finish sheet
+network, when the student presses **Save my answer file and PDF** on the finish sheet
 (decision 23: the page writes it, with the browser's print window as the
-backup). It is a plain record of what the student gave, for a marker to read in
+backup). One press saves both files, into the folder the student chose or, in a
+browser that cannot write into one, as two downloads; `docs/ANSWER_FILE.md` and
+entry 0.16 of `DECISIONS_LOG.md` say how the page checks them. It is a plain record of what the student gave, for a marker to read in
 Moodle's grader or on paper. The answer file (`docs/ANSWER_FILE.md`) is what the
 marking workbench reads; the PDF is what a person reads.
 

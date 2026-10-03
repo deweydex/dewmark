@@ -474,6 +474,18 @@ html[data-wrap="on"] .dm-code { white-space: pre-wrap; }
 }
 
 #dm-finish-screen ul { font-family: var(--dm-sans); font-size: 0.92rem; line-height: 1.7; }
+.dm-finish-steps { list-style: none; margin: 0; padding: 0; }
+.dm-finish-steps > li > h3 { margin-top: 0; }
+.dm-problem {
+  font-family: var(--dm-sans); font-size: 0.9rem; font-weight: 700; color: var(--dm-bad);
+  background: var(--dm-bad-bg); border: 1px solid var(--dm-bad); border-radius: 4px; padding: 0.7rem 1rem;
+}
+.dm-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem 1.4rem; margin: 0; font-family: var(--dm-sans); }
+.dm-facts dt { font-size: 0.78rem; font-weight: 700; color: var(--dm-muted); }
+.dm-facts dd { margin: 0; font-size: 0.95rem; word-break: break-word; }
+.dm-confirm { border-left: 4px solid var(--dm-good); }
+#dm-finish-screen .dm-card { margin-bottom: 1rem; }
+.dm-finish-steps .dm-restore-note, .dm-finish-steps .dm-problem, .dm-finish-steps .dm-note { margin-top: 1rem; }
 .dm-finish-good { color: var(--dm-good); }
 .dm-finish-warn { color: var(--dm-warn); }
 

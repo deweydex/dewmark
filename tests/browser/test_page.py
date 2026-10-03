@@ -26,9 +26,10 @@ from dewmark.build import build_pages
 from dewmark.receipt import canonical, receipt
 
 from helpers import (  # noqa: E402
-    BROKEN_STORAGE, CANCELLED_PICKER, EVERYTHING, FAKE_PICKER, KEY, NO_PICKER, READING, WRITING,
-    begin, choose_file, fill_everything, finish_and_download, holds, next_screen, open_page,
-    press_begin, resume, sit_and_leave, stored, type_details, wait_for, write)
+    BLOCKED_PICKER, BROKEN_STORAGE, CANCELLED_PICKER, EVERYTHING, FAKE_PICKER, KEY, NO_PICKER, READING,
+    WRITING, answer_file, begin, choose_folder, downloads_of_both, fill_everything, finish_and_download,
+    folder_bytes, folder_names, holds, next_screen, open_page, press_begin, resume, save_both,
+    sit_and_leave, stored, type_details, wait_for, write)
 
 
 # --- the two screens ----------------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ def test_next_goes_to_before_you_begin_back_returns_and_begin_enters_the_paper(c
     assert page.is_visible("#dm-start") and page.input_value("#dm-name") == "Agnes Nitt"
     assert page.evaluate("document.activeElement.id") == "dm-start-h"
     next_screen(page)
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.is_hidden("#dm-start") and page.is_hidden("#dm-before")
     assert page.text_content("#dm-top-student") == "Agnes Nitt · S12345"
@@ -84,7 +85,7 @@ def test_the_start_screen_writes_nothing_however_far_the_student_gets(context, p
     page = open_page(context, pages["student"])
     type_details(page)
     next_screen(page)
-    choose_file(page)
+    choose_folder(page)
     page.click("#dm-back")
     page.click('[name="start-font"][value="sans"]')
     assert set(stored(page)) == {READING}, "only the reading settings may be written before Begin"
@@ -119,7 +120,7 @@ def test_starting_again_sets_the_saved_answers_aside_rather_than_deleting_them(c
     page.click("#dm-again")
     assert page.is_visible("#dm-again-text")
     next_screen(page)
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.input_value(WRITING) == ""
     write(page, "9")
@@ -147,7 +148,7 @@ def test_declining_the_question_about_another_students_work_changes_nothing(cont
     page = open_page(context, pages["student"], accept_dialogs=False)
     type_details(page, "Tiffany Aching", "S99999")
     next_screen(page)
-    choose_file(page)
+    choose_folder(page)
     page.click("#dm-begin")
     page.wait_for_timeout(300)
     assert page.is_hidden("#dm-app") and page.is_visible("#dm-before")
@@ -221,7 +222,7 @@ def test_changing_the_number_after_continuing_lets_the_saved_work_go(context, pa
     page.fill("#dm-number", "S77777")
     next_screen(page)
     assert page.is_hidden("#dm-resume-line")
-    choose_file(page)
+    choose_folder(page)
     page.click("#dm-begin")
     page.wait_for_timeout(300)
     assert page.is_hidden("#dm-app"), "another student's saved work must raise the question"
@@ -239,7 +240,7 @@ def test_correcting_the_name_after_continuing_keeps_the_work_and_the_corrected_n
     page.fill("#dm-name", "Agnes Nitt-Smith")
     next_screen(page)
     assert page.is_visible("#dm-resume-line")
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.input_value(WRITING) == "4"
     assert stored(page)[KEY]["student"] == {"full name": "Agnes Nitt-Smith", "student number": "S12345"}
@@ -287,61 +288,92 @@ def test_a_second_window_never_writes_over_the_first(context, pages):
     assert first.input_value(WRITING) == "4"
 
 
-# --- where the answer file goes -----------------------------------------------------------------------------------------
+# --- where the files go -----------------------------------------------------------------------------------------------
 
-def test_a_chosen_file_is_written_into_as_the_student_works(context, pages):
+def test_a_chosen_folder_gets_the_answer_file_as_the_student_works(context, pages):
     page = open_page(context, pages["student"])
     begin(page)
     write(page, "alpha")
-    wait_for(page, "window.__saved.length > 0")
-    record = json.loads(page.evaluate("window.__saved[window.__saved.length - 1]"))
+    wait_for(page, "Object.keys(window.__folder).some((n) => window.__folder[n].length > 0)")
+    assert folder_names(page) == ["dewmark_rehearsal_s12345_agnes-nitt.json"]
+    record = answer_file(page)
     assert record["answers"] == {"q1a": "alpha"} and record["student"]["student number"] == "S12345"
     assert "File ✓" in page.text_content("#dm-save-file")
 
 
-def test_the_status_names_the_file_that_was_chosen(context, pages):
+def test_the_status_names_the_folder_and_the_file_that_were_chosen(context, pages):
     page = open_page(context, pages["student"])
     type_details(page)
     next_screen(page)
-    page.click("#dm-choose-file")
+    page.click("#dm-choose-folder")
     wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
-    assert "dewmark_rehearsal_s12345_agnes-nitt.json" in page.text_content("#dm-file-status")
-    assert page.text_content("#dm-choose-file").startswith("Choose a different place")
+    status = page.text_content("#dm-file-status")
+    assert "answers-folder" in status and "dewmark_rehearsal_s12345_agnes-nitt.json" in status
+    assert "puts your PDF there when you finish" in status
+    assert page.text_content("#dm-choose-folder").startswith("Choose a different folder")
 
 
-def test_a_browser_that_cannot_save_to_a_file_says_so_and_still_begins(context, pages):
+def test_a_browser_that_cannot_save_into_a_folder_says_so_and_still_begins(context, pages):
     page = open_page(context, pages["student"], picker=NO_PICKER)
     type_details(page)
     next_screen(page)
-    assert page.is_hidden("#dm-choose-file")
-    assert "downloads files instead" in page.text_content("#dm-file-status")
+    assert page.is_hidden("#dm-choose-folder")
+    assert "downloads files instead of saving into a folder" in page.text_content("#dm-file-status")
     press_begin(page)
     assert page.dialogs == [] and "File saving is off" in page.text_content("#dm-save-file")
 
 
-def test_a_student_who_cancels_the_save_window_is_told_and_may_begin(context, pages):
+def test_a_student_who_cancels_the_folder_window_is_told_and_may_begin(context, pages):
     page = open_page(context, pages["student"], picker=CANCELLED_PICKER)
     type_details(page)
     next_screen(page)
-    page.click("#dm-choose-file")
+    page.click("#dm-choose-folder")
     wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
-    assert "No place was chosen" in page.text_content("#dm-file-status")
+    assert "No folder was chosen" in page.text_content("#dm-file-status")
     press_begin(page)
     assert page.dialogs == []
 
 
-def test_begin_without_choosing_a_file_asks_once_and_the_student_may_go_back_and_choose(context, pages):
+def test_a_folder_the_browser_refuses_is_explained_with_where_to_try_instead(context, pages):
+    page = open_page(context, pages["student"], picker=BLOCKED_PICKER)
+    type_details(page)
+    next_screen(page)
+    page.click("#dm-choose-folder")
+    wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
+    status = page.text_content("#dm-file-status")
+    assert "did not let the page use that folder" in status and "USB stick" in status and "Documents" in status
+    press_begin(page)
+    assert page.dialogs == []
+
+
+def test_begin_without_choosing_a_folder_asks_once_and_the_student_may_go_back_and_choose(context, pages):
     page = open_page(context, pages["student"], accept_dialogs=False)
     type_details(page)
     next_screen(page)
     page.click("#dm-begin")
     page.wait_for_timeout(300)
-    assert page.is_hidden("#dm-app") and "You have not chosen where to save" in page.dialogs[0]
+    assert page.is_hidden("#dm-app") and "You have not chosen a folder for your files" in page.dialogs[0]
     accepting = open_page(context, pages["practice"], accept_dialogs=True)
     type_details(accepting)
     next_screen(accepting)
     press_begin(accepting)
     assert "You have not chosen" in accepting.dialogs[0]
+
+
+def test_changing_the_name_after_choosing_the_folder_saves_into_the_file_for_the_new_name(context, pages):
+    page = open_page(context, pages["student"])
+    type_details(page, "Agnes Nitt", "S12345")
+    next_screen(page)
+    choose_folder(page)
+    page.click("#dm-back")
+    page.fill("#dm-name", "Tiffany Aching")
+    next_screen(page)
+    press_begin(page)
+    write(page, "x")
+    wait_for(page, "Object.keys(window.__folder).some((n) => n.includes('tiffany') && window.__folder[n].length > 0)")
+    assert any("tiffany-aching" in name for name in folder_names(page))
+    assert json.loads(folder_bytes(page, next(n for n in folder_names(page) if "tiffany" in n)))["student"][
+        "full name"] == "Tiffany Aching"
 
 
 # --- every kind saves in its shape and comes back --------------------------------------------------------------
@@ -425,9 +457,10 @@ def test_the_answer_file_is_the_stored_record_with_a_finish_time(context, pages,
     page = open_page(context, pages["student"])
     begin(page)
     fill_everything(page)
-    file = finish_and_download(page, tmp_path)
-    assert re.fullmatch(r"dewmark_rehearsal_s12345_agnes-nitt\.json", file.name)
-    record = json.loads(file.read_text())
+    save_both(page)
+    assert sorted(folder_names(page)) == ["dewmark_rehearsal_s12345_agnes-nitt.json",
+                                          "dewmark_rehearsal_s12345_agnes-nitt.pdf"]
+    record = answer_file(page)
     assert record["answers"] == EVERYTHING and record["finished_at"]
     assert record["student"] == {"full name": "Agnes Nitt", "student number": "S12345"}
     assert stored(page)[KEY]["finished_at"] == record["finished_at"]
@@ -438,7 +471,9 @@ def test_an_answer_file_loads_into_a_fresh_browser_and_the_work_is_back(
     page = open_page(context, pages["student"])
     begin(page)
     fill_everything(page)
-    file = finish_and_download(page, tmp_path)
+    save_both(page)
+    file = tmp_path / "handed-in.json"
+    file.write_text(json.dumps(answer_file(page)))
 
     other = browser.new_context(accept_downloads=True)
     try:
@@ -448,7 +483,7 @@ def test_an_answer_file_loads_into_a_fresh_browser_and_the_work_is_back(
         chooser.value.set_files(str(file))
         fresh.wait_for_selector("#dm-before:not([hidden])")
         assert "Your work is ready to continue: 9 answers" in fresh.text_content("#dm-resume-line")
-        choose_file(fresh)
+        choose_folder(fresh)
         press_begin(fresh)
         assert fresh.input_value('[data-answer="q1b"] textarea') == "x = 2"
         assert fresh.is_checked('[data-answer="q3a"] input[value="C"]')
@@ -475,7 +510,7 @@ def test_choosing_a_file_over_different_work_in_the_browser_keeps_the_browsers_w
     assert page.dialogs and "This browser also holds saved work" in page.dialogs[0]
     records = stored(page)
     assert holds(records, "q1a", "browser work") and any(":set-aside:" in key for key in records)
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.input_value(WRITING) == "file work"
     assert stored(page)[KEY]["answers"] == {"q1a": "file work"}
@@ -538,7 +573,7 @@ def test_an_answer_file_with_the_wrong_shapes_in_it_cannot_run_or_break_anything
     page = open_page(context, pages["student"])
     load(page, file)
     page.wait_for_selector("#dm-before:not([hidden])")
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.input_value(WRITING) == "<img src=x onerror=\"window.hacked=1\">"
     assert page.evaluate("window.hacked") is None
@@ -637,7 +672,7 @@ def test_none_of_the_three_screens_scrolls_sideways_even_at_the_largest_text(con
     type_details(page)
     next_screen(page)
     assert page.evaluate(fits), "before you begin"
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.evaluate(fits), "the paper"
 
@@ -704,8 +739,8 @@ def test_reading_settings_are_never_in_the_answer_file_or_the_record(context, pa
     page.click('#dm-start [data-step="size"][data-d="1"]')
     begin(page)
     write(page, "x")
-    file = finish_and_download(page, tmp_path)
-    text = file.read_text()
+    save_both(page)
+    text = json.dumps(answer_file(page))
     for word in ("dyslexic", "OpenDyslexic", "size", "scheme", "reading", "font"):
         assert word not in text, word
     assert "dyslexic" not in json.dumps(stored(page)[KEY])
@@ -860,11 +895,11 @@ def test_a_browser_that_keeps_nothing_says_so_in_the_list_and_the_student_can_st
     assert page.is_enabled("#dm-begin")
 
 
-def test_a_browser_that_downloads_instead_of_saving_to_a_file_gets_a_note_not_a_problem(context, branded):
+def test_a_browser_that_downloads_instead_of_saving_into_a_folder_gets_a_note_not_a_problem(context, branded):
     page = open_page(context, branded["student"], picker=NO_PICKER)
     wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
     assert states(page)["file"] == ["note", "Note"]
-    assert "Save a copy" in page.text_content('#dm-checklist [data-need="file"]')
+    assert "gives you two files when you finish" in page.text_content('#dm-checklist [data-need="file"]')
     assert page.text_content("#dm-load-status") == "Everything this paper needs is ready."
 
 
@@ -947,12 +982,11 @@ def test_the_pages_receipt_is_the_receipt_python_works_out_from_the_same_record(
     assert page.evaluate("(r) => receiptOf(r)", changed) == "77FD 81FB"
 
 
-def saved_file(page, tmp_path):
-    with page.expect_download() as caught:
-        page.click("#dm-submit")
-    target = tmp_path / caught.value.suggested_filename
-    caught.value.save_as(target)
-    return json.loads(target.read_text())
+def saved_file(page, tmp_path=None):
+    """Press the one button on the finish sheet; the answer file it put in the folder."""
+    page.click("#dm-submit")
+    page.wait_for_selector("#dm-saved:not([hidden]), #dm-problem:not([hidden])")
+    return answer_file(page)
 
 
 def test_saving_the_answer_file_gives_a_receipt_the_workbench_can_check_and_says_so(
@@ -961,13 +995,13 @@ def test_saving_the_answer_file_gives_a_receipt_the_workbench_can_check_and_says
     begin(page)
     fill_everything(page)
     page.click("#dm-finish")
-    record = saved_file(page, tmp_path)
+    record = saved_file(page)
     assert re.fullmatch(r"[0-9A-F]{4} [0-9A-F]{4}", record["receipt"])
     assert record["receipt"] == receipt(record), "Python must reach the page's receipt from the file"
     assert re.fullmatch(r"[0-9A-HJKMNP-TV-Z]{3}-[0-9A-HJKMNP-TV-Z]{3}", record["exam"]["fingerprint"])
     saved = page.text_content("#dm-saved")
-    assert saved == (f"Saved. The file holds 9 answers. Receipt {record['receipt']}. "
-                     f"Paper ID {record['exam']['fingerprint']}.")
+    assert saved == (f"Checked: the file holds 9 answers. Receipt {record['receipt']}. The PDF has 2 pages. "
+                     f"Both are in the folder answers-folder.")
     assert stored(page)[KEY]["receipt"] == record["receipt"]
 
 
@@ -976,7 +1010,7 @@ def test_the_paper_id_on_the_second_screen_is_the_one_in_the_file(context, pages
     type_details(page)
     next_screen(page)
     shown = re.search(r"Paper ID ([0-9A-Z-]+)\.", page.text_content("#dm-before")).group(1)
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     write(page, "x")
     page.click("#dm-finish")
@@ -1031,7 +1065,7 @@ def test_work_continued_on_a_corrected_paper_is_kept_and_the_student_is_told(con
     page.wait_for_selector("#dm-before:not([hidden])")
     assert "The paper has been corrected since you saved this work. Your answers are kept." in \
         page.text_content("#dm-resume-line")
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
     assert page.input_value(WRITING) == "4"
     new_id = re.search(r"Paper ID ([0-9A-Z-]+)\.", page.text_content("#dm-before")).group(1)

@@ -12,7 +12,7 @@
    not the student's work. The page holds a blank state until Begin or
    Continue, which is the rule in CLAUDE.md. */
 
-const FILE_PICKER = "showSaveFilePicker" in window;
+const FOLDER_PICKER = "showDirectoryPicker" in window;
 const begun = { resuming: false, startAgain: false, fileDecided: false };
 
 function showScreen(name) {
@@ -23,16 +23,9 @@ function showScreen(name) {
   window.scrollTo(0, 0);
 }
 
-function say(id, text) {
-  const el = $(id);
-  el.textContent = text;
-  el.hidden = !text;
-}
-
 const detailField = (key) => document.querySelector('[data-detail="' + key + '"]');
 const detailValue = (key) => detailField(key).value.trim();
 const countAnswers = (record) => Object.keys((record && record.answers) || {}).length;
-const plural = (n, one, many) => n + " " + (n === 1 ? one : many);
 const whenSaved = (record) => record.saved_at
   ? new Date(record.saved_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
   : "at an unknown time";
@@ -194,39 +187,41 @@ function loadAnswerFile() {
 }
 $("dm-load-file").addEventListener("click", loadAnswerFile);
 
-/* --- where the answer file goes ------------------------------------------------------- */
+/* --- where the files go ----------------------------------------------------------------- */
 
-async function chooseFile() {
+async function chooseFolder() {
   begun.fileDecided = true;
   try {
-    fileHandle = await window.showSaveFilePicker({
-      suggestedName: submissionBaseName() + ".json",
-      types: [{ description: "dewmark answer file", accept: { "application/json": [".json"] } }],
-    });
-    say("dm-file-status", "Your answer file is " + fileHandle.name + ". The page saves into it as you work.");
-    $("dm-choose-file").textContent = "Choose a different place…";
+    directory = await window.showDirectoryPicker({ id: "dewmark", mode: "readwrite" });
+    fileHandle = await directory.getFileHandle(submissionBaseName() + ".json", { create: true });
+    say("dm-file-status", "Your files go in the folder " + directory.name + ". The answer file is "
+      + fileHandle.name + ". The page saves into it as you work, and puts your PDF there when you finish.");
+    $("dm-choose-folder").textContent = "Choose a different folder…";
   } catch (err) {
+    directory = null;
     fileHandle = null;
     say("dm-file-status", err && err.name === "AbortError"
-      ? "No place was chosen. The page will keep your work in this browser only. You can save a copy at any time."
-      : "Your browser did not let the page choose a place. The page will keep your work in this browser only. "
-        + "You can save a copy at any time.");
+      ? "No folder was chosen. The page will keep your work in this browser only. You can save files at any time."
+      : "Your browser did not let the page use that folder. Choose another one, for example a folder on a USB "
+        + "stick or a new folder inside Documents. Or begin without one: the page keeps your work in this "
+        + "browser, and you can save files at any time.");
   }
 }
 
-if (SAVES && $("dm-choose-file")) {
-  if (FILE_PICKER) {
-    $("dm-choose-file").addEventListener("click", chooseFile);
+if (SAVES && $("dm-choose-folder")) {
+  if (FOLDER_PICKER) {
+    $("dm-choose-folder").addEventListener("click", chooseFolder);
   } else {
-    $("dm-choose-file").hidden = true;
-    say("dm-file-status", "Your browser downloads files instead of saving into one as you work. The page keeps "
-      + "your work in this browser. When you press Finish, or Save a copy, it gives you a file to keep.");
+    $("dm-choose-folder").hidden = true;
+    say("dm-file-status", "Your browser downloads files instead of saving into a folder as you work. The page "
+      + "keeps your work in this browser. When you press Finish, it gives you your answer file and your PDF "
+      + "to keep.");
   }
 }
 
 /* --- begin ------------------------------------------------------------------------- */
 
-function begin() {
+async function begin() {
   if (secondWindow) return;
   if (!begun.resuming) {
     if (SAVES && !setAsideStoredWork(begun.startAgain)) return;
@@ -234,11 +229,20 @@ function begin() {
     state = blankState();
     state.student = details;
   }
-  if (SAVES && FILE_PICKER && !fileHandle && !begun.fileDecided && !confirm(
-      "You have not chosen where to save your answer file.\n\n"
+  if (SAVES && FOLDER_PICKER && !directory && !begun.fileDecided && !confirm(
+      "You have not chosen a folder for your files.\n\n"
       + "Press OK to begin anyway. The page then keeps your work in this browser only, "
-      + "and you can save a copy at any time. Press Cancel to go back and choose.")) {
+      + "and you can save files at any time. Press Cancel to go back and choose.")) {
     return;
+  }
+  /* The answer file is named for the student, so if the details changed after the
+     folder was chosen, the file the page saves into is the one for the details now. */
+  if (directory && fileHandle && fileHandle.name !== submissionBaseName() + ".json") {
+    try {
+      fileHandle = await directory.getFileHandle(submissionBaseName() + ".json", { create: true });
+    } catch (err) {
+      fileHandle = null;
+    }
   }
   if (!state.started_at) state.started_at = new Date().toISOString();
   enterExam();
@@ -265,10 +269,10 @@ const CHECKS = {
         detail: "This browser will not keep your work here. Tell your invigilator." };
     }
   },
-  file: () => FILE_PICKER
-    ? { state: "ready", word: "Ready", detail: "You choose the place on the next screen" }
+  file: () => FOLDER_PICKER
+    ? { state: "ready", word: "Ready", detail: "You choose the folder on the next screen" }
     : { state: "note", word: "Note",
-        detail: "This browser downloads files instead. Press Save a copy to keep one." },
+        detail: "This browser downloads files instead. The page gives you two files when you finish." },
   python: () => ({ state: "problem", word: "Not ready",
     detail: "This page cannot run Python yet" }),
 };
@@ -303,7 +307,7 @@ if (channel) {
       secondWindow = true;
       canWrite = false;
       /* Every way into the paper is closed, not only the Begin button. */
-      for (const id of ["dm-next", "dm-begin", "dm-load-file", "dm-continue", "dm-again", "dm-choose-file"]) {
+      for (const id of ["dm-next", "dm-begin", "dm-load-file", "dm-continue", "dm-again", "dm-choose-folder"]) {
         const button = $(id);
         if (button) button.disabled = true;
       }

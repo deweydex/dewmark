@@ -1,9 +1,11 @@
 """What the browser rehearsals share: sitting a paper in a real Chromium.
 
-A page opens with a stand-in for the browser's save window (FAKE_PICKER),
-because Chromium cannot show a window to a test; the stand-in keeps what is
-written to the chosen file in window.__saved. The helpers go through the two
-screens as a student does, and read browser storage as the page wrote it.
+A page opens with a stand-in for the browser's folder window (FAKE_PICKER),
+because Chromium cannot show a window to a test; the stand-in is a folder in
+memory, window.__folder, of name -> what was written. The helpers go through the
+two screens as a student does, and read browser storage as the page wrote it.
+window.__folderFails makes the folder misbehave: "folder" refuses to open a
+file, "write" refuses to write one, "altered" reads the PDF back wrongly.
 """
 
 import json
@@ -26,22 +28,38 @@ EVERYTHING = {
     "q3d": ["3", "4"],
 }
 
-# A stand-in for the browser's save window: it hands the page a file that keeps
-# every write in window.__saved.
+# A stand-in for the browser's folder window: a folder kept in window.__folder.
 FAKE_PICKER = """
-window.__saved = [];
-window.showSaveFilePicker = async (options) => ({
-  name: options.suggestedName,
-  createWritable: async () => {
-    let text = "";
-    return { write: async (data) => { text = data; },
-             close: async () => { window.__saved.push(text); } };
+window.__folder = {};
+window.__folderFails = null;
+window.showDirectoryPicker = async () => ({
+  name: "answers-folder",
+  getFileHandle: async (name, options) => {
+    if (window.__folderFails === "folder") throw new DOMException("denied", "NotAllowedError");
+    if (!(name in window.__folder)) {
+      if (!(options && options.create)) throw new DOMException("none", "NotFoundError");
+      window.__folder[name] = "";
+    }
+    return {
+      name,
+      createWritable: async () => {
+        if (window.__folderFails === "write") throw new DOMException("denied", "NotAllowedError");
+        let data = "";
+        return { write: async (d) => { data = d; }, close: async () => { window.__folder[name] = data; } };
+      },
+      getFile: async () => {
+        const altered = window.__folderFails === "altered" && name.endsWith(".pdf");
+        return new File([altered ? "not the same" : window.__folder[name]], name);
+      },
+    };
   },
 });
 """
-NO_PICKER = "delete window.showSaveFilePicker;"
-CANCELLED_PICKER = ("window.showSaveFilePicker = async () => "
+NO_PICKER = "delete window.showDirectoryPicker;"
+CANCELLED_PICKER = ("window.showDirectoryPicker = async () => "
                     "{ throw new DOMException('cancelled', 'AbortError'); };")
+BLOCKED_PICKER = ("window.showDirectoryPicker = async () => "
+                  "{ throw new DOMException('blocked', 'SecurityError'); };")
 BROKEN_STORAGE = ("Storage.prototype.setItem = function () "
                   "{ throw new DOMException('full', 'QuotaExceededError'); };")
 
@@ -86,9 +104,9 @@ def next_screen(page):
     page.wait_for_selector("#dm-before:not([hidden])")
 
 
-def choose_file(page):
-    if page.is_visible("#dm-choose-file"):
-        page.click("#dm-choose-file")
+def choose_folder(page):
+    if page.is_visible("#dm-choose-folder"):
+        page.click("#dm-choose-folder")
         wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
 
 
@@ -102,7 +120,7 @@ def begin(page, name="Agnes Nitt", number="S12345", choose=True):
     type_details(page, name, number)
     next_screen(page)
     if choose:
-        choose_file(page)
+        choose_folder(page)
     press_begin(page)
 
 
@@ -112,7 +130,7 @@ def resume(page, number="S12345"):
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")
     page.wait_for_selector("#dm-before:not([hidden])")
-    choose_file(page)
+    choose_folder(page)
     press_begin(page)
 
 
@@ -172,3 +190,53 @@ def finish_and_download(page, tmp_path, button="#dm-submit"):
     target = tmp_path / caught.value.suggested_filename
     caught.value.save_as(target)
     return target
+
+
+# --- the folder and the finish sheet --------------------------------------------------------------------------
+
+def folder_names(page):
+    return page.evaluate("() => Object.keys(window.__folder)")
+
+
+def folder_bytes(page, name):
+    return bytes(page.evaluate(
+        "(n) => { const d = window.__folder[n]; "
+        "return Array.from(typeof d === 'string' ? new TextEncoder().encode(d) : d); }", name))
+
+
+def answer_file(page):
+    """The answer file in the folder, as a dictionary."""
+    name = next(n for n in folder_names(page) if n.endswith(".json"))
+    return json.loads(folder_bytes(page, name))
+
+
+def pdf_file(page):
+    name = next(n for n in folder_names(page) if n.endswith(".pdf"))
+    return folder_bytes(page, name)
+
+
+def save_both(page):
+    """Finish, press the one button, and wait for the page to say how it went."""
+    page.click("#dm-finish")
+    page.click("#dm-submit")
+    page.wait_for_selector("#dm-saved:not([hidden]), #dm-problem:not([hidden])")
+
+
+def downloads_of_both(page, tmp_path):
+    """For a page with no folder: finish, press the one button, and keep the two
+    files it downloads, as {'json': path, 'pdf': path}."""
+    caught = []
+    page.on("download", lambda download: caught.append(download))
+    page.click("#dm-finish")
+    page.click("#dm-submit")
+    waited = 0
+    while len(caught) < 2 and waited < 8000:
+        page.wait_for_timeout(100)
+        waited += 100
+    assert len(caught) == 2, [d.suggested_filename for d in caught]
+    out = {}
+    for download in caught:
+        target = tmp_path / download.suggested_filename
+        download.save_as(target)
+        out[target.suffix.lstrip(".")] = target
+    return out

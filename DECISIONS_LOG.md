@@ -659,3 +659,64 @@ the output of a code run (step 5), and the question wording.
 *Changing it:* what a PDF holds and the header and footer are what a marker is
 used to; a change is a decision. A new character range is made with
 `dev/make_pdf_fonts.py` and recorded in `assets/vendor/SOURCE.json`.
+
+**0.16 — The finish sheet: one press, a folder, a check.** The third part of
+step 4's fourth slice. The finish sheet is now the three steps the plan sets
+out: *Check your answers*, *Save your answer file and your PDF*, *Hand it in*,
+followed by a confirmation card for the invigilator. One button saves both
+files.
+
+What it settles:
+
+- *The student chooses a folder, not a file.* Decision 8 and D3 say that in
+  Chrome and Edge the student chooses a folder once and both files go there; the
+  second slice had asked for a file (the answer file only), which cannot also
+  hold the PDF. The screen before the paper now has **Choose a folder…**
+  (`showDirectoryPicker`), the page saves the answer file into it as the student
+  works, and the PDF joins it at the finish. The folder is chosen on a button, and
+  not at Begin, as before. A folder the browser refuses is explained in words
+  that suggest where to try instead (a folder on a USB stick, or a new folder inside
+  Documents), and a student who chooses none is asked once at Begin. A student who
+  changes their name after choosing gets the answer file named for the new name.
+  **Open question for a college PC:** Chrome and Edge refuse some folders (the
+  home folder and some system folders) and a managed browser may refuse more; the
+  plan's open item 9 asks that the page be tried on the room's own computers, and
+  the wording on the screen is the first thing to change if it is not enough.
+- *The page reads back what it wrote.* In a folder, the page writes the answer
+  file and the PDF, reads both from the folder, compares the bytes, and checks
+  that the receipt in the file is the receipt of its answers. Only then does it say
+  "Checked: the file holds 17 answers. Receipt 7F3A 92C1. The PDF has 3 pages. Both
+  are in the folder X." and show the card. If a file is missing, differs or cannot
+  be written, nothing is called saved: the page says what it found, that the
+  answers are safe in the browser, and offers **Choose the folder again**
+  (which saves again at once) and Save a copy.
+- *A browser with no folder downloads both files and says it cannot check them.*
+  A page may not look inside a file it downloaded, so the message says "Saved",
+  names the two files and the receipt, and asks the student to open them; it
+  never says "Checked". **Save the answer file again** and **Save the PDF again**
+  cover a download the browser held back. The answer key never writes to a folder.
+- *One finish, one receipt.* Both files carry the receipt fixed by the press, a
+  second press with nothing changed writes the same files, and a change to an
+  answer withdraws the receipt, the card and the message (entry 0.14).
+- *The confirmation card is for the invigilator.* The student's name and number,
+  the paper, the Paper ID, the number of answers, the time saved, the receipt and
+  the file names: what the plan lists, so an invigilator can check a student's
+  screen against the sitting without opening a file.
+- *File names lose accents.* A student typing "Síle Ní Bhriain" had files named
+  `s-le-n-bhriain`. The page now turns accented letters into their plain letters
+  and a few that have no accent form (ł, ø, đ, ß, æ) into theirs, so the name is
+  `sile-ni-bhriain`. A name in another alphabet has no letters left and becomes
+  `student`; the student number, also in the name, tells the files apart.
+
+Not done: the invigilator's code and the view of set-aside work (the timer
+slice); "code changed since it last ran" in step 1 (it needs Run, step 5); the
+readable HTML copy still downloads and is not checked; a real college computer;
+a test Moodle assignment; and the keyboard and screen-reader walk-through.
+`tests/browser/test_finish.py` uses a folder kept in memory that can be made to
+refuse a write or give back the wrong bytes, because Chromium cannot show a test
+the browser's folder window.
+
+*Changing it:* the words in the finish sheet are what a student reads with a few
+minutes left, so they are short and say whether the work is safe. The checks
+run in order (written, read back, receipt) and a new one goes into
+`checkFolder` in `assets/page-finish.js`.
