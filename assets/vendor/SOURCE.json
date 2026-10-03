@@ -1,0 +1,30 @@
+{
+  "about": "Files copied unchanged from dewlab, not edited here (DECISIONS_LOG.md, entry 0.13; decision 31). tests/test_vendor.py fails if a file differs from its checksum. To update one, copy it again from dewlab and write the new commit and checksum here.",
+  "source": {
+    "repository": "https://github.com/deweydex/dewlab",
+    "commit": "d283416fb1154f3a2b2105b6019d49c1bad2f19a",
+    "path": "assets/vendor/fonts/",
+    "made_from": [
+      "@fontsource/lexend 5.3.0",
+      "@fontsource/opendyslexic 5.3.0"
+    ]
+  },
+  "files": {
+    "lexend-latin-400.woff2": {
+      "sha256": "0601e0a909219a542cdd581e3f8f1ff8fb208978cbc9bca1c90df02fd8062bb1",
+      "bytes": 14476
+    },
+    "lexend-latin-700.woff2": {
+      "sha256": "52dcdaa127bac4a5ea4c39ee17a3f454ceacc18d9f2a45cc453eeab68d378588",
+      "bytes": 14808
+    },
+    "opendyslexic-latin-400.woff2": {
+      "sha256": "f007004af3cda5d8076e57c943f8cc8d00a0da25988b1ae1048683d60e7cac1a",
+      "bytes": 115280
+    },
+    "opendyslexic-latin-700.woff2": {
+      "sha256": "dd9fa9c7991113b0dddefe9506a30ad26b48e302b7a8fb91719a4726e8fde85b",
+      "bytes": 120356
+    }
+  }
+}

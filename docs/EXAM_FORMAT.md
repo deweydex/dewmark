@@ -27,7 +27,9 @@
 > page draws `answer`, `maths`, `essay`, `code`, `python exec` (an editor
 > only, until step 5), `choice`, `boxes`, `blanks` and `table`; a paper using
 > `match`, `order`, `photo` or `on-paper` is refused with a message until
-> step 8. The start screens, timer, breaks and PDF of step 4 are not built.
+> step 8. The two start screens, reading settings, branding and the list of what a
+> paper needs are built (`DECISIONS_LOG.md`, entry 0.13); the timer, breaks and PDF
+> of step 4 are not.
 > Not yet built: the dewlab import form (§4.11) and the JSON schema for a
 > connected model (§4.10). `build_exam.py` still builds the pages of the
 > older format in `planning/THE_EXAM_FILE.md` for the workbench, which reads
@@ -329,6 +331,8 @@ Settings are `key: value` lines between two `---` lines. Capitals, spaces, under
 | `show answers` | `never`, `after finishing` | Practice and sample only (decision 14). |
 | `practice tests` | `never`, `after finishing`, `while working` | Practice and sample only (decision 16). |
 | `weighting`, `technique`, `outcomes` | `30%`; `Examination-Theory`; `1, 3, 6, 7, 8` | For QQI records. |
+
+**As built** (`dewmark/build.py`; `DECISIONS_LOG.md` 0.13). The band at the top of every screen shows `institution` and `college` on one line, `module` with its `module code`, the `session`, the time allowed and the total marks, under a word that says whether the page is an examination, a practice version or an answer key. `logo` is a picture file inside the paper's own folder (SVG, PNG, JPEG, GIF or WebP), at most 150 KB, carried in the page; one that is missing, outside the folder, remote, not a picture or too large stops the build (`logo-unavailable`, `logo-too-big`). The Get ready list is the paper, its fonts, and, when the paper has a `python exec` box or a set-up block, Python with where it comes from (`python from`), the `python packages` and the set-up code; the page adds the two ways of saving unless it is the answer key. Hostile words in any of these are shown as text.
 
 The student's name and number are always asked, on the one combined start screen (decision 9), so there is no setting for them; `number example: D00123456` sets the hint. The Get ready list is generated from what the paper declares (Python, packages, data files, set-up code), so a teacher never configures a loading screen. **Reference cards**: each `##` under `# Reference` becomes one side-panel card, which is where a formula sheet goes.
 

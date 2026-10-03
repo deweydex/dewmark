@@ -51,6 +51,7 @@ NOT_BUILT = {
 
 PICTURE_TYPES = {"svg": "image/svg+xml", "png": "image/png", "jpg": "image/jpeg",
                  "jpeg": "image/jpeg", "gif": "image/gif", "webp": "image/webp"}
+LOGO_LIMIT = 150 * 1024        # bytes: a logo is carried in every copy of the page
 MATH_RE = re.compile(r"\$([^$\n]+)\$")
 IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]*)\)")
 LINK_RE = re.compile(r'<a href="([^"]*)"[^>]*>(.*?)</a>', re.S)
@@ -90,6 +91,22 @@ def _picture(base_dir, path):
     if kind is None or not target.is_file() or root not in target.parents:
         return None
     return f"data:{kind};base64,{base64.b64encode(target.read_bytes()).decode('ascii')}"
+
+
+def logo_problem(settings, base_dir):
+    """Why the `logo` setting cannot go into a page, in words, or None."""
+    path = settings.get("logo")
+    if not path:
+        return None
+    data = _picture(base_dir, path)
+    if data is None:
+        return ("unavailable", f"The logo \"{path}\" can't be put in the page: it must be a "
+                f"{', '.join(sorted(PICTURE_TYPES))} file in the paper's own folder.")
+    size = len(base64.b64decode(data.partition(",")[2]))
+    if size > LOGO_LIMIT:
+        return ("too-big", f"The logo \"{path}\" is {size // 1024} KB, and a logo may be at "
+                f"most {LOGO_LIMIT // 1024} KB, because every copy of the paper carries it.")
+    return None
 
 
 def render_markdown(text, base_dir=None, holes=None):
@@ -169,6 +186,13 @@ def check_buildable(paper, base_dir):
                     f"{', '.join(sorted(PICTURE_TYPES))} file in the paper's own folder.",
                     "Put the file beside the exam file, or in a folder inside it, and use "
                     "its relative name.")
+    found = logo_problem(paper["settings"], base_dir)
+    if found:
+        code, what = found
+        messages.problem(
+            f"logo-{code}", paper["setting_lines"].get("logo", 1), what,
+            "Put a smaller picture beside the exam file, or take the logo line out." if code == "too-big"
+            else "Put the file beside the exam file, or in a folder inside it, and use its relative name.")
     if mathml_converter is None and any(MATH_RE.search(t) for _, t in sources):
         messages.problem(
             "maths-not-installed", 1,

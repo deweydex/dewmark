@@ -95,6 +95,21 @@ an answer file the marking workbench cannot read yet
 ([ANSWER_FILE.md](ANSWER_FILE.md)). Use it to try the new format, and use
 `build_exam.py` for a real sitting.
 
+What a student sees on the newer page: a band at the top that says in words
+whether this is an examination, a practice version or an answer key, with the
+paper's title, `institution`, `college`, `module`, `module code`, `session`,
+the time allowed and a `logo` if you give one (a picture file beside the exam
+file, 150 KB at most). Then two screens. On the first, the student types a name
+and a student number, chooses how the page looks, and sees a list of what the
+paper needs. On the second, they read your instructions, choose where their
+answer file goes, and press Begin. If the computer holds saved work for the
+number the student types, the page offers it, and offers it only for that
+number. The student's reading settings (font, text size, colours, a reading
+ruler) stay on that computer and are not in the answer file you receive. On a
+shared computer the next student finds them, so the page says so and offers
+**Use standard settings**. The **Aa** button at the top right opens the same
+settings on every screen.
+
 Before the real sitting, open the student page and sit the paper
 yourself. Reading your own exam as a student finds more problems than
 any automatic check.

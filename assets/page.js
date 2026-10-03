@@ -1,11 +1,16 @@
 "use strict";
 
 /* The behaviour of a dewmark exam page built from the new format
-   (dewmark/build.py). The older page, assets/exam-page.js, is untouched until
-   the older builder is retired; this one is organised around a registry of
-   answer kinds (KINDS), each saying how to collect an answer from its controls,
-   how to put a saved one back, and nothing else. The page never builds HTML
-   from what a student or an answer file holds: it sets .value and .textContent. */
+   (dewmark/build.py joins this file, assets/page-reading.js and
+   assets/page-start.js into one script, in that order, so they share names).
+   The older page, assets/exam-page.js, is untouched until the older builder is
+   retired.
+
+   This file holds the answer kinds, saving and finishing; it is organised
+   around a registry of kinds (KINDS), each saying how to collect an answer from
+   its controls, how to put a saved one back, and nothing else. The page never
+   builds HTML from what a student or an answer file holds: it sets .value and
+   .textContent. */
 
 const MODEL = JSON.parse(document.getElementById("dewmark-page-model").textContent);
 
@@ -25,16 +30,19 @@ const ANSWERS_FORMAT = "dewmark-answers/1";
 let canWrite = false;
 let secondWindow = false;
 
-let state = {
-  format: ANSWERS_FORMAT,
-  exam: { code: MODEL.exam.code, version: MODEL.exam.version, title: MODEL.exam.title },
-  page: VARIANT,
-  student: {},
-  started_at: null,
-  saved_at: null,
-  finished_at: null,
-  answers: {},
-};
+function blankState() {
+  return {
+    format: ANSWERS_FORMAT,
+    exam: { code: MODEL.exam.code, version: MODEL.exam.version, title: MODEL.exam.title },
+    page: VARIANT,
+    student: {},
+    started_at: null,
+    saved_at: null,
+    finished_at: null,
+    answers: {},
+  };
+}
+let state = blankState();
 let fileHandle = null;
 let fileSaveTimer = null;
 
@@ -226,10 +234,10 @@ function adoptState(candidate) {
 /* Starting afresh when this browser holds saved work for the paper keeps that
    work under a set-aside key rather than writing over it, so an invigilator can
    still recover it. */
-function setAsideStoredWork() {
+function setAsideStoredWork(confirmed) {
   const stored = readStoredState();
   if (!stored || !Object.keys(stored.answers || {}).length) return true;
-  const keep = confirm("This browser holds saved work for this paper ("
+  const keep = confirmed || confirm("This browser holds saved work for this paper ("
     + describeState(stored, "saved work") + ").\n\n"
     + "Press OK to start again. The saved work is kept aside on this "
     + "computer, not deleted. Press Cancel to go back and continue from "
@@ -246,40 +254,13 @@ function setAsideStoredWork() {
   return true;
 }
 
-async function begin() {
-  for (const el of document.querySelectorAll("[data-detail]")) {
-    if (!el.value.trim()) {
-      alert("Please fill in your " + el.dataset.detail + ".");
-      el.focus();
-      return;
-    }
-  }
-  if (SAVES && !secondWindow && !setAsideStoredWork()) return;
-  for (const el of document.querySelectorAll("[data-detail]")) {
-    state.student[el.dataset.detail] = el.value.trim();
-  }
-  if (!state.started_at) state.started_at = new Date().toISOString();
-
-  if (SAVES && !secondWindow && "showSaveFilePicker" in window) {
-    try {
-      fileHandle = await window.showSaveFilePicker({
-        suggestedName: submissionBaseName() + ".json",
-        types: [{ description: "dewmark answer file",
-                  accept: { "application/json": [".json"] } }],
-      });
-    } catch (err) {
-      fileHandle = null;
-    }
-  }
-  if (!fileHandle) {
-    setPill("dm-save-file", SAVES ? "File saving is off"
-      : "The answer key saves nothing", "dm-off");
-  }
-  enterExam();
+function hideScreens() {
+  for (const el of document.querySelectorAll(".dm-screen")) el.hidden = true;
 }
 
+/* The student has entered the paper: from here the page saves. */
 function enterExam() {
-  $("dm-start").hidden = true;
+  hideScreens();
   $("dm-app").hidden = false;
   $("dm-top-student").textContent =
     Object.values(state.student).filter(Boolean).join(" · ");
@@ -290,43 +271,14 @@ function enterExam() {
   buildPanel();
   canWrite = SAVES && !secondWindow;
   if (!SAVES) setPill("dm-save-browser", "The answer key saves nothing", "dm-off");
+  if (!fileHandle) {
+    setPill("dm-save-file", SAVES ? "File saving is off" : "The answer key saves nothing", "dm-off");
+  }
   saveEverywhere();
-}
-
-function loadAnswerFile() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "application/json,.json";
-  input.onchange = async () => {
-    const file = input.files[0];
-    if (!file) return;
-    let loaded;
-    try {
-      loaded = JSON.parse(await file.text());
-    } catch (err) {
-      alert("That file could not be read as an answer file.");
-      return;
-    }
-    if (!validState(loaded)) {
-      alert("That file is not an answer file for this paper, so it cannot be "
-        + "loaded here.");
-      return;
-    }
-    const stored = readStoredState();
-    if (stored && stored.saved_at !== loaded.saved_at
-        && Object.keys(stored.answers || {}).length) {
-      const keepFile = confirm(
-        "This browser also holds saved work for this paper.\n\n"
-        + describeState(loaded, "The file") + "\n"
-        + describeState(stored, "This browser") + "\n\n"
-        + "Press OK to continue from the file, or Cancel to continue "
-        + "from this browser.");
-      if (!keepFile) { adoptState(stored); enterExam(); return; }
-    }
-    adoptState(loaded);
-    enterExam();
-  };
-  input.click();
+  const paper = $("dm-paper");
+  paper.setAttribute("tabindex", "-1");
+  paper.focus({ preventScroll: true });
+  window.scrollTo(0, 0);
 }
 
 /* --- progress and the finish report ------------------------------------------------- */
@@ -447,7 +399,8 @@ function readableCopy() {
   gatherState();
   const clone = document.documentElement.cloneNode(true);
   for (const el of clone.querySelectorAll(
-      "script, button, #dm-panel, #dm-start, #dm-finish-screen, .dm-save-pill")) {
+      "script, button, #dm-panel, .dm-screen, #dm-drawer, #dm-scrim, #dm-aa, #dm-ruler, "
+      + "#dm-fonts, .dm-save-pill")) {
     el.remove();
   }
   for (const el of clone.querySelectorAll("#dm-app, #dm-topbar")) el.hidden = false;
@@ -506,18 +459,19 @@ function countWords() {
   }
 }
 
-$("dm-begin").addEventListener("click", begin);
-$("dm-load-file").addEventListener("click", loadAnswerFile);
 $("dm-download").addEventListener("click", downloadAnswerFile);
 $("dm-finish").addEventListener("click", () => {
   gatherState();
   $("dm-finish-report").replaceChildren(finishReport());
   $("dm-app").hidden = true;
   $("dm-finish-screen").hidden = false;
+  $("dm-finish-h").focus();
+  window.scrollTo(0, 0);
 });
 $("dm-keep-working").addEventListener("click", () => {
   $("dm-finish-screen").hidden = true;
   $("dm-app").hidden = false;
+  $("dm-paper").focus({ preventScroll: true });
 });
 $("dm-submit").addEventListener("click", () => {
   state.finished_at = new Date().toISOString();
@@ -542,41 +496,11 @@ window.addEventListener("beforeunload", () => {
   } catch (err) { /* the periodic save already reported storage trouble */ }
 });
 
-/* If this browser already holds saved work for this paper, offer to continue
-   from it rather than starting blank. */
-const stored = readStoredState();
-if (stored && Object.keys(stored.answers || {}).length) {
-  const note = document.createElement("p");
-  note.className = "dm-restore-note";
-  note.textContent = "Saved work was found (" + describeState(stored, "this browser") + "). ";
-  const resume = document.createElement("button");
-  resume.type = "button";
-  resume.className = "dm-secondary";
-  resume.textContent = "Continue from saved work";
-  resume.addEventListener("click", () => { adoptState(stored); enterExam(); });
-  note.appendChild(resume);
-  $("dm-start").prepend(note);
-}
-
-/* A second copy of the paper open in this browser must not save over the first;
-   the second copy detects the first and steps back. */
-const channel = "BroadcastChannel" in window ? new BroadcastChannel(STORAGE_KEY) : null;
-if (channel) {
-  let iAmFirst = true;
-  channel.onmessage = (event) => {
-    if (event.data === "anyone-there?" && iAmFirst) channel.postMessage("yes");
-    if (event.data === "yes") {
-      iAmFirst = false;
-      secondWindow = true;
-      canWrite = false;
-      /* Every way into the paper is closed, not only the Begin button. */
-      for (const button of document.querySelectorAll(
-          "#dm-begin, #dm-load-file, .dm-restore-note button")) {
-        button.disabled = true;
-      }
-      alert("This paper is already open in another window on this computer. "
-        + "Please continue there; this window will not save.");
-    }
-  };
-  channel.postMessage("anyone-there?");
+/* The top bar is as tall as its contents, which change with the text size;
+   the side panel sticks just below it. */
+if ("ResizeObserver" in window) {
+  new ResizeObserver(() => {
+    const height = $("dm-topbar").offsetHeight;
+    if (height) document.documentElement.style.setProperty("--dm-bar", height + "px");
+  }).observe($("dm-topbar"));
 }

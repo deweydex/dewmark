@@ -417,3 +417,108 @@ NVDA), which need a person.
 what the CSS and script share; a rename is a change to all three. The names in
 an answer file are the paper's permanent names, and the file's shapes follow
 `docs/ANSWER_FILE.md`'s rule for changing.
+
+**0.13 — The two screens before the paper, reading settings, branding, and
+the list of what a paper needs.** The second of the five slices of step 4
+(entry 0.12). A page now opens on *Start* (details, reading settings, what the
+paper needs) and goes on to *Before you begin* (instructions, where the answer
+file goes, Begin), as decision 25 sets out; the band carries the paper's
+branding; every screen has an **Aa** button that opens the reading settings.
+
+What it settles:
+
+- *Saved work is offered only for its own number.* Decision 9 said saved work
+  is offered after the number is typed. The page goes one step further and
+  offers it only when the number typed is the number the work belongs to
+  (ignoring capitals and spaces), so a shared computer never tells the next
+  student that someone has been working on this paper. If a different number
+  begins, the earlier work is set aside after a question at Begin, as before,
+  never written over. A student who continues and then goes back and changes
+  the details lets the saved work go: it is not loaded into the paper under
+  someone else's name.
+- *The save window is a button on the second screen, not part of Begin.*
+  Begin used to open the browser's own save window, which is a surprise at the
+  moment a student is waiting to start. Now the student chooses the place on
+  the screen that says why; a student who does not is asked once at Begin. A
+  browser that cannot save into a file (Firefox, Safari; decision 8) is told
+  so on that screen, in plain words, and carries on.
+- *Reading settings belong to the computer, not to the paper or the student's
+  file.* They are kept on this computer under `dewmark:reading-settings`, so a
+  student who sits several papers sets them once. They are never in the answer
+  file, the PDF or the readable copy: a file handed to a marker must not say
+  that its student needed large text or a font for dyslexia. The price is that
+  on a shared college computer the next student finds them; the page says so
+  where the settings are shown, and **Use standard settings** removes them.
+  This was chosen without Josh's say-so, and he may want it the other way
+  (clear them on finishing, or keep them only on a practice page); it is one
+  key and one function to change.
+- *One description, two drawings.* `READING` in `dewmark/build.py` says what
+  each setting is, what values it may have and what it begins as. The builder
+  draws the controls from it twice, on the first screen (four settings: font,
+  text size, colours, ruler, with the rest under More settings) and in the
+  drawer, and the page checks any stored setting against it, so a value left by
+  an older page or edited by hand can never put the page in a state it cannot
+  draw. Nothing is written until a student changes a setting.
+- *Six colour schemes, tested.* Match my computer, Light, Cream paper, Blue
+  tint, Dark and High contrast. Every colour is a variable and every size is in
+  `rem`, so a scheme or a text size from 14 to 32 pixels changes the whole page.
+  `tests/test_page_css.py` computes the contrast of each pair of colours the
+  stylesheet puts together: text reaches 4.5 to 1 and the edge of a field and
+  the focus ring 3 to 1, in every scheme. One pair failed at first (the
+  orange button in Blue tint) and was fixed.
+- *Two reading fonts, carried in the page.* Lexend and OpenDyslexic, about
+  345 KB of a page of 445 KB, so a student's choice never depends on the
+  computer. The files are copies from dewlab with a source record
+  (`assets/vendor/SOURCE.json`: the dewlab commit and a checksum for each),
+  and `tests/test_vendor.py` fails if one is edited by hand (decision 31). The
+  page's policy gains `font-src data:` and nothing else. The italic faces are
+  left out; a browser slants the upright one. The fonts' licences are those of
+  the `@fontsource` packages dewlab builds them from; that record should be
+  read before dewmark's own licence terms are settled.
+- *The reading ruler* follows the pointer, and moves to the line being typed
+  (found by laying the text out again in an invisible copy of the box).
+- *Branding is text and a picture, in a fixed band.* `institution`, `college`,
+  `module`, `module code`, `session` and an optional `logo` appear in the
+  band, which says in words whether the page is an examination, a practice
+  version or an answer key. A logo is a picture file inside the paper's folder,
+  at most 150 KB, carried into the page as the other pictures are; a logo that
+  is missing, remote, outside the folder, not a picture or too big stops the
+  build with a message. There is no college colour (decision 12). `number
+  example` is the hint under the student number.
+- *The list of what a paper needs is made from the paper.* The builder lists
+  the paper and its fonts, Python (and where it comes from, its packages and
+  its set-up code) if the paper declares any, and the two ways of saving; a
+  teacher never writes a loading screen. The page runs a check for each item
+  and shows the result in words as well as colour. The two real checks today
+  are whether this browser will keep anything (a small key is written and
+  removed at once, which also finds a full disk) and whether it can save into
+  a file. The Python rows say plainly that this page cannot run Python yet;
+  step 5 puts a loader there, and a check may take time and return a promise
+  of a state. A problem is shown and never stops Begin: the student can still
+  read and write, and the invigilator decides.
+- *The one rule about writing before Begin has two more exceptions, both of
+  them not the student's work:* the reading settings, written only when
+  changed, and the storage test, which leaves nothing behind. CLAUDE.md says
+  so, and `tests/browser/test_page.py` checks that the first screen writes
+  nothing else, and that a changed setting is the only thing it writes.
+
+Moved to the next slice: *the invigilator's view of work set aside.* `docs/DEVELOPMENT.md`
+said it comes with these screens. It cannot be safe without the invigilator's
+code of decision 24: a list of other students' saved work that any student can
+open is the leak the previous point closes. The code comes with the timer, and
+the view comes with it. *Extra time* moves there too, since the answer file's
+record of it and the timer's behaviour are one design. This slice shows the
+time allowed and nothing more.
+
+Not done: the keyboard-alone and NVDA walk-through the plan asks for (it needs
+a person at a college computer), and a check that the drawer and screens read
+well at the largest text on a phone (the rehearsals check that nothing scrolls
+sideways at 1024 pixels and 420 pixels wide).
+
+*Changing it:* a new reading setting is added in four places that must agree:
+`READING`, `reading_controls` and its labels in `dewmark/build.py`, `applyReading`
+in `assets/page-reading.js`, and the CSS variable or attribute it sets. The
+stored settings have no format number: a setting that is unknown or invalid
+becomes its default, so a new one can be added without one.
+A colour added to the stylesheet goes into the pairs of `tests/test_page_css.py`
+in the same commit.

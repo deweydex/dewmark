@@ -206,6 +206,51 @@ Answers:
 """
 
 
+# A small paper with no Python, and with every branding setting, for the
+# rehearsals of the band and of a page whose paper needs nothing to load.
+BRANDED_PAPER = """\
+---
+dewmark: 1
+code: branded
+kind: exam
+title: Branded Paper
+module: Testing
+module code: 5N0000
+institution: Dublin and Dún Laoghaire ETB
+college: Dublin College Dundrum
+session: 2026–2027
+logo: pictures/logo.svg
+number example: D00123456
+total marks: 2
+time allowed: 30 minutes
+---
+
+## Question 1: Writing (2 marks)
+
+```answer
+```
+
+# Marking scheme
+
+### 1 (draft)
+"""
+LOGO_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60" viewBox="0 0 120 60">'
+            '<rect width="120" height="60" fill="#d4692a"/></svg>')
+
+
+@pytest.fixture(scope="session")
+def branded(tmp_path_factory):
+    """The branded paper built once, with its logo beside it."""
+    source = tmp_path_factory.mktemp("branded-source")
+    (source / "pictures").mkdir()
+    (source / "pictures" / "logo.svg").write_text(LOGO_SVG, encoding="utf-8")
+    out = tmp_path_factory.mktemp("branded")
+    for name, text in build_pages(BRANDED_PAPER, source).items():
+        (out / name).write_text(text, encoding="utf-8")
+    return {"student": out / "branded.student.html", "practice": out / "branded.practice.html",
+            "answer_key": out / "branded.answer-key.html", "dir": out}
+
+
 @pytest.fixture(scope="session")
 def pages(tmp_path_factory):
     """The rehearsal paper built once with the new builder: its three pages."""
