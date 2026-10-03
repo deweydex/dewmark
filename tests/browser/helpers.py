@@ -124,8 +124,9 @@ def begin(page, name="Agnes Nitt", number="S12345", choose=True):
     press_begin(page)
 
 
-def resume(page, number="S12345"):
-    """Type the number, Continue my work, then Begin."""
+def resume(page, number="S12345", name="Agnes Nitt"):
+    """Type the name and number, Continue my work, then Begin."""
+    page.fill("#dm-name", name)
     page.fill("#dm-number", number)
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")

@@ -21,6 +21,9 @@ const MODEL = JSON.parse(document.getElementById("dewmark-page-model").textConte
 const VARIANT = MODEL.variant;
 const STORAGE_KEY = "dewmark:" + MODEL.exam.code + ":" + VARIANT;
 const SAVES = VARIANT !== "answer-key";
+/* The sitting these pages were built for (dewmark build --sitting), or "". Work
+   saved in another sitting is never offered back: it is set aside. */
+const SITTING = (MODEL.invigilator && MODEL.invigilator.sitting) || "";
 const ANSWERS_FORMAT = "dewmark-answers/1";
 
 /* Nothing is written to storage until the student has entered the paper
@@ -29,22 +32,58 @@ const ANSWERS_FORMAT = "dewmark-answers/1";
    restore. A second copy of the paper in the same browser never writes. */
 let canWrite = false;
 let secondWindow = false;
+let entered = false;                  // the student has pressed Begin or Continue
+let paperClosed = false;              // an enforced clock has run out (assets/page-time.js)
+let changedAfterFinish = "";          // why the saved files no longer match: "answers" or "time"
+
+const EXTRA_LIMIT = 600;              // the most minutes of extra time one person or one grant can have
 
 function blankState() {
   return {
     format: ANSWERS_FORMAT,
-    exam: {
+    exam: Object.assign({
       code: MODEL.exam.code, version: MODEL.exam.version, title: MODEL.exam.title,
       fingerprint: MODEL.exam.fingerprint,
-    },
+    }, SITTING ? { sitting: SITTING } : {}),
     page: VARIANT,
     student: {},
     started_at: null,
     saved_at: null,
     finished_at: null,
     receipt: null,
+    time: blankTime(),
     answers: {},
   };
+}
+
+/* What the page records about time (docs/ANSWER_FILE.md, `time`): the paper's rule
+   for the clock, the minutes added to it and by whom, the breaks, and the pauses
+   when an enforced paper was closed until time was added. */
+function blankTime() {
+  return { timer: MODEL.timer.mode, allowed_minutes: MODEL.timer.minutes, extra: [], breaks: [], closed: [] };
+}
+
+/* The time in a record that came from outside (storage, a file) is rebuilt from
+   its parts, so that what is not a number of minutes or a time is dropped, and the
+   rule for the clock is always this paper's. */
+function cleanTime(raw) {
+  const time = blankTime();
+  if (!raw || typeof raw !== "object") return time;
+  const when = (value) => (typeof value === "string" && !Number.isNaN(Date.parse(value)) ? value : null);
+  const list = (value, limit) => (Array.isArray(value) ? value.slice(0, limit) : []);
+  for (const grant of list(raw.extra, 20)) {
+    const minutes = grant && Number.isInteger(grant.minutes) ? grant.minutes : 0;
+    if (minutes >= 1 && minutes <= EXTRA_LIMIT && (grant.by === "student" || grant.by === "invigilator")) {
+      time.extra.push({ minutes, by: grant.by, at: when(grant.at) });
+    }
+  }
+  for (const key of ["breaks", "closed"]) {
+    for (const pause of list(raw[key], 50)) {
+      const start = pause && when(pause.start);
+      if (start) time[key].push({ start, end: when(pause.end) });
+    }
+  }
+  return time;
 }
 let state = blankState();
 
@@ -286,6 +325,7 @@ function saveEverywhere() {
       }
     }, 800);
   }
+  keepClock();
   refreshProgress();
 }
 
@@ -296,14 +336,15 @@ function saveEverywhere() {
 const UNACCENTED = { "ł": "l", "Ł": "L", "ø": "o", "Ø": "O", "đ": "d", "Đ": "D", "ð": "d", "Ð": "D",
   "ħ": "h", "Ħ": "H", "ı": "i", "ß": "ss", "æ": "ae", "Æ": "AE", "œ": "oe", "Œ": "OE", "þ": "th", "Þ": "TH" };
 
+const unaccent = (text) => String(text || "").replace(/[łŁøØđĐðÐħĦıßæÆœŒþÞ]/g, (c) => UNACCENTED[c])
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
 function safeName(text) {
-  return String(text || "").replace(/[łŁøØđĐðÐħĦıßæÆœŒþÞ]/g, (c) => UNACCENTED[c])
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "student";
+  return unaccent(text).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "student";
 }
 
-function submissionBaseName() {
-  const details = state.student || {};
+function submissionBaseName(details) {
+  details = details || state.student || {};
   return "dewmark_" + MODEL.exam.code + "_" + safeName(details["student number"])
     + "_" + safeName(details["full name"]);
 }
@@ -341,6 +382,7 @@ function adoptState(candidate) {
   state = candidate;
   /* The work now continues on this copy of the paper, whichever copy it began on. */
   state.exam = blankState().exam;
+  state.time = cleanTime(state.time);
   const details = state.student || {};
   for (const el of document.querySelectorAll("[data-detail]")) {
     el.value = typeof details[el.dataset.detail] === "string" ? details[el.dataset.detail] : "";
@@ -386,6 +428,7 @@ function enterExam() {
   countWords();
   buildPanel();
   canWrite = SAVES && !secondWindow;
+  entered = true;
   if (!SAVES) setPill("dm-save-browser", "The answer key saves nothing", "dm-off");
   if (!fileHandle) {
     setPill("dm-save-file", SAVES ? "File saving is off" : "The answer key saves nothing", "dm-off");
@@ -395,6 +438,7 @@ function enterExam() {
   paper.setAttribute("tabindex", "-1");
   paper.focus({ preventScroll: true });
   window.scrollTo(0, 0);
+  startClock();
 }
 
 /* --- progress and the finish report ------------------------------------------------- */
@@ -518,8 +562,8 @@ function readableCopy() {
   gatherState();
   const clone = document.documentElement.cloneNode(true);
   for (const el of clone.querySelectorAll(
-      "script, button, #dm-panel, .dm-screen, #dm-drawer, #dm-scrim, #dm-aa, #dm-ruler, "
-      + "#dm-fonts, .dm-save-pill")) {
+      "script, button, dialog, #dm-panel, .dm-screen, #dm-drawer, #dm-scrim, #dm-aa, #dm-ruler, "
+      + "#dm-fonts, .dm-save-pill, .dm-timebox, #dm-clock-live, #dm-clock-note")) {
     el.remove();
   }
   for (const el of clone.querySelectorAll("#dm-app, #dm-topbar")) el.hidden = false;
@@ -578,16 +622,27 @@ function countWords() {
   }
 }
 
-$("dm-download").addEventListener("click", downloadAnswerFile);
-$("dm-finish").addEventListener("click", () => {
+const CHANGED_MESSAGES = {
+  answers: "You changed your answers after you saved. Save your files again before you hand in.",
+  time: "The record of your time changed after you saved. Save your files again before you hand in.",
+};
+
+/* The finish sheet, from the Finish button or because an enforced clock ran out. */
+function showFinishSheet() {
   gatherState();
   $("dm-finish-report").replaceChildren(finishReport());
   $("dm-app").hidden = true;
   $("dm-finish-screen").hidden = false;
-  $("dm-changed").hidden = !changedAfterFinish;
+  say("dm-changed", CHANGED_MESSAGES[changedAfterFinish] || "");
+  say("dm-time-added", "");
+  $("dm-closed").hidden = !paperClosed;
+  $("dm-keep-working").hidden = paperClosed;
   $("dm-finish-h").focus();
   window.scrollTo(0, 0);
-});
+}
+
+$("dm-download").addEventListener("click", downloadAnswerFile);
+$("dm-finish").addEventListener("click", showFinishSheet);
 $("dm-keep-working").addEventListener("click", () => {
   $("dm-finish-screen").hidden = true;
   $("dm-app").hidden = false;
@@ -595,7 +650,6 @@ $("dm-keep-working").addEventListener("click", () => {
 });
 /* Saving at the finish sheet is what hands the paper in: the time is fixed, the
    receipt is made from the whole record (assets/page-finish.js does the saving). */
-let changedAfterFinish = false;
 
 /* The paper is handed in as it now is. If it was already saved and has not
    changed since, the receipt stays the same, so every file saved from one
@@ -605,17 +659,17 @@ function fixReceipt() {
   if (state.finished_at && state.receipt) return;
   state.finished_at = new Date().toISOString();
   state.receipt = receiptOf(state);
-  changedAfterFinish = false;
+  changedAfterFinish = "";
   saveEverywhere();
 }
 
 /* A change after the paper was saved means the files and their receipt no longer
    describe the paper, so the student is asked to save again. */
-function noteChangeAfterFinish() {
+function noteChangeAfterFinish(reason) {
   if (!state.finished_at) return;
   state.finished_at = null;
   state.receipt = null;
-  changedAfterFinish = true;
+  changedAfterFinish = reason || "answers";
   for (const id of ["dm-saved", "dm-problem", "dm-confirm", "dm-pdf-note", "dm-again-row"]) $(id).hidden = true;
 }
 $("dm-save-readable").addEventListener("click", downloadReadableCopy);

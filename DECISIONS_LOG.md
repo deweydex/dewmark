@@ -720,3 +720,107 @@ the browser's folder window.
 minutes left, so they are short and say whether the work is safe. The checks
 run in order (written, read back, receipt) and a new one goes into
 `checkFolder` in `assets/page-finish.js`.
+
+**0.17 — The clock, extra time, breaks, and the invigilator's code.** The fourth
+part of step 4's fourth slice, and the last of it. A page now has a clock that a
+student can hide, extra time, breaks, and an invigilator's code that adds time
+to a paper that has closed. It settles D4 and decision 11 in code.
+
+What it settles:
+
+- *The code is made when the pages are built, for one sitting.* Josh chose this
+  over a setting in the exam file. `python -m dewmark build FILE -o DIR --sitting
+  "2026-10-20 Group A"` makes six digits, prints them once for the sitting card,
+  and writes them nowhere; `--code` gives them back to build the same pages again,
+  or sets four to eight digits of the teacher's own. The page holds a short hash
+  (`dewmark/invigilator.py`), made with the paper's code, so the code is not in the
+  page's text, and the paste route never sees it because it is not in the exam
+  file. A paper whose timer is `enforced` is refused without one. A page built
+  without a sitting has no code, and says so: the things that need a code cannot be
+  done on it.
+- *The code is a guard against accidents, and the page says so.* A hash of six
+  digits is searched in seconds, and a student who reads the page's source can
+  change what it checks. D4 accepts that: the invigilator, in the room, is the
+  remedy. The page waits 30 seconds after three wrong tries, which stops a student
+  pressing keys, not one with a script. `docs/DEVELOPMENT.md` lists it as a limit
+  and says what a stronger design would need (a server).
+- *What the code does.* It adds time. It lets a student start again under an
+  enforced clock. It lets a student continue work saved under another name. It
+  opens a list of saved work. Each time, the page asks for it afresh in one small
+  window (`<dialog>`: focus is kept, Escape closes it), with the minutes asked for
+  in the same window when time is being added. The code is typed masked.
+- *The clock is the wall clock.* Time left is Begin, plus the time allowed, plus
+  extra time, plus every break and every closed pause, less now. Closing the page
+  does not stop it; only a break does. The page reads `time allowed` in the forms
+  teachers write it (`2 hours 30 minutes`, `90`, `1.5 hours`, `2h30`); a timer that
+  is asked for and cannot count the words is a problem, and a default timer that
+  cannot is turned off with a warning.
+- *At ten minutes, words, weight and a drawn mark, once.* The clock is a `timer`
+  element, which a screen reader does not read every second; a separate status line
+  says "Ten minutes left." once, with no sound and no change of focus. A student who
+  hid the clock is not told under a clock that only shows (they asked for quiet);
+  under an enforced clock they are, because the paper will close. **This is my
+  choice, not one of Josh's decisions; it is a few lines to change.**
+- *Under an enforced clock, at zero: the page saves, the boxes become read-only,
+  and the finish sheet opens* (D4). A read-only box can still be read and copied;
+  a choice, a drop-down or a button is disabled. The student can still save and
+  hand in. Nothing is written to the record for being closed: a closed paper is the
+  clock's answer, found again whenever the page opens, so a student who had already
+  saved still holds a receipt that matches.
+- *Time added to a closed paper counts from when it reopens.* Without this, an
+  invigilator who adds fifteen minutes twenty minutes after the paper closed gets a
+  paper that is still closed. The page records the time the paper waited as a
+  `closed` pause, from the moment the time ran out to the moment it reopened, and
+  keeps the minutes the invigilator typed as typed.
+- *Extra time has two sources and the record names them.* A clock that only shows
+  takes the student's own word, typed on the second screen (1 to 600 minutes,
+  replaced each time they change it); an enforced clock takes only the
+  invigilator's, appended and never replaced. Both are in `time.extra` with who and
+  when, and the confirmation card shows them so the invigilator can check them
+  against the college's list. `time` is always present in the answer file, so a
+  reader never asks whether it exists, and it is part of the receipt.
+- *Breaks need no code.* The page hides the paper, stops the clock, and records
+  the start and end. A break left open (the page was closed on it) is still open
+  when the work is continued, and the clock is still stopped. A break taken after
+  the student saved withdraws the receipt, with its own message ("The record of your
+  time changed after you saved"), since the file no longer holds it.
+- *The practice page shows the clock and never closes the paper*, whatever the
+  paper says: nobody is there to give a practising student more time. The answer
+  key has no clock. **Also my choice.**
+- *Start again, under an enforced clock, needs the code and does not restart the
+  clock.* The start of the clock is kept for the paper, the sitting and the student
+  number, apart from the saved work (`dewmark:clock:…`), and ignored after 36 hours.
+  Under a clock that only shows, starting again starts the clock again, as before.
+  A student who clears the browser's data, or uses another browser, begins with a
+  full clock: it is a browser page, and the invigilator sees it.
+- *The sitting joins the record.* §5.2 says a record carries its sitting and that
+  another sitting's work is set aside, not restored; the record carried only the
+  version and the fingerprint. `exam.sitting` is now written when the pages were
+  built for a sitting, work from another sitting is not offered, and an answer file
+  from another sitting is refused with a message. Without this an enforced clock
+  would read a start time from last term.
+- *Saved work asks for the name.* A student who types a number is offered the work
+  saved under it. The page now also asks for the name, and compares it without
+  capitals, accents, spaces or punctuation (so `sile ni bhriain` is `Síle Ní
+  Bhriain`); a name that does not match needs the code, as §5.2 says. This changes
+  the second slice: Continue my work used to need only the number, and several
+  rehearsals now type the name first.
+- *The invigilator's list of saved work.* Behind the code, on the first screen: the
+  work this computer holds for this paper, newest first, by initials and the last
+  three digits of the number (a student who sees the list learns no name). Each can
+  be saved as a file, and a piece of work from this paper's version and sitting can
+  be continued from, which sets the work the page holds aside first. Nothing here
+  deletes anything.
+
+Not done: print headers on every printed page; deleting old saved work and old
+clocks (§5.2's 14 days, which is not built, so the list shows no expiry); the
+workbench's accommodations column (step 6; the file already carries what it needs);
+the code on a studio sitting card (step 7; until then the command prints it); a
+college computer; and the keyboard and screen-reader walk-through of the dialogs.
+
+*Changing it:* the words the invigilator and the student read are in
+`dewmark/build.py` (`_time_card`, `_dialogs`) and `assets/page-invigilator.js`; the
+rule for the clock is `millisecondsLeft` in `assets/page-time.js` and must agree
+with `docs/ANSWER_FILE.md`, *Time*. A change to the hash in `dewmark/invigilator.py`
+and `invigilatorCheck` changes every page already built, so
+`tests/test_timer.py` freezes a value.

@@ -266,10 +266,10 @@ def test_nothing_in_the_settings_or_the_screens_adds_an_address():
             assert not re.search(r"url\((?!data:)", page), name
 
 
-def test_the_script_is_the_five_files_in_order_and_never_writes_markup():
+def test_the_script_is_the_seven_files_in_order_and_never_writes_markup():
     """What a student or an answer file holds goes into the page as text only."""
-    assert build_module.SCRIPTS == ("page.js", "page-reading.js", "page-pdf.js", "page-finish.js",
-                                    "page-start.js")
+    assert build_module.SCRIPTS == ("page.js", "page-reading.js", "page-invigilator.js", "page-time.js",
+                                    "page-pdf.js", "page-finish.js", "page-start.js")
     for name in build_module.SCRIPTS:
         script = (ROOT / "assets" / name).read_text(encoding="utf-8")
         assert not re.search(r"\.(innerHTML|outerHTML)\s*=|insertAdjacentHTML|document\.write|eval\(", script), name

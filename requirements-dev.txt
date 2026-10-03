@@ -1,5 +1,5 @@
 # What developing dewmark needs on top of requirements.txt.
 pytest>=7.0
-playwright>=1.40   # only for the dev/ browser rehearsals; needs Chromium
+playwright>=1.45   # only for the dev/ browser rehearsals; needs Chromium. 1.45 added the clock the timer rehearsals use
 pymupdf>=1.24      # reads the PDFs the page writes, to check them (tests/browser/test_pdf.py)
 # fonttools is needed only to run dev/make_pdf_fonts.py, which remakes assets/vendor/pdf-fonts/.

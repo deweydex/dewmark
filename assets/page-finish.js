@@ -54,6 +54,12 @@ function showConfirmation(names) {
     "dm-c-receipt": state.receipt, "dm-c-files": names.join(", "),
   };
   for (const [id, value] of Object.entries(fields)) $(id).textContent = value || "";
+  /* What the invigilator needs to check against the college's list: extra time and breaks. */
+  const accommodations = { extra: describeExtra(state.time), breaks: describeBreaks(state.time) };
+  for (const [name, text] of Object.entries(accommodations)) {
+    $("dm-c-" + name).textContent = text;
+    $("dm-c-" + name + "-row").hidden = !text;
+  }
   $("dm-confirm").hidden = false;
 }
 

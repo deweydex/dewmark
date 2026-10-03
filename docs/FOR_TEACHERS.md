@@ -88,12 +88,11 @@ things:
 paper is written in the new format ([EXAM_FORMAT.md](EXAM_FORMAT.md)),
 `python -m dewmark build my-exam.exam.md -o finished/` builds the same four
 files from it, and stops, writing nothing, if a page it made would show
-students the marking scheme or a hint. What it makes does not yet have a
-timer, breaks or a PDF, cannot draw four kinds of question (matching,
-ordering, photographs and "answer on paper"; it tells you which), and saves
-an answer file the marking workbench cannot read yet
-([ANSWER_FILE.md](ANSWER_FILE.md)). Use it to try the new format, and use
-`build_exam.py` for a real sitting.
+students the marking scheme or a hint. What it makes cannot draw four kinds
+of question (matching, ordering, photographs and "answer on paper"; it tells
+you which), cannot run Python yet, and saves an answer file the marking
+workbench cannot read yet ([ANSWER_FILE.md](ANSWER_FILE.md)). Use it to try the
+new format, and use `build_exam.py` for a real sitting.
 
 What a student sees on the newer page: a band at the top that says in words
 whether this is an examination, a practice version or an answer key, with the
@@ -130,6 +129,51 @@ the student's name, number and the exam code on every page and the Paper ID and
 receipt at the foot. The page makes it with no network. A student whose answer
 holds a character the PDF's fonts lack (Arabic or Chinese, say) is told which, and
 offered the browser's own print window instead.
+
+**The clock, extra time and breaks.** `timer` in the exam file is `none`, `shown` or
+`enforced`, and `breaks` is `on` or `off` ([EXAM_FORMAT.md](EXAM_FORMAT.md) §4.9). With
+`shown`, the page has a clock at the top that a student can hide with one click.
+It tells the student once, in words, at ten minutes. At zero nothing stops them:
+you tell them. A student with extra time types the minutes on the second screen,
+and the confirmation card shows them, so you can check against your list. With
+`enforced`, the page saves at zero, the answer boxes stop taking changes, and the
+finish sheet opens, where the student can still save and hand in. You add time
+with the **invigilator's code**, and time you add to a paper that has closed
+counts from the moment you add it. Extra time for a student with an enforced
+clock is only ever added with the code, on the second screen before Begin or on
+the finish sheet. With `breaks: on`, a student presses **Take a break**: the
+page hides the paper, stops the clock, and records when the break began and
+ended; the confirmation card counts the breaks. The practice page shows the clock
+and never closes the paper. Closing the page does not stop the clock, only a
+break does. The answer file records the rule, the extra time and who gave it,
+the breaks, and any time a closed paper waited for you
+([ANSWER_FILE.md](ANSWER_FILE.md), *Time*).
+
+**The invigilator's code** is made when you build the pages for a sitting:
+
+```sh
+python -m dewmark build my-exam.exam.md -o finished/ --sitting "2026-10-20 Group A"
+```
+
+The command prints six digits, such as `482 915`. Write them on the sitting card
+and keep them out of the folder students receive: no file holds them, and the
+pages hold only a short hash. A new sitting gets a new code. To build the same pages
+again so that they accept the same code, add `--code 482915`; you may also choose
+a code of your own, of four to eight digits. A paper with `timer: enforced` cannot
+be built without one. The code does four things: it adds time to a closed paper,
+it lets a student start again under an enforced clock (which does not give a
+new clock), it lets a student continue work saved under a different name, and it
+opens **Saved work on this computer (for invigilators)** on the first screen,
+which lists the work the computer holds for this paper (by the student's
+initials and the last digits of the number, never the whole name), lets you save
+any of it as a file, and lets you continue from it. Nothing the page does deletes
+saved work. The code guards against accidents, not against a student who knows
+how to read a page's source: it is a hash of a short number. You are in the room,
+as at a paper exam, and the card and the file are there to check afterwards.
+The page waits 30 seconds after three wrong codes.
+
+Work saved in another sitting is never offered back to a student: each sitting's
+pages know their sitting, and the answer file records it.
 
 Before the real sitting, open the student page and sit the paper
 yourself. Reading your own exam as a student finds more problems than

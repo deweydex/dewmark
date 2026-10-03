@@ -28,8 +28,9 @@
 > only, until step 5), `choice`, `boxes`, `blanks` and `table`; a paper using
 > `match`, `order`, `photo` or `on-paper` is refused with a message until
 > step 8. The two start screens, reading settings, branding and the list of what a
-> paper needs are built (`DECISIONS_LOG.md`, entry 0.13); the timer, breaks and PDF
-> of step 4 are not. A paper's **fingerprint** (the Paper ID students see) is made when
+> paper needs are built (`DECISIONS_LOG.md`, entry 0.13), and so are the PDF and
+> the finish sheet (0.15, 0.16), and the timer, extra time, breaks and the
+> invigilator's code (0.17); print headers on every printed page are not. A paper's **fingerprint** (the Paper ID students see) is made when
 > it is built, from the paper above the marking scheme and the pictures it carries
 > (`dewmark/receipt.py`, `docs/ANSWER_FILE.md`).
 > Not yet built: the dewlab import form (§4.11) and the JSON schema for a
@@ -319,9 +320,9 @@ Settings are `key: value` lines between two `---` lines. Capitals, spaces, under
 | `kind` | `exam`, `practice`, `sample` | Sets the EXAMINATION or PRACTICE band (decision 12). Required. |
 | `title`, `module`, `module code` | Written Examination; Programming and Design Principles; 5N2927 | Required for an exam. |
 | `institution`, `college`, `session`, `logo` | Dublin and Dún Laoghaire ETB; Dublin College Dundrum; 2026–2027; `pictures/dcd-logo.svg` | Branding (decision 12); logo optional, 150 KB at most. No colour setting yet. |
-| `total marks`, `time allowed` | `60`; `2 hours` | Required. |
-| `timer` | `none`, `shown`, `enforced` | Default `shown` when there is a time, else `none`. The student can always hide it (decision 11). |
-| `breaks` | `on`, `off` | Default `off` (decision 11). |
+| `total marks`, `time allowed` | `60`; `2 hours` | Required. A time the timer can count is a number of hours, minutes or both: `90`, `90 minutes`, `1.5 hours`, `2h30`, `2 hours 30 minutes`, `1 hour and 30 minutes`; a bare number is minutes; more than a day is not a time. Anything else (`Open book`) is shown as written and has no timer. |
+| `timer` | `none`, `shown`, `enforced` | Default `shown` when `time allowed` is a time the timer can count, else `none` (with a warning). `shown` and `enforced` need a countable time and are refused without one. The student can always hide it (decision 11). `enforced` closes the paper at zero (D4) and the pages cannot be built without an invigilator's code (`build --sitting`). |
+| `breaks` | `on`, `off` | Default `off` (decision 11). When `on`, a student can take a break: the page hides the paper, stops the clock, and records when the break began and ended. |
 | `calculator` | `none`, `basic`, `scientific` | Default `none`. |
 | `maths input` | `text, visual, photo` | Default `text` (decision 15). A box may narrow it with `(input: …)`. |
 | `hand in` | Upload your PDF and answer file to "PDP exam" on Moodle. | Finish-screen wording. Every hand-in includes a PDF (decision 10); the data file's form is dewmark's choice, not the paper's. |
@@ -335,6 +336,8 @@ Settings are `key: value` lines between two `---` lines. Capitals, spaces, under
 | `weighting`, `technique`, `outcomes` | `30%`; `Examination-Theory`; `1, 3, 6, 7, 8` | For QQI records. |
 
 **As built** (`dewmark/build.py`; `DECISIONS_LOG.md` 0.13). The band at the top of every screen shows `institution` and `college` on one line, `module` with its `module code`, the `session`, the time allowed and the total marks, under a word that says whether the page is an examination, a practice version or an answer key. `logo` is a picture file inside the paper's own folder (SVG, PNG, JPEG, GIF or WebP), at most 150 KB, carried in the page; one that is missing, outside the folder, remote, not a picture or too large stops the build (`logo-unavailable`, `logo-too-big`). The Get ready list is the paper, its fonts, and, when the paper has a `python exec` box or a set-up block, Python with where it comes from (`python from`), the `python packages` and the set-up code; the page adds the two ways of saving unless it is the answer key. Hostile words in any of these are shown as text.
+
+**The timer, as built** (`dewmark/build.py`, `timer_block`; `assets/page-time.js`; `DECISIONS_LOG.md` 0.17). `timer: none` has no clock. `shown` has a clock at the top of the page that a student can hide with one click and show again; at ten minutes its words change (*Less than 10 minutes left: 9:59*), it gains weight and a drawn mark, and a screen reader is told once; nothing locks at zero, and the student types any extra time they have been given on the second screen. `enforced` has the same clock; at zero the page saves, the boxes become read-only and the finish sheet opens, where the invigilator's code adds time (`build --sitting "2026-10-20 Group A"` makes a code for the sitting and prints it for the sitting card; the page holds only a hash of it). Extra time under `enforced` is only ever added with that code. The time a student began is kept for the paper, the sitting and the student number apart from the saved work, so **Start again** (which also needs the code) does not give a new clock. The practice page shows the clock and never closes the paper, and the answer key has no clock, whatever the paper says. What the page records is in `docs/ANSWER_FILE.md`, under *Time*.
 
 The student's name and number are always asked, on the one combined start screen (decision 9), so there is no setting for them; `number example: D00123456` sets the hint. The Get ready list is generated from what the paper declares (Python, packages, data files, set-up code), so a teacher never configures a loading screen. **Reference cards**: each `##` under `# Reference` becomes one side-panel card, which is where a formula sheet goes.
 

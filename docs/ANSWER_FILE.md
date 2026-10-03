@@ -15,13 +15,20 @@ policy allows it to connect to nothing at all.
 {
   "format": "dewmark-answers/1",
   "exam": { "code": "specimen-short", "version": "1", "title": "Specimen Paper",
-            "fingerprint": "1WV-H2V" },
+            "fingerprint": "1WV-H2V", "sitting": "2027-01-12 Group A" },
   "page": "student",
   "student": { "full name": "Agnes Nitt", "student number": "S12345" },
   "started_at": "2027-01-12T09:02:11.403Z",
   "saved_at": "2027-01-12T10:01:52.918Z",
   "finished_at": "2027-01-12T10:01:52.918Z",
   "receipt": "2337 B2A0",
+  "time": {
+    "timer": "enforced",
+    "allowed_minutes": 120,
+    "extra": [{ "minutes": 15, "by": "invigilator", "at": "2027-01-12T10:58:40.120Z" }],
+    "breaks": [{ "start": "2027-01-12T09:40:02.331Z", "end": "2027-01-12T09:46:10.007Z" }],
+    "closed": [{ "start": "2027-01-12T11:02:11.403Z", "end": "2027-01-12T11:07:30.840Z" }]
+  },
   "answers": {
     "q1a": "8",
     "q1b": ["B"],
@@ -35,13 +42,47 @@ policy allows it to connect to nothing at all.
 | Field | Meaning |
 |---|---|
 | `format` | Always `dewmark-answers/1` for this shape. A page refuses a file with any other. |
-| `exam` | The paper's `code`, `version` and `title` from its settings, and its `fingerprint` (the Paper ID, below). A page refuses a file whose `code` or `version` is not its own, because a teacher raises the version when names or marks change, and the answers may not fit. |
+| `exam` | The paper's `code`, `version` and `title` from its settings, its `fingerprint` (the Paper ID, below) and, when the pages were built for a sitting (`build --sitting`), that `sitting`; the key is absent otherwise. A page refuses a file whose `code`, `version` or `sitting` is not its own: a teacher raises the version when names or marks change, and the answers may not fit, and work from another sitting is another day's work. |
 | `page` | Which page the work was done on: `student` or `practice`. A page refuses work from a page of the other kind. The answer key saves nothing. |
 | `student` | What the start screen asked: `full name` and `student number`. |
 | `started_at`, `saved_at` | When the student pressed Begin, and when the page last saved. UTC, to the millisecond. |
 | `finished_at` | When the student pressed *Save my answer file and PDF* on the finish sheet. `null` until then, and `null` again if the student changes an answer afterwards. |
 | `receipt` | The receipt of the record (below). `null` until the student saves at the finish sheet, and `null` again if they change an answer afterwards. |
+| `time` | What the page recorded about time (below): the rule the clock followed, extra time and who gave it, breaks, and pauses while an enforced paper was closed. |
 | `answers` | One entry for each answer box that has something in it, keyed by the box's permanent name. |
+
+## Time
+
+`time` is always present and always has this shape, so a reader never has to ask
+whether a field exists. It is part of the record, so the receipt covers it: a
+student, or anyone, who changes the minutes in a file changes the receipt.
+
+| Field | Meaning |
+|---|---|
+| `timer` | The rule the page followed: `none`, `shown` or `enforced` (`docs/EXAM_FORMAT.md`, `timer`). A practice page of an enforced paper says `shown`: it never closes the paper. |
+| `allowed_minutes` | The time allowed, in whole minutes, from `time allowed`; `null` when `timer` is `none`. |
+| `extra` | The minutes added to the time allowed, one entry for each grant: `minutes` (1 to 600), `by` (`student` when the student typed it on the *Before you begin* screen, which a clock that only shows allows; `invigilator` when it was added with the invigilator's code, which is the only way under an enforced clock) and `at` (when). The student's own entry is replaced each time they change the box; the invigilator's entries only grow. |
+| `breaks` | Each break the student took, `start` and `end`, when `breaks: on`. A break that is not yet ended has `end: null`: the page was closed on a break, and the clock is still stopped. |
+| `closed` | The time an enforced paper spent closed, once the invigilator added time and it opened again: `start` is the moment the time ran out and `end` the moment it reopened. |
+
+**How the clock reads it.** The time left is the moment `started_at`, plus
+`allowed_minutes`, plus the `extra` minutes, plus the length of every break and
+closed pause, less now. So minutes added to a paper that closed twenty minutes
+ago are minutes the student can use, counted from when it reopens, and a record
+carries everything a reader needs to say when the time was up. Closing the page
+does not stop the clock; only a break does.
+
+**What is not in it.** An enforced paper that is closed when the student saves
+has nothing added to it for being closed: a closed paper is the clock's answer
+(no time left), found again whenever the page opens. Only the `closed` pause is
+written, and only when time is added.
+
+**What it can and cannot prove.** The invigilator, in the room, is the check on
+extra time and breaks, and the confirmation card shows both so that the card can
+be held against the college's list. A student with developer tools can write
+what they like into a file, and a receipt does not prevent it (it is not a
+signature). The page's own rules (that extra time under an enforced clock needs
+the code) stop accidents and casual attempts, and that is all they claim.
 
 ## The Paper ID and the receipt
 
@@ -113,8 +154,9 @@ either.
 No marks and nothing from the marking scheme, and none of the student's reading
 settings (font, text size, colours, ruler), which belong to the computer and
 never travel in a file that a marker will open: the file holds what a student
-wrote, so it is as safe to hand in as the paper was to sit. Nothing about the
-timer, breaks or extra time yet. The PDF a student also hands in (decision 23)
+wrote, so it is as safe to hand in as the paper was to sit. It does hold extra
+time and breaks (above), because the marker and the exams office need them; it
+never holds the invigilator's code or a hash of it. The PDF a student also hands in (decision 23)
 is a separate file (`docs/PDF_FILE.md`) that carries the receipt and the Paper ID
 on every page.
 

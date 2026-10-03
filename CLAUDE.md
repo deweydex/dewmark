@@ -14,6 +14,7 @@ python build_exam.py samples/sample-mixed-paper.exam.md --output /tmp/out
 python dev/build_site.py                                   # the Pages site, into site/
 python -m dewmark check samples/pdp-5n2927/*.exam.md       # the new reader (docs/EXAM_FORMAT.md)
 python -m dewmark build FILE -o /tmp/out                    # the new pages: student, practice, answer key, scheme
+python -m dewmark build FILE -o /tmp/out --sitting "2026-10-20 Group A"   # ...and the invigilator's code, printed once (an enforced timer needs it)
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"  # the names lock, at issue
 python -m dewmark scheme FILE -o scheme.json                 # the marker's half as JSON (secret: never in a folder students get)
 python -m dewmark package tidy FILE -o package.txt           # the paste route: what to give an assistant
@@ -29,7 +30,8 @@ python -m pytest tests/browser/test_checker.py              # the checker page; 
 
 Student-facing text lives in `build_exam.py`, `assets/exam-page.js`,
 `assets/exam-page.css`, `dewmark/build.py`, `dewmark/render.py`, `assets/page.js`,
-`assets/page-reading.js`, `assets/page-pdf.js`, `assets/page-start.js`, `assets/page.css` and the built pages; teacher-facing text in
+`assets/page-reading.js`, `assets/page-pdf.js`, `assets/page-start.js`, `assets/page-time.js`,
+`assets/page-invigilator.js`, `assets/page.css` and the built pages; teacher-facing text in
 `workbench/index.html`, `checker/index.html`, `docs/FOR_TEACHERS.md`, the builder's
 messages and the paste route's mode names and notices in `dewmark/package.py`.
 Follow dewlab's style guide for student text,
@@ -84,4 +86,9 @@ if another write gets past, on either page. Each page of an exam keeps its own s
 page are written before Begin, and neither is the student's work: the reading settings
 (`dewmark:reading-settings`, only when a student changes one; never in the answer file),
 and a small storage test that removes itself. Saved work is offered only for the student
-number it belongs to.
+number it belongs to, in the sitting it was saved in, and only for a name that matches or
+with the invigilator's code. Under an enforced clock the page also keeps the start of the
+clock apart from the saved work (`dewmark:clock:…`, in `assets/page-time.js`); it is written
+by `saveEverywhere` like the work, so never before Begin, and never touched by
+`setAsideStoredWork`: starting again must not give a student a new clock. The invigilator's
+code is never in an exam file, a built file's name or an answer file; the pages hold a hash.

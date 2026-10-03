@@ -200,9 +200,10 @@ def test_next_asks_for_a_choice_while_saved_work_is_on_offer(context, pages):
     assert page.is_visible("#dm-start") and page.is_hidden("#dm-before")
 
 
-def test_continuing_takes_the_name_from_the_saved_work_and_says_so_on_the_next_screen(context, pages):
+def test_continuing_keeps_the_spelling_of_the_name_the_work_was_saved_under(context, pages):
     sit_and_leave(context, pages["student"], "4")
     page = open_page(context, pages["student"])
+    page.fill("#dm-name", "agnes nitt")
     page.fill("#dm-number", "S12345")
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")
@@ -214,6 +215,7 @@ def test_continuing_takes_the_name_from_the_saved_work_and_says_so_on_the_next_s
 def test_changing_the_number_after_continuing_lets_the_saved_work_go(context, pages):
     sit_and_leave(context, pages["student"], "4")
     page = open_page(context, pages["student"])
+    page.fill("#dm-name", "Agnes Nitt")
     page.fill("#dm-number", "S12345")
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")
@@ -232,6 +234,7 @@ def test_changing_the_number_after_continuing_lets_the_saved_work_go(context, pa
 def test_correcting_the_name_after_continuing_keeps_the_work_and_the_corrected_name(context, pages):
     sit_and_leave(context, pages["student"], "4")
     page = open_page(context, pages["student"])
+    page.fill("#dm-name", "Agnes Nitt")
     page.fill("#dm-number", "S12345")
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")
@@ -1059,6 +1062,7 @@ def test_work_continued_on_a_corrected_paper_is_kept_and_the_student_is_told(con
     for name, text in build_pages(corrected, ROOT).items():
         (out / name).write_text(text, encoding="utf-8")
     page = open_page(context, out / "rehearsal.student.html")
+    page.fill("#dm-name", "Agnes Nitt")
     page.fill("#dm-number", "S12345")
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")
@@ -1075,6 +1079,7 @@ def test_work_continued_on_a_corrected_paper_is_kept_and_the_student_is_told(con
 def test_work_continued_on_the_same_paper_is_not_told_it_was_corrected(context, pages):
     sit_and_leave(context, pages["student"], "4")
     page = open_page(context, pages["student"])
+    page.fill("#dm-name", "Agnes Nitt")
     page.fill("#dm-number", "S12345")
     page.wait_for_selector("#dm-restore:not([hidden])")
     page.click("#dm-continue")

@@ -19,6 +19,7 @@ function showScreen(name) {
   hideScreens();
   const screen = $(name === "start" ? "dm-start" : "dm-before");
   screen.hidden = false;
+  if (name === "before") refreshExtra();
   screen.querySelector("h2").focus();
   window.scrollTo(0, 0);
 }
@@ -55,10 +56,13 @@ function validateDetails() {
 
 /* Work saved on another version of the paper is not offered: a teacher raises
    the version when names or marks have changed, so its answers may not belong
-   to these boxes. It is still on the computer, and Begin sets it aside. */
+   to these boxes. Work saved in another sitting is not offered either: it is
+   another day's work, and its clock has long run out. It is still on the
+   computer, and Begin sets it aside. */
 const sameVersion = (record) => String((record.exam || {}).version) === String(MODEL.exam.version);
+const sameSitting = (record) => String((record.exam || {}).sitting || "") === SITTING;
 const savedWork = SAVES ? readStoredState() : null;
-const holdsWork = countAnswers(savedWork) > 0 && sameVersion(savedWork);
+const holdsWork = countAnswers(savedWork) > 0 && sameVersion(savedWork) && sameSitting(savedWork);
 const sameNumber = (a, b) => a !== "" && a.toLowerCase() === b.trim().toLowerCase();
 
 function offerSavedWork() {
@@ -102,6 +106,7 @@ document.addEventListener("input", (event) => {
       begun.resuming = false;
       state = blankState();
       say("dm-resume-line", "");
+      forgetExtra();
     } else if (field.dataset.detail === "full name" && field.value.trim()) {
       state.student["full name"] = field.value.trim();
     }
@@ -111,13 +116,43 @@ document.addEventListener("input", (event) => {
     field.removeAttribute("aria-invalid");
     say(entry[1], "");
   }
-  if (field.dataset.detail === "student number") offerSavedWork();
+  if (field.dataset.detail === "student number") {
+    forgetExtra();
+    offerSavedWork();
+  }
 });
 
-$("dm-continue").addEventListener("click", () => resumeWork(savedWork));
-$("dm-again").addEventListener("click", () => {
+/* Saved work is offered to whoever types its student number, so the name is the
+   second check: a name that is not the saved name needs the invigilator's code. */
+const nameKey = (name) => unaccent(name).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+$("dm-continue").addEventListener("click", async () => {
+  if (!validateDetails()) return;
+  if (nameKey(detailValue("full name")) !== nameKey((savedWork.student || {})["full name"])) {
+    if (!INVIGILATOR) {
+      say("dm-restore-err", "The name you typed is not the name this work was saved under. Check how you "
+        + "spelled it, or ask your invigilator for help.");
+      return;
+    }
+    const result = await askInvigilator("The name you typed is not the name this work was saved under. "
+      + "The invigilator can type their code to let you continue.");
+    if (!result) return;
+  }
+  say("dm-restore-err", "");
+  resumeWork(savedWork);
+});
+
+/* Under an enforced clock, starting again also needs the code, and the clock does not start again. */
+const AGAIN_TEXT = $("dm-again-text").textContent.replace(/\s+/g, " ").trim();
+$("dm-again").addEventListener("click", async () => {
+  if (ENFORCED) {
+    const result = await askInvigilator("To start this paper again, the invigilator types their code. Your "
+      + "earlier work is kept aside, not deleted. Your time keeps counting from when you first began.");
+    if (!result) return;
+  }
   begun.startAgain = true;
   say("dm-restore-err", "");
+  $("dm-again-text").textContent = AGAIN_TEXT + (ENFORCED ? " Your time does not start again." : "");
   $("dm-again-text").hidden = false;
 });
 $("dm-not-me").addEventListener("click", () => {
@@ -160,6 +195,11 @@ function loadAnswerFile() {
     if (!validState(loaded)) {
       say("dm-file-msg", "That file is not an answer file for this paper, so it cannot be loaded here. "
         + "Nothing has changed.");
+      return;
+    }
+    if (!sameSitting(loaded)) {
+      say("dm-file-msg", "That file was saved in another sitting of this paper, so it cannot be loaded here. "
+        + "Nothing has changed. Ask your invigilator for help.");
       return;
     }
     if (!sameVersion(loaded)) {
@@ -223,11 +263,24 @@ if (SAVES && $("dm-choose-folder")) {
 
 async function begin() {
   if (secondWindow) return;
+  const extra = typedExtra();
+  if (extra.error) {
+    $("dm-extra").setAttribute("aria-invalid", "true");
+    say("dm-extra-err", extra.error);
+    $("dm-extra").focus();
+    return;
+  }
   if (!begun.resuming) {
     if (SAVES && !setAsideStoredWork(begun.startAgain)) return;
     const details = state.student;
     state = blankState();
     state.student = details;
+    /* The clock of an enforced paper belongs to the student number, not to the saved work. */
+    const kept = ENFORCED ? keptClock(details["student number"]) : null;
+    if (kept) {
+      state.started_at = kept.started_at;
+      state.time = kept.time;
+    }
   }
   if (SAVES && FOLDER_PICKER && !directory && !begun.fileDecided && !confirm(
       "You have not chosen a folder for your files.\n\n"
@@ -245,6 +298,7 @@ async function begin() {
     }
   }
   if (!state.started_at) state.started_at = new Date().toISOString();
+  applyExtraAtBegin(extra.minutes);
   enterExam();
 }
 $("dm-begin").addEventListener("click", begin);

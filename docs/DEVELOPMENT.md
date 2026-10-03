@@ -219,20 +219,34 @@ decision against the design documents. The documents remain the target.
   (`dewmark:<exam code>:<page>`). Work left in the old slot stays in
   the browser but is no longer offered for restore. No class had sat a
   dewmark paper, so nothing real was stranded.
-- **The new page is two slices in of five.** It draws every kind of box but
+- **The new page is four slices in of five.** It draws every kind of box but
   `match`, `order`, `photo` and `on-paper` (the build refuses those), opens on
   two screens (details, reading settings and what the paper needs; then the
-  instructions, the answer file and Begin), saves in the browser and, in Chrome
-  and Edge, into a file the student chose, and hands in an answer file and a
-  readable copy. It has no timer, breaks or PDF, no extra time and no print
-  headers, and `python exec` is an editor with no Run: the Python rows of the
-  list of what the paper needs say so. The workbench does not read its answer
-  file until step 6.
-- **Saved work that was set aside cannot be recovered from the page.** A
-  student who starts again, or a different student who begins, causes the
-  earlier work to be kept under `dewmark:<code>:<page>:set-aside:<time>`. The
-  invigilator's view that lists and recovers it comes with the invigilator's code
-  (the timer slice), because without a code any student could open it.
+  instructions, the folder for the files, the time and Begin), saves in the
+  browser and into a folder the student chose, hands in an answer file and a PDF
+  with a receipt, and has a clock, extra time, breaks and the invigilator's code.
+  It has no print headers on every printed page, and `python exec` is an
+  editor with no Run: the Python rows of the list of what the paper needs say
+  so. The workbench does not read its answer file until step 6.
+- **The invigilator's code is a guard against accidents.** The page holds a hash
+  of a six-digit number, which a program searches in seconds, and a student who
+  can read the page can change what it checks. The plan says so (D4) and so does
+  the teacher guide. If a room ever needs more than the invigilator's presence,
+  that is a different design (a code the page cannot check by itself, which needs
+  a server), and not a change to this one.
+- **A browser that is cleared during a sitting gives a student a new clock.** The
+  start of an enforced clock is kept in the browser (`dewmark:clock:…`), as the
+  saved work is. A student who clears the site's data, or opens the page in a
+  private window or another browser, begins again with a full clock. The
+  invigilator, in the room, sees it. The clock is kept for 36 hours at most.
+- **Nothing deletes old saved work or old clocks yet.** The plan (§5.2) deletes a
+  record once its answer file has been saved and read back, and after 14 days. The
+  page does not yet, so work, set-aside work and clocks stay in a computer's
+  browser until someone clears them. The invigilator's list shows them, with no
+  expiry.
+- **Time is the computer's clock.** A student who changes the computer's clock
+  changes their time left. The page counts from the moment of Begin on the
+  computer's own clock and has nothing else to check it against.
 - **Reading settings are not tested with a screen reader.** The structure is
   there (labelled controls, a dialog that traps the keyboard and returns focus,
   states written as words), and the contrast of every scheme is computed by
