@@ -193,11 +193,12 @@ body {
 .dm-field { display: block; font-family: var(--dm-sans); margin: 0 0 1rem; }
 .dm-field > label, .dm-field > .dm-label { display: block; font-size: 0.9rem; font-weight: 700; }
 .dm-hint-text { display: block; font-size: 0.82rem; color: var(--dm-muted); margin: 0.1rem 0 0.3rem; }
-.dm-field input[type="text"] {
+.dm-field input[type="text"], .dm-field input[type="password"] {
   display: block; width: 100%; max-width: 26rem; margin-top: 0.2rem; padding: 0.5rem 0.65rem;
   font-family: var(--dm-font-body); font-size: 1rem; color: var(--dm-ink);
   border: 2px solid var(--dm-field-border); border-radius: 4px; background: var(--dm-surface);
 }
+.dm-field input.dm-short { max-width: 9rem; }
 .dm-field input[aria-invalid="true"] { border-color: var(--dm-bad); }
 .dm-error { font-family: var(--dm-sans); font-size: 0.85rem; font-weight: 700; color: var(--dm-bad); margin: 0.3rem 0 0; }
 .dm-note {
@@ -325,6 +326,19 @@ html[data-ruler="on"] #dm-ruler { display: block; }
 [data-scheme="dark"] #dm-ruler { background: rgba(255, 214, 90, 0.18); }
 [data-scheme="contrast"] #dm-ruler { background: rgba(255, 214, 0, 0.35); border-color: #000; }
 
+/* --- the invigilator's windows ------------------------------------------------------------ */
+
+dialog {
+  font-family: var(--dm-sans); color: var(--dm-ink); background: var(--dm-surface);
+  border: 2px solid var(--dm-field-border); border-radius: 6px; padding: 1.2rem 1.5rem;
+  max-width: min(34rem, 92vw);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+dialog h2 { font-size: 1.2rem; margin: 0 0 0.5rem; color: var(--dm-accent); }
+.dm-work-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+.dm-work-list li { padding: 0.6rem 0; border-top: 1px solid var(--dm-rule); }
+.dm-work-list li:first-child { border-top: none; }
+
 /* --- the paper ------------------------------------------------------------------------- */
 
 #dm-topbar {
@@ -340,6 +354,27 @@ html[data-ruler="on"] #dm-ruler { display: block; }
 }
 .dm-save-pill.dm-ok { background: var(--dm-good-bg); color: var(--dm-good); }
 .dm-save-pill.dm-off { background: var(--dm-warn-bg); color: var(--dm-warn); }
+/* The clock: words and weight change at ten minutes, and the mark is drawn, not a symbol a font may lack. */
+.dm-timebox { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--dm-sans); font-size: 0.82rem; }
+#dm-clock { font-variant-numeric: tabular-nums; }
+#dm-clock.dm-urgent {
+  background: var(--dm-warn-bg); color: var(--dm-warn); font-weight: 700;
+  padding: 0.15rem 0.65rem; border-radius: 999px;
+}
+#dm-clock.dm-urgent::before {
+  content: "!"; display: inline-flex; align-items: center; justify-content: center;
+  width: 1.15em; height: 1.15em; margin-right: 0.4em; border: 2px solid currentColor;
+  border-radius: 50%; font-size: 0.8em; line-height: 1;
+}
+.dm-link {
+  background: none; border: none; padding: 0; color: inherit; font: inherit; font-size: 0.82rem;
+  text-decoration: underline; cursor: pointer;
+}
+.dm-clock-note { margin: 0; border-radius: 0; border-left: none; border-right: none; }
+.dm-visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
 #dm-topbar .dm-primary { margin-left: auto; background: var(--dm-orange); border-color: var(--dm-orange); color: var(--dm-orange-ink); }
 #dm-topbar .dm-secondary { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
 
@@ -474,6 +509,19 @@ html[data-wrap="on"] .dm-code { white-space: pre-wrap; }
 }
 
 #dm-finish-screen ul { font-family: var(--dm-sans); font-size: 0.92rem; line-height: 1.7; }
+.dm-finish-steps { list-style: none; margin: 0; padding: 0; }
+.dm-finish-steps > li > h3 { margin-top: 0; }
+.dm-problem {
+  font-family: var(--dm-sans); font-size: 0.9rem; font-weight: 700; color: var(--dm-bad);
+  background: var(--dm-bad-bg); border: 1px solid var(--dm-bad); border-radius: 4px; padding: 0.7rem 1rem;
+}
+.dm-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem 1.4rem; margin: 0; font-family: var(--dm-sans); }
+.dm-facts dt { font-size: 0.78rem; font-weight: 700; color: var(--dm-muted); }
+.dm-facts dd { margin: 0; font-size: 0.95rem; word-break: break-word; }
+.dm-confirm { border-left: 4px solid var(--dm-good); }
+#dm-finish-screen .dm-card { margin-bottom: 1rem; }
+#dm-finish-screen > .dm-actions { margin-bottom: 1rem; }
+.dm-finish-steps .dm-restore-note, .dm-finish-steps .dm-problem, .dm-finish-steps .dm-note { margin-top: 1rem; }
 .dm-finish-good { color: var(--dm-good); }
 .dm-finish-warn { color: var(--dm-warn); }
 
@@ -493,9 +541,29 @@ html[data-wrap="on"] .dm-code { white-space: pre-wrap; }
   .dm-card { padding: 1.1rem 1.1rem; }
   .dm-screen { padding: 0 0.7rem; }
 }
+/* The frame of a printed page: the student's name, number and exam code at the top with the page
+   number, the Paper ID and the receipt at the foot. They are page margin boxes (Chrome and Edge
+   from 131), whose text assets/page-finish.js sets in two custom properties just before the
+   page prints. A browser without margin boxes prints no frame. A box's text prints from its
+   twin, since a printed text box shows only what fits. */
+.dm-print-twin { display: none; }
+@page {
+  size: A4; margin: 24mm 16mm 22mm;
+  @top-left { content: var(--dm-print-who, ""); font: 9pt system-ui, sans-serif; color: #000000; }
+  @top-right { content: "Page " counter(page) " of " counter(pages); font: 9pt system-ui, sans-serif; color: #000000; }
+  @bottom-left { content: var(--dm-print-foot, ""); font: 9pt system-ui, sans-serif; color: #000000; }
+}
 @media print {
+  html { font-size: 12pt; }
+  .dm-answer textarea, .dm-answer input[type="text"] { display: none !important; }
+  .dm-print-twin {
+    display: block; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 3.2em;
+    padding: 0.4rem 0.6rem; border: 1px solid #000000; color: #000000; background: #ffffff;
+  }
+  span.dm-print-twin { display: inline-block; min-height: 0; min-width: 6em; padding: 0 0.3rem; vertical-align: baseline; }
+  .dm-code-twin { font-family: var(--dm-mono); font-size: 0.9em; }
   #dm-topbar button, #dm-panel, .dm-save-pill, .dm-screen, #dm-finish-screen,
-  #dm-aa, #dm-drawer, #dm-scrim, #dm-ruler { display: none !important; }
+  #dm-aa, #dm-drawer, #dm-scrim, #dm-ruler, .dm-timebox, dialog, #dm-clock-note { display: none !important; }
   #dm-topbar { position: static; padding-right: 1.2rem; }
   :root, [data-scheme] {
     --dm-bg: #ffffff; --dm-surface: #ffffff; --dm-ink: #000000; --dm-muted: #333333;
@@ -503,6 +571,10 @@ html[data-wrap="on"] .dm-code { white-space: pre-wrap; }
   }
   body { background: #ffffff; font-size: 11pt; }
   #dm-paper { max-width: none; }
-  .dm-answer, .dm-question, .dm-part { break-inside: avoid; }
+  /* A long answer may run on to the next page, and a heading stays with what follows it. A short
+     answer, whose parts belong together, does not split. */
+  #dm-paper h2, #dm-paper h3, #dm-paper h4 { break-after: avoid; }
+  .dm-answer[data-kind="choice"], .dm-answer[data-kind="boxes"], .dm-answer[data-kind="blanks"],
+  .dm-answer[data-kind="table"] { break-inside: avoid; }
   .dm-writing, .dm-code { resize: none; overflow: visible; border-color: #000000; }
 }

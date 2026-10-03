@@ -25,7 +25,8 @@ the plan at a time. Today it holds the reader for the exam format in
 `docs/EXAM_FORMAT.md` (`dewmark/reader.py`, with `settings.py`,
 `numbers.py`, `kinds.py` and `scheme.py`), the names lock that holds an
 issued paper's names still (`dewmark/lock.py`), the marker's half as JSON (`dewmark/scheme_json.py`) and the two layers
-that keep it off a student page (`dewmark/secrecy.py`), the paste route
+that keep it off a student page (`dewmark/secrecy.py`), the receipt of an
+answer file and the fingerprint of a paper (`dewmark/receipt.py`), the paste route
 (`dewmark/package.py` builds what a teacher gives an assistant,
 `dewmark/reply.py` checks what comes back, and `dewmark/data/` holds the
 cheat sheet and the specimen paper it sends), and the converter for the
@@ -37,20 +38,25 @@ paper's blocks as HTML and `dewmark/build.py` assembles the pages and refuses a
 paper that leaks, and both need the `markdown` and `latex2mathml` packages. Nothing
 in the pure core imports them, and `dev/build_site.py` leaves them out of the
 checker page's bundle (`NOT_IN_THE_PAGE`), which `tests/test_web.py` checks. The
-page they build is `assets/page.css` and three scripts joined in this order:
+page they build is `assets/page.css` and five scripts joined in this order:
 `assets/page.js` (answer kinds, saving, finishing), `assets/page-reading.js`
-(reading settings, the Aa drawer, the ruler) and `assets/page-start.js` (the two
-screens, the list of what the paper needs, and the start of the page). They are
+(reading settings, the Aa drawer, the ruler), `assets/page-pdf.js` (the PDF writer,
+`docs/PDF_FILE.md`), `assets/page-finish.js` (the finish sheet's saving and checking) and `assets/page-start.js` (the two screens, the list of what
+the paper needs, and the start of the page). They are
 not `exam-page.*`, which belong to `build_exam.py`. Its answer file is
 `docs/ANSWER_FILE.md`. The reading fonts in `assets/vendor/fonts/` are copies
 from dewlab with a record in `assets/vendor/SOURCE.json`; `tests/test_vendor.py`
-fails if one is edited, and an update is a new copy and a new record.
+fails if one is edited, and an update is a new copy and a new record. The PDF fonts in
+`assets/vendor/pdf-fonts/` are subsets of DejaVu made by `dev/make_pdf_fonts.py`
+(`pip install fonttools`), recorded the same way.
 
 ```sh
 python -m dewmark check samples/pdp-5n2927/*.exam.md
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"
 python -m dewmark build FILE -o DIR
 python -m dewmark scheme FILE -o scheme.json
+python -m dewmark fingerprint FILE
+python -m dewmark receipt ANSWER_FILE
 python -m dewmark package tidy FILE -o package.txt
 python -m dewmark reply tidy FILE REPLY.txt -o reworded.exam.md
 python -m dewmark.convert_pdp samples/pdp-5n2927 experiments/pdp-5n2927/*.html
@@ -83,7 +89,10 @@ practice pages of every paper it builds and stops on a leak; `tests/test_build.p
 builds the specimen and the four PDP papers that way, and shows a renderer that
 lets the scheme, the right option or a hint through being caught.
 
-`tests/test_start.py` covers the band and its branding, the two screens, the
+`tests/browser/test_finish.py` sits the finish sheet against a folder kept in memory that can refuse a write or give back wrong bytes. `tests/browser/test_pdf.py` has the page write PDFs and reads them back with PyMuPDF
+(`pip install pymupdf`), qpdf and Ghostscript (system programs; CI installs them), and
+checks the file's own table byte by byte. `tests/test_receipt.py` freezes the canonical form, a sample receipt and a sample
+fingerprint, and checks what does and does not change them. `tests/test_start.py` covers the band and its branding, the two screens, the
 list of what a paper needs and the description of the reading settings the
 builder draws twice. `tests/test_page_css.py` computes the contrast of every pair
 of colours in every scheme. `tests/test_build.py` also covers the reader's blocks, each kind's markup, what
@@ -115,6 +124,8 @@ cheat sheet in `dewmark/data/` drifts from §8 of `docs/EXAM_FORMAT.md`.
                        with every colour a variable set per scheme
     page.js            ...with a registry of answer kinds (docs/ANSWER_FILE.md)
     page-reading.js    reading settings, the Aa drawer and the ruler
+    page-pdf.js        the PDF writer (docs/PDF_FILE.md)
+    page-finish.js     the finish sheet: save both files, read them back, the card
     page-start.js      the two screens before the paper, and the page's start
     vendor/            fonts copied from dewlab, and where from (SOURCE.json)
   workbench/
@@ -208,20 +219,38 @@ decision against the design documents. The documents remain the target.
   (`dewmark:<exam code>:<page>`). Work left in the old slot stays in
   the browser but is no longer offered for restore. No class had sat a
   dewmark paper, so nothing real was stranded.
-- **The new page is two slices in of five.** It draws every kind of box but
+- **The new page is four slices in of five.** It draws every kind of box but
   `match`, `order`, `photo` and `on-paper` (the build refuses those), opens on
   two screens (details, reading settings and what the paper needs; then the
-  instructions, the answer file and Begin), saves in the browser and, in Chrome
-  and Edge, into a file the student chose, and hands in an answer file and a
-  readable copy. It has no timer, breaks or PDF, no extra time and no print
-  headers, and `python exec` is an editor with no Run: the Python rows of the
-  list of what the paper needs say so. The workbench does not read its answer
-  file until step 6.
-- **Saved work that was set aside cannot be recovered from the page.** A
-  student who starts again, or a different student who begins, causes the
-  earlier work to be kept under `dewmark:<code>:<page>:set-aside:<time>`. The
-  invigilator's view that lists and recovers it comes with the invigilator's code
-  (the timer slice), because without a code any student could open it.
+  instructions, the folder for the files, the time and Begin), saves in the
+  browser and into a folder the student chose, hands in an answer file and a PDF
+  with a receipt, and has a clock, extra time, breaks and the invigilator's code.
+  It has a frame on every page of the browser's own print window in Chrome
+  and Edge only (below), and `python exec` is an editor with no Run: the Python
+  rows of the list of what the paper needs say so. The workbench does not read its answer file until step 6.
+- **The print window has a header and footer in Chrome and Edge only.** They are
+  CSS page margin boxes (Chrome and Edge 131 or later); Firefox and Safari print
+  the paper without them. The page's own PDF, which every browser can make, always
+  has them. Nothing tests the print window in a browser but Chromium.
+- **The invigilator's code is a guard against accidents.** The page holds a hash
+  of a six-digit number, which a program searches in seconds, and a student who
+  can read the page can change what it checks. The plan says so (D4) and so does
+  the teacher guide. If a room ever needs more than the invigilator's presence,
+  that is a different design (a code the page cannot check by itself, which needs
+  a server), and not a change to this one.
+- **A browser that is cleared during a sitting gives a student a new clock.** The
+  start of an enforced clock is kept in the browser (`dewmark:clock:…`), as the
+  saved work is. A student who clears the site's data, or opens the page in a
+  private window or another browser, begins again with a full clock. The
+  invigilator, in the room, sees it. The clock is kept for 36 hours at most.
+- **Nothing deletes old saved work or old clocks yet.** The plan (§5.2) deletes a
+  record once its answer file has been saved and read back, and after 14 days. The
+  page does not yet, so work, set-aside work and clocks stay in a computer's
+  browser until someone clears them. The invigilator's list shows them, with no
+  expiry.
+- **Time is the computer's clock.** A student who changes the computer's clock
+  changes their time left. The page counts from the moment of Begin on the
+  computer's own clock and has nothing else to check it against.
 - **Reading settings are not tested with a screen reader.** The structure is
   there (labelled controls, a dialog that traps the keyboard and returns focus,
   states written as words), and the contrast of every scheme is computed by

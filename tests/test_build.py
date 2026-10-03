@@ -349,10 +349,12 @@ def test_a_built_page_connects_to_nothing_and_holds_no_address_but_a_pictures():
 # --- the page model -------------------------------------------------------------------------------------
 
 def test_the_page_model_names_the_questions_parts_and_boxes_without_any_scheme():
-    model = page_model(read(SPECIMEN), "student")
+    model = page_model(read(SPECIMEN), "student", "7KQ-4MD")
     assert model["format"] == "dewmark-page/1" and model["variant"] == "student"
     assert model["exam"] == {"code": "specimen-short", "version": "1", "title": "Specimen Paper",
-                             "kind": "exam", "marks": 20}
+                             "kind": "exam", "marks": 20, "fingerprint": "7KQ-4MD",
+                             "institution": "", "college": "", "module": "Introduction to Computing",
+                             "moduleCode": "5N0000", "session": ""}
     assert model["sections"] == [{"index": 1, "title": "Section A: Short questions", "any": None,
                                   "questions": ["q1", "q2"]}]
     assert [p["name"] for p in model["questions"]["q1"]["parts"]] == ["q1a", "q1b", "q1c"]
@@ -476,7 +478,7 @@ def test_a_refused_build_writes_nothing(tmp_path, monkeypatch):
 def test_every_sample_builds_with_both_leak_checks_run_on_the_real_pages(path, tmp_path):
     names = build(path, tmp_path)
     assert len(names) == 4 and all((tmp_path / n).is_file() for n in names)
-    assert not any(n.endswith(".html") and "decimal" in (tmp_path / n).read_text() and "student" in n
+    assert not any(n.endswith(".html") and "decimal number" in (tmp_path / n).read_text() and "student" in n
                    for n in names if path.name.startswith("specimen"))
 
 

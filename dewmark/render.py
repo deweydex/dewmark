@@ -77,9 +77,9 @@ def math_html(tex):
     return f'<em class="dm-math">{esc(tex)}</em>'
 
 
-def _picture(base_dir, path):
-    """A picture file as a data address, so the page stays one file. Only a
-    picture inside the paper's own folder is read: never an address on the
+def picture_file(base_dir, path):
+    """A picture file inside the paper's own folder, as (media type, bytes).
+    Only a picture inside that folder is read: never an address on the
     internet, never a path that climbs out of the folder. Returns None if the
     path is not one of those."""
     if base_dir is None or not path or re.match(r"^[a-z][a-z0-9+.-]*:", path, re.I) \
@@ -90,7 +90,17 @@ def _picture(base_dir, path):
     kind = PICTURE_TYPES.get(target.suffix.lower().lstrip("."))
     if kind is None or not target.is_file() or root not in target.parents:
         return None
-    return f"data:{kind};base64,{base64.b64encode(target.read_bytes()).decode('ascii')}"
+    return kind, target.read_bytes()
+
+
+def _picture(base_dir, path):
+    """A picture file as a data address, so the page stays one file; None if
+    the path is not a picture inside the paper's own folder."""
+    found = picture_file(base_dir, path)
+    if found is None:
+        return None
+    kind, data = found
+    return f"data:{kind};base64,{base64.b64encode(data).decode('ascii')}"
 
 
 def logo_problem(settings, base_dir):

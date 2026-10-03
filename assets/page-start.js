@@ -12,27 +12,21 @@
    not the student's work. The page holds a blank state until Begin or
    Continue, which is the rule in CLAUDE.md. */
 
-const FILE_PICKER = "showSaveFilePicker" in window;
+const FOLDER_PICKER = "showDirectoryPicker" in window;
 const begun = { resuming: false, startAgain: false, fileDecided: false };
 
 function showScreen(name) {
   hideScreens();
   const screen = $(name === "start" ? "dm-start" : "dm-before");
   screen.hidden = false;
+  if (name === "before") refreshExtra();
   screen.querySelector("h2").focus();
   window.scrollTo(0, 0);
-}
-
-function say(id, text) {
-  const el = $(id);
-  el.textContent = text;
-  el.hidden = !text;
 }
 
 const detailField = (key) => document.querySelector('[data-detail="' + key + '"]');
 const detailValue = (key) => detailField(key).value.trim();
 const countAnswers = (record) => Object.keys((record && record.answers) || {}).length;
-const plural = (n, one, many) => n + " " + (n === 1 ? one : many);
 const whenSaved = (record) => record.saved_at
   ? new Date(record.saved_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
   : "at an unknown time";
@@ -60,8 +54,15 @@ function validateDetails() {
 
 /* --- saved work, offered after the number is typed --------------------------------- */
 
+/* Work saved on another version of the paper is not offered: a teacher raises
+   the version when names or marks have changed, so its answers may not belong
+   to these boxes. Work saved in another sitting is not offered either: it is
+   another day's work, and its clock has long run out. It is still on the
+   computer, and Begin sets it aside. */
+const sameVersion = (record) => String((record.exam || {}).version) === String(MODEL.exam.version);
+const sameSitting = (record) => String((record.exam || {}).sitting || "") === SITTING;
 const savedWork = SAVES ? readStoredState() : null;
-const holdsWork = countAnswers(savedWork) > 0;
+const holdsWork = countAnswers(savedWork) > 0 && sameVersion(savedWork) && sameSitting(savedWork);
 const sameNumber = (a, b) => a !== "" && a.toLowerCase() === b.trim().toLowerCase();
 
 function offerSavedWork() {
@@ -79,12 +80,16 @@ function offerSavedWork() {
 }
 
 function resumeWork(record) {
+  const corrected = Boolean(record.exam.fingerprint)
+    && record.exam.fingerprint !== MODEL.exam.fingerprint;
   adoptState(record);
   begun.resuming = true;
   begun.startAgain = false;
   $("dm-restore").hidden = true;
   say("dm-resume-line", "Your work is ready to continue: "
-    + plural(countAnswers(record), "answer", "answers") + ", saved " + whenSaved(record) + ".");
+    + plural(countAnswers(record), "answer", "answers") + ", saved " + whenSaved(record) + "."
+    + (corrected ? " The paper has been corrected since you saved this work. Your answers are kept."
+      : ""));
   showScreen("before");
 }
 
@@ -101,6 +106,7 @@ document.addEventListener("input", (event) => {
       begun.resuming = false;
       state = blankState();
       say("dm-resume-line", "");
+      forgetExtra();
     } else if (field.dataset.detail === "full name" && field.value.trim()) {
       state.student["full name"] = field.value.trim();
     }
@@ -110,13 +116,43 @@ document.addEventListener("input", (event) => {
     field.removeAttribute("aria-invalid");
     say(entry[1], "");
   }
-  if (field.dataset.detail === "student number") offerSavedWork();
+  if (field.dataset.detail === "student number") {
+    forgetExtra();
+    offerSavedWork();
+  }
 });
 
-$("dm-continue").addEventListener("click", () => resumeWork(savedWork));
-$("dm-again").addEventListener("click", () => {
+/* Saved work is offered to whoever types its student number, so the name is the
+   second check: a name that is not the saved name needs the invigilator's code. */
+const nameKey = (name) => unaccent(name).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+$("dm-continue").addEventListener("click", async () => {
+  if (!validateDetails()) return;
+  if (nameKey(detailValue("full name")) !== nameKey((savedWork.student || {})["full name"])) {
+    if (!INVIGILATOR) {
+      say("dm-restore-err", "The name you typed is not the name this work was saved under. Check how you "
+        + "spelled it, or ask your invigilator for help.");
+      return;
+    }
+    const result = await askInvigilator("The name you typed is not the name this work was saved under. "
+      + "The invigilator can type their code to let you continue.");
+    if (!result) return;
+  }
+  say("dm-restore-err", "");
+  resumeWork(savedWork);
+});
+
+/* Under an enforced clock, starting again also needs the code, and the clock does not start again. */
+const AGAIN_TEXT = $("dm-again-text").textContent.replace(/\s+/g, " ").trim();
+$("dm-again").addEventListener("click", async () => {
+  if (ENFORCED) {
+    const result = await askInvigilator("To start this paper again, the invigilator types their code. Your "
+      + "earlier work is kept aside, not deleted. Your time keeps counting from when you first began.");
+    if (!result) return;
+  }
   begun.startAgain = true;
   say("dm-restore-err", "");
+  $("dm-again-text").textContent = AGAIN_TEXT + (ENFORCED ? " Your time does not start again." : "");
   $("dm-again-text").hidden = false;
 });
 $("dm-not-me").addEventListener("click", () => {
@@ -161,6 +197,17 @@ function loadAnswerFile() {
         + "Nothing has changed.");
       return;
     }
+    if (!sameSitting(loaded)) {
+      say("dm-file-msg", "That file was saved in another sitting of this paper, so it cannot be loaded here. "
+        + "Nothing has changed. Ask your invigilator for help.");
+      return;
+    }
+    if (!sameVersion(loaded)) {
+      say("dm-file-msg", "That file was saved on version " + loaded.exam.version + " of this paper, and "
+        + "this page is version " + MODEL.exam.version + ", so its answers may not fit. Nothing has changed. "
+        + "Ask your invigilator for the page that matches your file.");
+      return;
+    }
     say("dm-file-msg", "");
     const stored = SAVES ? readStoredState() : null;
     if (stored && stored.saved_at !== loaded.saved_at && countAnswers(stored)) {
@@ -180,53 +227,78 @@ function loadAnswerFile() {
 }
 $("dm-load-file").addEventListener("click", loadAnswerFile);
 
-/* --- where the answer file goes ------------------------------------------------------- */
+/* --- where the files go ----------------------------------------------------------------- */
 
-async function chooseFile() {
+async function chooseFolder() {
   begun.fileDecided = true;
   try {
-    fileHandle = await window.showSaveFilePicker({
-      suggestedName: submissionBaseName() + ".json",
-      types: [{ description: "dewmark answer file", accept: { "application/json": [".json"] } }],
-    });
-    say("dm-file-status", "Your answer file is " + fileHandle.name + ". The page saves into it as you work.");
-    $("dm-choose-file").textContent = "Choose a different place…";
+    directory = await window.showDirectoryPicker({ id: "dewmark", mode: "readwrite" });
+    fileHandle = await directory.getFileHandle(submissionBaseName() + ".json", { create: true });
+    say("dm-file-status", "Your files go in the folder " + directory.name + ". The answer file is "
+      + fileHandle.name + ". The page saves into it as you work, and puts your PDF there when you finish.");
+    $("dm-choose-folder").textContent = "Choose a different folder…";
   } catch (err) {
+    directory = null;
     fileHandle = null;
     say("dm-file-status", err && err.name === "AbortError"
-      ? "No place was chosen. The page will keep your work in this browser only. You can save a copy at any time."
-      : "Your browser did not let the page choose a place. The page will keep your work in this browser only. "
-        + "You can save a copy at any time.");
+      ? "No folder was chosen. The page will keep your work in this browser only. You can save files at any time."
+      : "Your browser did not let the page use that folder. Choose another one, for example a folder on a USB "
+        + "stick or a new folder inside Documents. Or begin without one: the page keeps your work in this "
+        + "browser, and you can save files at any time.");
   }
 }
 
-if (SAVES && $("dm-choose-file")) {
-  if (FILE_PICKER) {
-    $("dm-choose-file").addEventListener("click", chooseFile);
+if (SAVES && $("dm-choose-folder")) {
+  if (FOLDER_PICKER) {
+    $("dm-choose-folder").addEventListener("click", chooseFolder);
   } else {
-    $("dm-choose-file").hidden = true;
-    say("dm-file-status", "Your browser downloads files instead of saving into one as you work. The page keeps "
-      + "your work in this browser. When you press Finish, or Save a copy, it gives you a file to keep.");
+    $("dm-choose-folder").hidden = true;
+    say("dm-file-status", "Your browser downloads files instead of saving into a folder as you work. The page "
+      + "keeps your work in this browser. When you press Finish, it gives you your answer file and your PDF "
+      + "to keep.");
   }
 }
 
 /* --- begin ------------------------------------------------------------------------- */
 
-function begin() {
+async function begin() {
   if (secondWindow) return;
+  const extra = typedExtra();
+  if (extra.error) {
+    $("dm-extra").setAttribute("aria-invalid", "true");
+    say("dm-extra-err", extra.error);
+    $("dm-extra").focus();
+    return;
+  }
   if (!begun.resuming) {
     if (SAVES && !setAsideStoredWork(begun.startAgain)) return;
     const details = state.student;
     state = blankState();
     state.student = details;
+    /* The clock of an enforced paper belongs to the student number, not to the saved work. */
+    const kept = ENFORCED ? keptClock(details["student number"]) : null;
+    if (kept) {
+      state.started_at = kept.started_at;
+      state.time = kept.time;
+    }
   }
-  if (SAVES && FILE_PICKER && !fileHandle && !begun.fileDecided && !confirm(
-      "You have not chosen where to save your answer file.\n\n"
+  if (SAVES && FOLDER_PICKER && !directory && !begun.fileDecided && !confirm(
+      "You have not chosen a folder for your files.\n\n"
       + "Press OK to begin anyway. The page then keeps your work in this browser only, "
-      + "and you can save a copy at any time. Press Cancel to go back and choose.")) {
+      + "and you can save files at any time. Press Cancel to go back and choose.")) {
     return;
   }
+  /* The answer file is named for the student, so if the details changed after the
+     folder was chosen, the file the page saves into is the one for the details now. */
+  if (directory && fileHandle && fileHandle.name !== submissionBaseName() + ".json") {
+    try {
+      fileHandle = await directory.getFileHandle(submissionBaseName() + ".json", { create: true });
+    } catch (err) {
+      fileHandle = null;
+    }
+  }
   if (!state.started_at) state.started_at = new Date().toISOString();
+  applyExtraAtBegin(extra.minutes);
   enterExam();
 }
 $("dm-begin").addEventListener("click", begin);
@@ -251,10 +323,10 @@ const CHECKS = {
         detail: "This browser will not keep your work here. Tell your invigilator." };
     }
   },
-  file: () => FILE_PICKER
-    ? { state: "ready", word: "Ready", detail: "You choose the place on the next screen" }
+  file: () => FOLDER_PICKER
+    ? { state: "ready", word: "Ready", detail: "You choose the folder on the next screen" }
     : { state: "note", word: "Note",
-        detail: "This browser downloads files instead. Press Save a copy to keep one." },
+        detail: "This browser downloads files instead. The page gives you two files when you finish." },
   python: () => ({ state: "problem", word: "Not ready",
     detail: "This page cannot run Python yet" }),
 };
@@ -289,7 +361,7 @@ if (channel) {
       secondWindow = true;
       canWrite = false;
       /* Every way into the paper is closed, not only the Begin button. */
-      for (const id of ["dm-next", "dm-begin", "dm-load-file", "dm-continue", "dm-again", "dm-choose-file"]) {
+      for (const id of ["dm-next", "dm-begin", "dm-load-file", "dm-continue", "dm-again", "dm-choose-folder"]) {
         const button = $(id);
         if (button) button.disabled = true;
       }

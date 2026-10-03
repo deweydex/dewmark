@@ -522,3 +522,348 @@ stored settings have no format number: a setting that is unknown or invalid
 becomes its default, so a new one can be added without one.
 A colour added to the stylesheet goes into the pairs of `tests/test_page_css.py`
 in the same commit.
+
+**0.14 — The receipt, the Paper ID, and work from another version.** The first
+part of step 4's fourth slice (the PDF, the finish sheet and the receipt). Two
+short codes, made by `dewmark/receipt.py` and by the page, let a person or a
+program check that a file is the file it should be: the **Paper ID**
+(`7KQ-4MD`, the plan's *fingerprint*), which identifies a paper, and the
+**receipt** (`7F3A 92C1`), which identifies an answer file as it was handed in.
+`docs/ANSWER_FILE.md` describes both.
+
+What it settles:
+
+- *The Paper ID is made at build, not at issue.* The plan had the studio's Issue
+  button write it (step 7). It is a plain function of the paper, so the builder
+  makes it every time, `python -m dewmark fingerprint FILE` prints it, and the
+  studio will show it. Nothing is stored that could go stale. It is the start of
+  a SHA-256 of the exam file above `# Marking scheme` (settings, questions,
+  reference cards) without its hints and with line endings and trailing spaces
+  made the same, together with a checksum of every picture and the logo; six
+  letters of Crockford's alphabet. The marking scheme is never in it, which
+  keeps a page's bytes independent of the scheme, as the mutation test demands,
+  and means that correcting a key does not change what students sat. The student
+  page, the practice page and the answer key of one paper share it.
+- *The receipt is a hash of the whole record.* Everything but `saved_at`
+  (which changes every few seconds) and `receipt` itself: the answers, the name
+  and number, the paper, the start and finish times. Eight hexadecimal digits in
+  two groups of four, short enough to read down a telephone. It finds a file
+  changed by accident or after it was handed in. It is **not a signature**:
+  nothing in it is secret, and someone who can edit a file can write a matching
+  receipt. It is evidence for the marker, not security against a determined
+  student; the PDF, which the page writes at the same moment, is the second
+  copy a marker can compare.
+- *One canonical form, two languages.* JSON with sorted keys, no spaces, every
+  character outside printable ASCII as a lower-case `\uXXXX` escape. Python's
+  `ensure_ascii=True` writes exactly that; the page writes it by hand, sorting
+  keys by code point as Python does (not by UTF-16 unit, which differ for
+  characters above U+FFFF) and keeping a key named `__proto__` as a key. The
+  page's SHA-256 is also written by hand, so the receipt does not depend on
+  `crypto.subtle`, which browsers offer only to a secure context, and is worked
+  out at once. `tests/test_receipt.py` freezes a sample's canonical text and
+  receipt, and `tests/browser/test_page.py` checks the page's hash against
+  Python's for thirteen lengths around the block boundaries, and its canonical
+  text and receipt against Python's for a record of the characters most likely
+  to differ (accents, `≥`, an emoji, DEL, control characters, `__proto__`).
+- *Saving at the finish sheet fixes the receipt, and a later change withdraws
+  it.* The page gathers the answers, sets `finished_at`, works the receipt out
+  and shows it with the Paper ID and the number of answers. If the student then
+  changes an answer, `finished_at` and `receipt` go back to `null` and the finish
+  sheet asks for another save, so a file and a receipt never describe a paper
+  that has since changed.
+- *Work from another version is set aside, not restored.* The plan said so
+  (§5.2) and the page now does it: saved work for another `version` is not
+  offered when the number is typed, and Begin sets it aside after the usual
+  question; an answer file from another version is refused in words that give
+  both versions. A teacher raises the version when names or marks change, so the
+  answers may not fit the boxes. Work saved on the *same* version of a paper that
+  was corrected in wording (a different Paper ID) is kept and continued, with a
+  sentence saying the paper was corrected; the file made at the end carries the
+  Paper ID of the paper it was finished on.
+- *Two commands for before the workbench exists.* `python -m dewmark receipt
+  FILE...` checks each handed-in answer file against the receipt in it (exit 1
+  if any fails) and `python -m dewmark fingerprint FILE` prints the Paper ID.
+
+Not done: the receipt on every page of the PDF (there is no PDF yet), the
+"Checked: the file holds 17 answers" read-back (it needs the folder the finish
+sheet will write into, next), the receipt shown by the workbench (step 6), and
+the sitting card with the Paper ID (the studio, step 7). The Paper ID is shown
+to students as "Paper ID", because "fingerprint" is a word they would have to
+be told.
+
+*Changing it:* the material of a receipt or a fingerprint, the canonical form, or
+the alphabet changes every code already handed out. A change is a decision, and
+a new format number for the answer file if receipts already issued must still
+verify; the frozen values in `tests/test_receipt.py` fail first.
+
+**0.15 — The PDF the page writes.** The second part of step 4's fourth slice.
+`assets/page-pdf.js` writes the PDF of decision 23 with no network, from the
+paper on the page and the student's record, when the student presses **Save a
+PDF**; **Print or save as PDF** opens the browser's own window as the backup.
+`docs/PDF_FILE.md` describes it.
+
+What it settles:
+
+- *A PDF writer of our own, not a library.* The plan expected a PDF library
+  (D3, "two to three weeks"). A library is hundreds of kilobytes of someone
+  else's code in every page, and the page is a file a student opens from a
+  disk. What the page needs is small (text, rules, a font, numbered pages),
+  and the file is the one thing a marker opens, so every byte of it is code
+  that can be read here. The writer is about 650 lines, writes **PDF 1.4 with a
+  plain cross-reference table and no object streams**, which is what the
+  PDF tools in Moodle's grader read (its annotation tool imports pages with a
+  reader for that kind of file), and writes the same bytes for the same
+  answers.
+- *Fonts are DejaVu, cut down and carried in the page.* A PDF must look the
+  same on any computer and show Irish accents and mathematical symbols as typed,
+  so each PDF carries its fonts. DejaVu Sans and Sans Mono (licence: Bitstream
+  Vera with public-domain changes; it allows copying and embedding if the notice
+  stays, and a modified font if it is not named Bitstream or Vera) are cut by
+  `dev/make_pdf_fonts.py` to Latin with its European accents, Greek, Cyrillic,
+  punctuation, currency, arrows and mathematical operators for Sans, and Latin
+  and punctuation for Mono, with the licence beside them and a checksummed record
+  (`assets/vendor/SOURCE.json`). Together they are about 180 KB, about 235 KB as
+  carried in a page, which is now about 720 KB. Cyrillic, Greek and Vietnamese,
+  which the plan expected to fall back to the print button, are covered; the
+  cost of the whole set is under 20 KB. Bold is drawn with a thin outline, so no
+  bold font is carried. A PDF carries only the fonts it uses, so a PDF with no
+  code does not carry Mono.
+- *What a character the fonts lack does.* A box is drawn in its place, what a
+  reader copies from it is a question mark, and the student is told which
+  characters could not be shown, that the answer file has them as typed, and
+  that **Print or save as PDF** will show them: the plan's rule, kept.
+- *The PDF holds the headings and the answers, not the question.* Decision 23
+  and D3 say so: each part's printed heading and the answer as typed, with the
+  question's wording left to the readable copy. A choice shows the options
+  chosen with their wording, and a gap or a table shows its line with the gaps
+  filled in. The wording could be added later; leaving it out keeps a PDF to the
+  student's own words.
+- *Every page says whose it is.* The name, student number and exam code at the
+  top, "Page n of N", and the Paper ID and receipt at the foot, so a page that
+  comes loose from the rest can still be matched to the answer file.
+- *One finish sheet, one receipt.* Saving the answer file and saving the PDF
+  both use the receipt the finish fixed (`fixReceipt`), and a second press does
+  not make a new one, so the PDF's footer and the file agree. A change to an
+  answer withdraws it (entry 0.14).
+- *Checked by three readers.* `tests/browser/test_pdf.py` opens each PDF in
+  MuPDF (no repair, no warnings; text, fonts and positions), `qpdf --check`, and
+  Ghostscript (draws every page and writes the file again), and checks the
+  cross-reference table entry by entry. CI installs Ghostscript and qpdf. The
+  rehearsals include a sweep that puts a heading at every height a page can
+  have, and was shown to fail when the heading rule was broken.
+
+Not done: opening a PDF in a real Moodle assignment's grader (the plan asks for a
+test assignment; it needs a Moodle), pictures and photographs in a PDF (step 8),
+the output of a code run (step 5), and the question wording.
+
+*Changing it:* what a PDF holds and the header and footer are what a marker is
+used to; a change is a decision. A new character range is made with
+`dev/make_pdf_fonts.py` and recorded in `assets/vendor/SOURCE.json`.
+
+**0.16 — The finish sheet: one press, a folder, a check.** The third part of
+step 4's fourth slice. The finish sheet is now the three steps the plan sets
+out: *Check your answers*, *Save your answer file and your PDF*, *Hand it in*,
+followed by a confirmation card for the invigilator. One button saves both
+files.
+
+What it settles:
+
+- *The student chooses a folder, not a file.* Decision 8 and D3 say that in
+  Chrome and Edge the student chooses a folder once and both files go there; the
+  second slice had asked for a file (the answer file only), which cannot also
+  hold the PDF. The screen before the paper now has **Choose a folder…**
+  (`showDirectoryPicker`), the page saves the answer file into it as the student
+  works, and the PDF joins it at the finish. The folder is chosen on a button, and
+  not at Begin, as before. A folder the browser refuses is explained in words
+  that suggest where to try instead (a folder on a USB stick, or a new folder inside
+  Documents), and a student who chooses none is asked once at Begin. A student who
+  changes their name after choosing gets the answer file named for the new name.
+  **Open question for a college PC:** Chrome and Edge refuse some folders (the
+  home folder and some system folders) and a managed browser may refuse more; the
+  plan's open item 9 asks that the page be tried on the room's own computers, and
+  the wording on the screen is the first thing to change if it is not enough.
+- *The page reads back what it wrote.* In a folder, the page writes the answer
+  file and the PDF, reads both from the folder, compares the bytes, and checks
+  that the receipt in the file is the receipt of its answers. Only then does it say
+  "Checked: the file holds 17 answers. Receipt 7F3A 92C1. The PDF has 3 pages. Both
+  are in the folder X." and show the card. If a file is missing, differs or cannot
+  be written, nothing is called saved: the page says what it found, that the
+  answers are safe in the browser, and offers **Choose the folder again**
+  (which saves again at once) and Save a copy.
+- *A browser with no folder downloads both files and says it cannot check them.*
+  A page may not look inside a file it downloaded, so the message says "Saved",
+  names the two files and the receipt, and asks the student to open them; it
+  never says "Checked". **Save the answer file again** and **Save the PDF again**
+  cover a download the browser held back. The answer key never writes to a folder.
+- *One finish, one receipt.* Both files carry the receipt fixed by the press, a
+  second press with nothing changed writes the same files, and a change to an
+  answer withdraws the receipt, the card and the message (entry 0.14).
+- *The confirmation card is for the invigilator.* The student's name and number,
+  the paper, the Paper ID, the number of answers, the time saved, the receipt and
+  the file names: what the plan lists, so an invigilator can check a student's
+  screen against the sitting without opening a file.
+- *File names lose accents.* A student typing "Síle Ní Bhriain" had files named
+  `s-le-n-bhriain`. The page now turns accented letters into their plain letters
+  and a few that have no accent form (ł, ø, đ, ß, æ) into theirs, so the name is
+  `sile-ni-bhriain`. A name in another alphabet has no letters left and becomes
+  `student`; the student number, also in the name, tells the files apart.
+
+Not done: the invigilator's code and the view of set-aside work (the timer
+slice); "code changed since it last ran" in step 1 (it needs Run, step 5); the
+readable HTML copy still downloads and is not checked; a real college computer;
+a test Moodle assignment; and the keyboard and screen-reader walk-through.
+`tests/browser/test_finish.py` uses a folder kept in memory that can be made to
+refuse a write or give back the wrong bytes, because Chromium cannot show a test
+the browser's folder window.
+
+*Changing it:* the words in the finish sheet are what a student reads with a few
+minutes left, so they are short and say whether the work is safe. The checks
+run in order (written, read back, receipt) and a new one goes into
+`checkFolder` in `assets/page-finish.js`.
+
+**0.17 — The clock, extra time, breaks, and the invigilator's code.** The fourth
+part of step 4's fourth slice, and the last of it. A page now has a clock that a
+student can hide, extra time, breaks, and an invigilator's code that adds time
+to a paper that has closed. It settles D4 and decision 11 in code.
+
+What it settles:
+
+- *The code is made when the pages are built, for one sitting.* Josh chose this
+  over a setting in the exam file. `python -m dewmark build FILE -o DIR --sitting
+  "2026-10-20 Group A"` makes six digits, prints them once for the sitting card,
+  and writes them nowhere; `--code` gives them back to build the same pages again,
+  or sets four to eight digits of the teacher's own. The page holds a short hash
+  (`dewmark/invigilator.py`), made with the paper's code, so the code is not in the
+  page's text, and the paste route never sees it because it is not in the exam
+  file. A paper whose timer is `enforced` is refused without one. A page built
+  without a sitting has no code, and says so: the things that need a code cannot be
+  done on it.
+- *The code is a guard against accidents, and the page says so.* A hash of six
+  digits is searched in seconds, and a student who reads the page's source can
+  change what it checks. D4 accepts that: the invigilator, in the room, is the
+  remedy. The page waits 30 seconds after three wrong tries, which stops a student
+  pressing keys, not one with a script. `docs/DEVELOPMENT.md` lists it as a limit
+  and says what a stronger design would need (a server).
+- *What the code does.* It adds time. It lets a student start again under an
+  enforced clock. It lets a student continue work saved under another name. It
+  opens a list of saved work. Each time, the page asks for it afresh in one small
+  window (`<dialog>`: focus is kept, Escape closes it), with the minutes asked for
+  in the same window when time is being added. The code is typed masked.
+- *The clock is the wall clock.* Time left is Begin, plus the time allowed, plus
+  extra time, plus every break and every closed pause, less now. Closing the page
+  does not stop it; only a break does. The page reads `time allowed` in the forms
+  teachers write it (`2 hours 30 minutes`, `90`, `1.5 hours`, `2h30`); a timer that
+  is asked for and cannot count the words is a problem, and a default timer that
+  cannot is turned off with a warning.
+- *At ten minutes, words, weight and a drawn mark, once.* The clock is a `timer`
+  element, which a screen reader does not read every second; a separate status line
+  says "Ten minutes left." once, with no sound and no change of focus. A student who
+  hid the clock is not told under a clock that only shows (they asked for quiet);
+  under an enforced clock they are, because the paper will close. **This is my
+  choice, not one of Josh's decisions; it is a few lines to change.**
+- *Under an enforced clock, at zero: the page saves, the boxes become read-only,
+  and the finish sheet opens* (D4). A read-only box can still be read and copied;
+  a choice, a drop-down or a button is disabled. The student can still save and
+  hand in. Nothing is written to the record for being closed: a closed paper is the
+  clock's answer, found again whenever the page opens, so a student who had already
+  saved still holds a receipt that matches.
+- *Time added to a closed paper counts from when it reopens.* Without this, an
+  invigilator who adds fifteen minutes twenty minutes after the paper closed gets a
+  paper that is still closed. The page records the time the paper waited as a
+  `closed` pause, from the moment the time ran out to the moment it reopened, and
+  keeps the minutes the invigilator typed as typed.
+- *Extra time has two sources and the record names them.* A clock that only shows
+  takes the student's own word, typed on the second screen (1 to 600 minutes,
+  replaced each time they change it); an enforced clock takes only the
+  invigilator's, appended and never replaced. Both are in `time.extra` with who and
+  when, and the confirmation card shows them so the invigilator can check them
+  against the college's list. `time` is always present in the answer file, so a
+  reader never asks whether it exists, and it is part of the receipt.
+- *Breaks need no code.* The page hides the paper, stops the clock, and records
+  the start and end. A break left open (the page was closed on it) is still open
+  when the work is continued, and the clock is still stopped. A break taken after
+  the student saved withdraws the receipt, with its own message ("The record of your
+  time changed after you saved"), since the file no longer holds it.
+- *The practice page shows the clock and never closes the paper*, whatever the
+  paper says: nobody is there to give a practising student more time. The answer
+  key has no clock. **Also my choice.**
+- *Start again, under an enforced clock, needs the code and does not restart the
+  clock.* The start of the clock is kept for the paper, the sitting and the student
+  number, apart from the saved work (`dewmark:clock:…`), and ignored after 36 hours.
+  Under a clock that only shows, starting again starts the clock again, as before.
+  A student who clears the browser's data, or uses another browser, begins with a
+  full clock: it is a browser page, and the invigilator sees it.
+- *The sitting joins the record.* §5.2 says a record carries its sitting and that
+  another sitting's work is set aside, not restored; the record carried only the
+  version and the fingerprint. `exam.sitting` is now written when the pages were
+  built for a sitting, work from another sitting is not offered, and an answer file
+  from another sitting is refused with a message. Without this an enforced clock
+  would read a start time from last term.
+- *Saved work asks for the name.* A student who types a number is offered the work
+  saved under it. The page now also asks for the name, and compares it without
+  capitals, accents, spaces or punctuation (so `sile ni bhriain` is `Síle Ní
+  Bhriain`); a name that does not match needs the code, as §5.2 says. This changes
+  the second slice: Continue my work used to need only the number, and several
+  rehearsals now type the name first.
+- *The invigilator's list of saved work.* Behind the code, on the first screen: the
+  work this computer holds for this paper, newest first, by initials and the last
+  three digits of the number (a student who sees the list learns no name). Each can
+  be saved as a file, and a piece of work from this paper's version and sitting can
+  be continued from, which sets the work the page holds aside first. Nothing here
+  deletes anything.
+
+Not done: deleting old saved work and old
+clocks (§5.2's 14 days, which is not built, so the list shows no expiry); the
+workbench's accommodations column (step 6; the file already carries what it needs);
+the code on a studio sitting card (step 7; until then the command prints it); a
+college computer; and the keyboard and screen-reader walk-through of the dialogs.
+
+*Changing it:* the words the invigilator and the student read are in
+`dewmark/build.py` (`_time_card`, `_dialogs`) and `assets/page-invigilator.js`; the
+rule for the clock is `millisecondsLeft` in `assets/page-time.js` and must agree
+with `docs/ANSWER_FILE.md`, *Time*. A change to the hash in `dewmark/invigilator.py`
+and `invigilatorCheck` changes every page already built, so
+`tests/test_timer.py` freezes a value.
+
+**0.18 — The header and footer of the print window.** The last piece of step 4's
+list. **Print or save as PDF**, and Ctrl+P, now carry the frame the page's own PDF
+has: the student's name, number and the exam code at the top of every page, "Page
+3 of 5", and the Paper ID and the receipt at the foot (`docs/PDF_FILE.md`).
+
+What it settles:
+
+- *The frame is page margins, not boxes.* The plan's note was "a fixed-position header
+  and footer in the print CSS". I tried that first. In Chromium's print layout a fixed
+  box with a negative offset landed at the foot of the page, and the footer was missing
+  from some pages. CSS page margin boxes put the header, footer and page number in the
+  margins of every page. The text comes from two custom properties that the page sets
+  just before printing (the `beforeprint` event, which Ctrl+P also sends) and clears
+  afterwards. A name with quotes, backslashes or CSS in it is escaped, and the tests
+  print four such names.
+- *It is Chrome and Edge only.* Page margin boxes are in Chrome and Edge from 131, which
+  the plan names for the college's computers. Firefox and Safari print the paper with
+  no frame. I could not test them here, and a fallback I could not test might put
+  boxes on top of the paper, so there is none. The page's own PDF, which every browser
+  can make, always has the frame, and the teacher guide says to hand that in from
+  Firefox or Safari.
+- *The print window used to clip long answers.* A browser prints only what a text box
+  shows: a sixty-line answer printed its last four lines. Each box now has a twin that
+  holds its whole text for the printing, made on `beforeprint` and removed on
+  `afterprint`. This was a real loss in the backup route, found while building the
+  frame.
+- *Print is set at a standard size, and a long answer may run over.* The page's reading
+  size does not change the printout, so the page count does not depend on it. The old
+  rule that no answer may split sent a long answer to a page of its own after a page
+  holding only a heading (nine pages where five do). Now an answer runs over, a
+  heading stays with what follows it, and a choice, gaps, boxes or a table stay whole.
+- *No receipt yet.* A student who prints before saving gets "No receipt yet: save your
+  answer file and PDF first" at the foot. Printing does not fix a receipt: only the
+  finish sheet's save does, so a print can never carry a receipt the file does not.
+
+Not done: Firefox and Safari; a print of the finish sheet (Ctrl+P there prints
+nothing of the paper); pictures in a print (step 8).
+
+*Changing it:* the margins and their text are in the `@page` rule of `assets/page.css`,
+the properties in `fillPrintFrame` in `assets/page-finish.js`. `tests/browser/test_print.py`
+prints a page to PDF with Chromium and reads it back with PyMuPDF; a change to the
+frame is a change a marker will notice.

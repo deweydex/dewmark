@@ -1,7 +1,9 @@
 """python -m dewmark check EXAM_FILE [EXAM_FILE ...]
 python -m dewmark lock EXAM_FILE --sitting "2026-10-20 Group A"
-python -m dewmark build EXAM_FILE [-o DIR]
+python -m dewmark build EXAM_FILE [-o DIR] [--sitting "2026-10-20 Group A"] [--code 482915]
 python -m dewmark scheme EXAM_FILE [-o OUT]
+python -m dewmark receipt ANSWER_FILE [ANSWER_FILE ...]
+python -m dewmark fingerprint EXAM_FILE
 python -m dewmark package MODE FILE [--set "key: value" ...] [-o OUT]
 python -m dewmark reply MODE ORIGINAL REPLY [--set "key: value" ...] [-o OUT]
 
@@ -21,6 +23,21 @@ a paper that uses a kind of box no page draws yet, and any page that would give
 away the scheme or a hint (§4.5); and with no -o it only checks. It needs the
 `markdown` and `latex2mathml` packages (requirements.txt).
 
+--sitting names the sitting the pages are for and makes the invigilator's code
+for it (dewmark/invigilator.py): six digits, printed once for the sitting card.
+The pages hold a hash of it, never the code, and no file written holds it. To
+build the same pages again, give the code back with --code. A paper whose timer
+is enforced cannot be built without one.
+
+receipt checks each answer file a student handed in: it works out the receipt
+(dewmark/receipt.py) from the file and says whether it is the one the page
+wrote into it. A file that was changed after it was saved does not match. It
+exits 1 if any file does not.
+
+fingerprint prints the paper's ID, the code students see as "Paper ID" and the
+code in every answer file made from the paper. It needs the `markdown` and
+`latex2mathml` packages, since it reads the pictures the paper carries.
+
 scheme writes the marking scheme of a paper as dewmark-scheme/1 JSON, the
 file the marking workbench reads (§4.6). It holds the paper's secrets: keep
 it with the teacher's files, never in a folder students receive. It refuses
@@ -37,12 +54,15 @@ and with -o writes the file with every change made.
 """
 
 import datetime
+import json
 import os
 import sys
 
+from . import invigilator
 from . import lock as names_lock
 from .package import ABOUT_KEYS, MODES, build_package
 from .reader import read
+from .receipt import receipt as receipt_of
 from .reply import check_reply
 from .scheme_json import dumps, scheme_json
 
@@ -136,17 +156,39 @@ def _read_text(path):
         return handle.read()
 
 
+def _take(argv, flag):
+    """Remove `flag VALUE` from the arguments: (the rest, VALUE or None)."""
+    rest, value, index = [], None, 0
+    while index < len(argv):
+        if argv[index] == flag and index + 1 < len(argv):
+            value = argv[index + 1]
+            index += 2
+        else:
+            rest.append(argv[index])
+            index += 1
+    return rest, value
+
+
 def build(argv):
     from .build import BuildError, build as build_files    # needs markdown: only when asked
-    rest, _, out = _options(argv)
-    if len(rest) != 1:
-        print("build needs an exam file.")
+    rest, name = _take(argv, "--sitting")
+    rest, given = _take(rest, "--code")
+    rest, _, out = _options(rest)
+    if len(rest) != 1 or rest[0].startswith("-"):
+        print("build needs an exam file, and --sitting and --code each need a value.")
         return 2
+    if given is not None and not invigilator.valid(given):
+        print("--code must be 4 to 8 digits, for example --code 482915.")
+        return 2
+    sitting = None
+    if name is not None or given is not None:
+        sitting = {"name": (name or "").strip(),
+                   "code": invigilator.normalise(given) if given is not None else invigilator.issue()}
     paper, _, _, _ = read_with_lock(rest[0])
     try:
         if paper["messages"].problems:
             raise BuildError(paper["messages"].problems)
-        names = build_files(rest[0], out)
+        names = build_files(rest[0], out, sitting)
     except BuildError as error:
         print(f"{rest[0]}: not built.")
         for message in error.messages:
@@ -154,8 +196,58 @@ def build(argv):
         return 1
     print(f"{rest[0]}: " + (f"built {len(names)} files into {out}." if out else
                             "builds cleanly; no files written (give -o DIR to write them)."))
-    for name in names:
-        print("  " + name)
+    for name_ in names:
+        print("  " + name_)
+    if out and sitting:
+        which = f"for \"{sitting['name']}\" " if sitting["name"] else ""
+        print(f"The invigilator's code {which}is {invigilator.pretty(sitting['code'])}.")
+        print("  Write it on the sitting card, and keep it out of the folder students receive: no file "
+              "holds it.")
+        print(f"  To build these pages again so that they accept the same code, give --code {sitting['code']}.")
+    elif out:
+        print("These pages have no invigilator's code, so they cannot ask for one (to continue work saved "
+              "under another name, or to list saved work). Add --sitting \"...\" to make one.")
+    return 0
+
+
+def receipts(paths):
+    """Check the receipt in each answer file against the file."""
+    failed = False
+    for path in paths:
+        try:
+            record = json.loads(_read_text(path))
+        except (OSError, ValueError) as error:
+            print(f"{path}: cannot be read as an answer file ({error}).")
+            failed = True
+            continue
+        if not isinstance(record, dict) or record.get("format") != "dewmark-answers/1":
+            print(f"{path}: not a dewmark answer file (its format is not dewmark-answers/1).")
+            failed = True
+            continue
+        written = record.get("receipt")
+        found = receipt_of(record)
+        student = record.get("student") or {}
+        who = f"{student.get('full name', '?')}, {student.get('student number', '?')}"
+        if not written:
+            print(f"{path}: {who}: no receipt. The student did not save at the finish sheet "
+                  f"(the receipt would be {found}).")
+            failed = True
+        elif written == found:
+            count = len(record.get("answers") or {})
+            print(f"{path}: {who}: receipt {found} matches. "
+                  f"{count} answer{'' if count == 1 else 's'}; paper ID "
+                  f"{(record.get('exam') or {}).get('fingerprint', '?')}.")
+        else:
+            print(f"{path}: {who}: receipt {written} does not match the file, which works out "
+                  f"to {found}. The file was changed after it was saved.")
+            failed = True
+    return 1 if failed else 0
+
+
+def fingerprint_of(path):
+    from .build import paper_fingerprint            # needs markdown: only when asked
+    text = _read_text(path)
+    print(paper_fingerprint(text, read(text), os.path.dirname(os.path.abspath(path))))
     return 0
 
 
@@ -237,6 +329,10 @@ def main(argv):
         return build(argv[1:])
     if argv and argv[0] == "scheme":
         return scheme(argv[1:])
+    if len(argv) >= 2 and argv[0] == "receipt":
+        return receipts(argv[1:])
+    if len(argv) == 2 and argv[0] == "fingerprint":
+        return fingerprint_of(argv[1])
     if argv and argv[0] == "package":
         return package(argv[1:])
     if argv and argv[0] == "reply":

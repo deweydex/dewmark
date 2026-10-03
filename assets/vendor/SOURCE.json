@@ -1,30 +1,62 @@
 {
-  "about": "Files copied unchanged from dewlab, not edited here (DECISIONS_LOG.md, entry 0.13; decision 31). tests/test_vendor.py fails if a file differs from its checksum. To update one, copy it again from dewlab and write the new commit and checksum here.",
-  "source": {
-    "repository": "https://github.com/deweydex/dewlab",
-    "commit": "d283416fb1154f3a2b2105b6019d49c1bad2f19a",
-    "path": "assets/vendor/fonts/",
-    "made_from": [
-      "@fontsource/lexend 5.3.0",
-      "@fontsource/opendyslexic 5.3.0"
-    ]
-  },
-  "files": {
-    "lexend-latin-400.woff2": {
-      "sha256": "0601e0a909219a542cdd581e3f8f1ff8fb208978cbc9bca1c90df02fd8062bb1",
-      "bytes": 14476
+  "about": "Every file under assets/vendor/ is listed here with where it came from and what it held when it was copied or made. A file edited by hand, or added without a record, fails tests/test_vendor.py (DECISIONS_LOG.md, entries 0.13 and 0.15; decision 31). To update one, make or copy it again and write the new checksum here.",
+  "sources": [
+    {
+      "name": "The reading fonts, copied unchanged from dewlab",
+      "repository": "https://github.com/deweydex/dewlab",
+      "commit": "d283416fb1154f3a2b2105b6019d49c1bad2f19a",
+      "path": "assets/vendor/fonts/",
+      "made_from": [
+        "@fontsource/lexend 5.3.0",
+        "@fontsource/opendyslexic 5.3.0"
+      ],
+      "files": {
+        "fonts/lexend-latin-400.woff2": {
+          "sha256": "0601e0a909219a542cdd581e3f8f1ff8fb208978cbc9bca1c90df02fd8062bb1",
+          "bytes": 14476
+        },
+        "fonts/lexend-latin-700.woff2": {
+          "sha256": "52dcdaa127bac4a5ea4c39ee17a3f454ceacc18d9f2a45cc453eeab68d378588",
+          "bytes": 14808
+        },
+        "fonts/opendyslexic-latin-400.woff2": {
+          "sha256": "f007004af3cda5d8076e57c943f8cc8d00a0da25988b1ae1048683d60e7cac1a",
+          "bytes": 115280
+        },
+        "fonts/opendyslexic-latin-700.woff2": {
+          "sha256": "dd9fa9c7991113b0dddefe9506a30ad26b48e302b7a8fb91719a4726e8fde85b",
+          "bytes": 120356
+        }
+      }
     },
-    "lexend-latin-700.woff2": {
-      "sha256": "52dcdaa127bac4a5ea4c39ee17a3f454ceacc18d9f2a45cc453eeab68d378588",
-      "bytes": 14808
-    },
-    "opendyslexic-latin-400.woff2": {
-      "sha256": "f007004af3cda5d8076e57c943f8cc8d00a0da25988b1ae1048683d60e7cac1a",
-      "bytes": 115280
-    },
-    "opendyslexic-latin-700.woff2": {
-      "sha256": "dd9fa9c7991113b0dddefe9506a30ad26b48e302b7a8fb91719a4726e8fde85b",
-      "bytes": 120356
+    {
+      "name": "The PDF fonts: subsets of DejaVu Sans and DejaVu Sans Mono 2.37",
+      "upstream": "https://dejavu-fonts.github.io/",
+      "package": "fonts-dejavu-core 2.37-8 (Debian)",
+      "made_by": "dev/make_pdf_fonts.py, with fontTools 4.66.1",
+      "licence": "pdf-fonts/DEJAVU-LICENSE.txt",
+      "files": {
+        "pdf-fonts/DejaVuSans-subset.ttf": {
+          "sha256": "6f341b431bc5e98421602f43e3c15802baad7e6a5d2db8e8f70c15e032f9a705",
+          "bytes": 133012,
+          "from": {
+            "file": "DejaVuSans.ttf",
+            "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
+          }
+        },
+        "pdf-fonts/DejaVuSansMono-subset.ttf": {
+          "sha256": "8dacb3307bca7654f7d693b26034cd9ea8d3792af70b7960b846d03abe3afa6e",
+          "bytes": 45676,
+          "from": {
+            "file": "DejaVuSansMono.ttf",
+            "sha256": "c805f9436dbc268644c1d9584f01a601a653e028e08fd74b9b949f6cf8304d88"
+          }
+        },
+        "pdf-fonts/DEJAVU-LICENSE.txt": {
+          "sha256": "6417114da56b88cacb119263fb2182ce6507d98ebbd7d52e74559ca9ce566ff2",
+          "bytes": 4145
+        }
+      }
     }
-  }
+  ]
 }

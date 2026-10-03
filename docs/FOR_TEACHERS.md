@@ -88,12 +88,11 @@ things:
 paper is written in the new format ([EXAM_FORMAT.md](EXAM_FORMAT.md)),
 `python -m dewmark build my-exam.exam.md -o finished/` builds the same four
 files from it, and stops, writing nothing, if a page it made would show
-students the marking scheme or a hint. What it makes does not yet have a
-timer, breaks or a PDF, cannot draw four kinds of question (matching,
-ordering, photographs and "answer on paper"; it tells you which), and saves
-an answer file the marking workbench cannot read yet
-([ANSWER_FILE.md](ANSWER_FILE.md)). Use it to try the new format, and use
-`build_exam.py` for a real sitting.
+students the marking scheme or a hint. What it makes cannot draw four kinds
+of question (matching, ordering, photographs and "answer on paper"; it tells
+you which), cannot run Python yet, and saves an answer file the marking
+workbench cannot read yet ([ANSWER_FILE.md](ANSWER_FILE.md)). Use it to try the
+new format, and use `build_exam.py` for a real sitting.
 
 What a student sees on the newer page: a band at the top that says in words
 whether this is an examination, a practice version or an answer key, with the
@@ -101,14 +100,83 @@ paper's title, `institution`, `college`, `module`, `module code`, `session`,
 the time allowed and a `logo` if you give one (a picture file beside the exam
 file, 150 KB at most). Then two screens. On the first, the student types a name
 and a student number, chooses how the page looks, and sees a list of what the
-paper needs. On the second, they read your instructions, choose where their
-answer file goes, and press Begin. If the computer holds saved work for the
+paper needs. On the second, they read your instructions, choose a folder
+for their files, and press Begin. If the computer holds saved work for the
 number the student types, the page offers it, and offers it only for that
 number. The student's reading settings (font, text size, colours, a reading
 ruler) stay on that computer and are not in the answer file you receive. On a
 shared computer the next student finds them, so the page says so and offers
 **Use standard settings**. The **Aa** button at the top right opens the same
 settings on every screen.
+
+Every page built from one paper shows the same **Paper ID**, such as `7KQ-4MD`,
+on the second screen, and writes it into the answer file. Read it out to check
+that every student has the same copy of the paper; `python -m dewmark fingerprint
+my-exam.exam.md` prints it. Work saved on another version of a paper is not put
+into a new version: the page keeps it aside and starts the student again.
+
+On the screen before the paper, a student in Chrome or Edge chooses a folder (a
+folder on a USB stick, say), and the page saves their answer file into it as they
+work. On the finish sheet, one press saves the answer file and a **PDF** of their
+answers into the same folder, reads both back, and shows a **receipt**, such as
+`7F3A 92C1`, and a card for you with their name, number, paper, Paper ID, answers
+and the time. In another browser the page downloads both files and says it cannot
+look inside them. `python -m dewmark receipt FILE` checks a handed-in answer file
+against its receipt, and says if the file was changed after it was saved.
+
+The PDF (`docs/PDF_FILE.md`) has each part's heading and the answer as typed, with
+the student's name, number and the exam code on every page and the Paper ID and
+receipt at the foot. The page makes it with no network. **Print or save as PDF**
+(and Ctrl+P) gives the browser's own version, with the same header and footer and
+the whole of every answer, in Chrome and Edge; Firefox and Safari print the paper
+without a header or footer, so for a student who uses one, hand in the page's PDF. A student whose answer
+holds a character the PDF's fonts lack (Arabic or Chinese, say) is told which, and
+offered the browser's own print window instead.
+
+**The clock, extra time and breaks.** `timer` in the exam file is `none`, `shown` or
+`enforced`, and `breaks` is `on` or `off` ([EXAM_FORMAT.md](EXAM_FORMAT.md) §4.9). With
+`shown`, the page has a clock at the top that a student can hide with one click.
+It tells the student once, in words, at ten minutes. At zero nothing stops them:
+you tell them. A student with extra time types the minutes on the second screen,
+and the confirmation card shows them, so you can check against your list. With
+`enforced`, the page saves at zero, the answer boxes stop taking changes, and the
+finish sheet opens, where the student can still save and hand in. You add time
+with the **invigilator's code**, and time you add to a paper that has closed
+counts from the moment you add it. Extra time for a student with an enforced
+clock is only ever added with the code, on the second screen before Begin or on
+the finish sheet. With `breaks: on`, a student presses **Take a break**: the
+page hides the paper, stops the clock, and records when the break began and
+ended; the confirmation card counts the breaks. The practice page shows the clock
+and never closes the paper. Closing the page does not stop the clock, only a
+break does. The answer file records the rule, the extra time and who gave it,
+the breaks, and any time a closed paper waited for you
+([ANSWER_FILE.md](ANSWER_FILE.md), *Time*).
+
+**The invigilator's code** is made when you build the pages for a sitting:
+
+```sh
+python -m dewmark build my-exam.exam.md -o finished/ --sitting "2026-10-20 Group A"
+```
+
+The command prints six digits, such as `482 915`. Write them on the sitting card
+and keep them out of the folder students receive: no file holds them, and the
+pages hold only a short hash. A new sitting gets a new code. To build the same pages
+again so that they accept the same code, add `--code 482915`; you may also choose
+a code of your own, of four to eight digits. A paper with `timer: enforced` cannot
+be built without one. The code does four things: it adds time to a closed paper,
+it lets a student start again under an enforced clock (which does not give a
+new clock), it lets a student continue work saved under a different name, and it
+opens **Saved work on this computer (for invigilators)** on the first screen,
+which lists the work the computer holds for this paper (by the student's
+initials and the last digits of the number, never the whole name), lets you save
+any of it as a file, and lets you continue from it. Nothing the page does deletes
+saved work. The code guards against accidents, not against a student who knows
+how to read a page's source: it is a hash of a short number. You are in the room,
+as at a paper exam, and the card and the file are there to check afterwards.
+The page waits 30 seconds after three wrong codes.
+
+Work saved in another sitting is never offered back to a student: each sitting's
+pages know their sitting, and the answer file records it.
 
 Before the real sitting, open the student page and sit the paper
 yourself. Reading your own exam as a student finds more problems than

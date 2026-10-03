@@ -53,6 +53,37 @@ MATHS_INPUTS = ("text", "visual", "photo")
 CODE_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
+# The words a time can be written in, and what each is worth in minutes.
+TIME_UNITS = {"h": 60, "hr": 60, "hrs": 60, "hour": 60, "hours": 60,
+              "m": 1, "min": 1, "mins": 1, "minute": 1, "minutes": 1}
+_TIME_PART = r"(\d+(?:\.\d+)?) ?([a-z]*)"
+
+
+def parse_minutes(text):
+    """The time allowed, in whole minutes, or None if the words are not a time
+    the timer can count. `90`, `90 minutes`, `1 hour`, `1.5 hours`, `2h30`,
+    `2 hours 30 minutes` and `1 hour and 30 minutes` are all times; a number on
+    its own is minutes. A time of nothing, or of more than a day, is not one."""
+    cleaned = re.sub(r"\s+", " ", re.sub(r"\band\b|,", " ", str(text).lower())).strip()
+    if not re.fullmatch(rf"(?:{_TIME_PART} ?)+", cleaned):
+        return None
+    parts = re.findall(_TIME_PART, cleaned)
+    total, seen, last = 0.0, set(), None
+    for index, (number, unit) in enumerate(parts):
+        if not unit:
+            # A bare number is minutes: on its own ("90") or after hours ("2h30").
+            if index and last != 60 or index == 0 and len(parts) > 1:
+                return None
+            unit = "m"
+        if unit not in TIME_UNITS or TIME_UNITS[unit] in seen:
+            return None
+        seen.add(TIME_UNITS[unit])
+        last = TIME_UNITS[unit]
+        total += float(number) * last
+    minutes = round(total)
+    return minutes if 1 <= minutes <= 24 * 60 else None
+
+
 def normal_key(key):
     return re.sub(r"[\s_\-]+", " ", key.strip().lower())
 
@@ -185,8 +216,22 @@ def _after(settings, seen, messages):
                     f"An exam paper can't have \"{key}: {settings[key]}\". Only practice "
                     "and sample papers show answers or run tests.",
                     f"Remove the \"{key}\" line, or make this a practice paper.")
+    minutes = parse_minutes(settings.get("time allowed", ""))
     if "timer" not in settings:
-        settings["timer"] = "shown" if settings.get("time allowed") else "none"
+        settings["timer"] = "shown" if minutes else "none"
+        if settings.get("time allowed") and not minutes:
+            messages.warning(
+                "timer-needs-a-time", seen.get("time allowed", first),
+                f"The page cannot count \"{settings['time allowed']}\" as a time, so this paper "
+                "has no timer.",
+                "Write the time as, for example, 2 hours 30 minutes, or 90 minutes.")
+    elif settings["timer"] != "none" and not minutes:
+        messages.problem(
+            "timer-needs-a-time", seen.get("time allowed", first),
+            f"The timer is {settings['timer']}, but the page cannot count "
+            f"\"{settings.get('time allowed', '')}\" as a time.",
+            "Write the time as, for example, 2 hours 30 minutes, or 90 minutes. "
+            "Or set \"timer: none\".")
     for key, default in (("breaks", "off"), ("calculator", "none"), ("maths input", "text"),
                          ("python from", "this file"), ("code completion", "off"),
                          ("error hints", "on"), ("python reference", "no"),

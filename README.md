@@ -107,8 +107,9 @@ newer ones win until the older ones are rewritten.
 
 `python -m dewmark build FILE -o DIR` builds a paper in the new format into a
 student page, a practice page, an answer key and a marking scheme. It is a first
-slice of the page (every kind of box but four, no timer or PDF yet): try it on
-the [specimen](https://deweydex.github.io/dewmark/new/specimen-short/specimen-short.student.html),
+slice of the page (every kind of box but four, no Python yet; it has a clock,
+breaks, a PDF and the invigilator's code, which `--sitting "2026-10-20 Group A"`
+makes for a sitting): try it on the [specimen](https://deweydex.github.io/dewmark/new/specimen-short/specimen-short.student.html),
 but sit a class on `build_exam.py`'s pages until the plan's step 4 is done. What
 the page saves is described in [`docs/ANSWER_FILE.md`](docs/ANSWER_FILE.md).
 
