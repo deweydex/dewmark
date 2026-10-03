@@ -586,12 +586,20 @@ function showSaved() {
   $("dm-changed").hidden = true;
 }
 
-$("dm-submit").addEventListener("click", () => {
+/* The paper is handed in as it now is. If it was already saved and has not
+   changed since, the receipt stays the same, so every file saved from one
+   finish sheet carries one receipt. */
+function fixReceipt() {
   gatherState();
+  if (state.finished_at && state.receipt) return;
   state.finished_at = new Date().toISOString();
   state.receipt = receiptOf(state);
   changedAfterFinish = false;
   saveEverywhere();
+}
+
+$("dm-submit").addEventListener("click", () => {
+  fixReceipt();
   downloadAnswerFile();
   showSaved();
 });

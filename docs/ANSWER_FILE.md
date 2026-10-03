@@ -115,8 +115,8 @@ settings (font, text size, colours, ruler), which belong to the computer and
 never travel in a file that a marker will open: the file holds what a student
 wrote, so it is as safe to hand in as the paper was to sit. Nothing about the
 timer, breaks or extra time yet. The PDF a student also hands in (decision 23)
-is a separate file, and comes with the PDF writer; it will carry the receipt and
-the Paper ID on every page.
+is a separate file (`docs/PDF_FILE.md`) that carries the receipt and the Paper ID
+on every page.
 
 ## Files and names
 

@@ -29,7 +29,7 @@ python -m pytest tests/browser/test_checker.py              # the checker page; 
 
 Student-facing text lives in `build_exam.py`, `assets/exam-page.js`,
 `assets/exam-page.css`, `dewmark/build.py`, `dewmark/render.py`, `assets/page.js`,
-`assets/page.css` and the built pages; teacher-facing text in
+`assets/page-reading.js`, `assets/page-pdf.js`, `assets/page-start.js`, `assets/page.css` and the built pages; teacher-facing text in
 `workbench/index.html`, `checker/index.html`, `docs/FOR_TEACHERS.md`, the builder's
 messages and the paste route's mode names and notices in `dewmark/package.py`.
 Follow dewlab's style guide for student text,
@@ -43,7 +43,7 @@ plain words, a term defined the first time it is used.
 | Anything about the plan, or what to build next | `planning/PROPOSAL.md` §9, then `planning/DECISIONS_2026-09-27.md` |
 | The exam file format | `docs/EXAM_FORMAT.md` (adopted; `build_exam.py` still reads the older format in `planning/THE_EXAM_FILE.md` until step 6, and `python -m dewmark build` reads the new one) |
 | Changing the builder, the page or the workbench | `docs/DEVELOPMENT.md`, which lists where the drafts fall short |
-| Changing the new page or what it saves | `docs/ANSWER_FILE.md`, then `DECISIONS_LOG.md` entry 0.12 |
+| Changing the new page or what it saves | `docs/ANSWER_FILE.md` and `docs/PDF_FILE.md`, then `DECISIONS_LOG.md` entry 0.12 |
 | Running an exam as a teacher | `docs/FOR_TEACHERS.md` |
 | Why something is the way it is | `DECISIONS_LOG.md` |
 

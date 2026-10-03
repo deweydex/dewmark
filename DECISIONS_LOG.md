@@ -595,3 +595,67 @@ be told.
 the alphabet changes every code already handed out. A change is a decision, and
 a new format number for the answer file if receipts already issued must still
 verify; the frozen values in `tests/test_receipt.py` fail first.
+
+**0.15 — The PDF the page writes.** The second part of step 4's fourth slice.
+`assets/page-pdf.js` writes the PDF of decision 23 with no network, from the
+paper on the page and the student's record, when the student presses **Save a
+PDF**; **Print or save as PDF** opens the browser's own window as the backup.
+`docs/PDF_FILE.md` describes it.
+
+What it settles:
+
+- *A PDF writer of our own, not a library.* The plan expected a PDF library
+  (D3, "two to three weeks"). A library is hundreds of kilobytes of someone
+  else's code in every page, and the page is a file a student opens from a
+  disk. What the page needs is small (text, rules, a font, numbered pages),
+  and the file is the one thing a marker opens, so every byte of it is code
+  that can be read here. The writer is about 650 lines, writes **PDF 1.4 with a
+  plain cross-reference table and no object streams**, which is what the
+  PDF tools in Moodle's grader read (its annotation tool imports pages with a
+  reader for that kind of file), and writes the same bytes for the same
+  answers.
+- *Fonts are DejaVu, cut down and carried in the page.* A PDF must look the
+  same on any computer and show Irish accents and mathematical symbols as typed,
+  so each PDF carries its fonts. DejaVu Sans and Sans Mono (licence: Bitstream
+  Vera with public-domain changes; it allows copying and embedding if the notice
+  stays, and a modified font if it is not named Bitstream or Vera) are cut by
+  `dev/make_pdf_fonts.py` to Latin with its European accents, Greek, Cyrillic,
+  punctuation, currency, arrows and mathematical operators for Sans, and Latin
+  and punctuation for Mono, with the licence beside them and a checksummed record
+  (`assets/vendor/SOURCE.json`). Together they are about 180 KB, about 235 KB as
+  carried in a page, which is now about 720 KB. Cyrillic, Greek and Vietnamese,
+  which the plan expected to fall back to the print button, are covered; the
+  cost of the whole set is under 20 KB. Bold is drawn with a thin outline, so no
+  bold font is carried. A PDF carries only the fonts it uses, so a PDF with no
+  code does not carry Mono.
+- *What a character the fonts lack does.* A box is drawn in its place, what a
+  reader copies from it is a question mark, and the student is told which
+  characters could not be shown, that the answer file has them as typed, and
+  that **Print or save as PDF** will show them: the plan's rule, kept.
+- *The PDF holds the headings and the answers, not the question.* Decision 23
+  and D3 say so: each part's printed heading and the answer as typed, with the
+  question's wording left to the readable copy. A choice shows the options
+  chosen with their wording, and a gap or a table shows its line with the gaps
+  filled in. The wording could be added later; leaving it out keeps a PDF to the
+  student's own words.
+- *Every page says whose it is.* The name, student number and exam code at the
+  top, "Page n of N", and the Paper ID and receipt at the foot, so a page that
+  comes loose from the rest can still be matched to the answer file.
+- *One finish sheet, one receipt.* Saving the answer file and saving the PDF
+  both use the receipt the finish fixed (`fixReceipt`), and a second press does
+  not make a new one, so the PDF's footer and the file agree. A change to an
+  answer withdraws it (entry 0.14).
+- *Checked by three readers.* `tests/browser/test_pdf.py` opens each PDF in
+  MuPDF (no repair, no warnings; text, fonts and positions), `qpdf --check`, and
+  Ghostscript (draws every page and writes the file again), and checks the
+  cross-reference table entry by entry. CI installs Ghostscript and qpdf. The
+  rehearsals include a sweep that puts a heading at every height a page can
+  have, and was shown to fail when the heading rule was broken.
+
+Not done: opening a PDF in a real Moodle assignment's grader (the plan asks for a
+test assignment; it needs a Moodle), pictures and photographs in a PDF (step 8),
+the output of a code run (step 5), and the question wording.
+
+*Changing it:* what a PDF holds and the header and footer are what a marker is
+used to; a change is a decision. A new character range is made with
+`dev/make_pdf_fonts.py` and recorded in `assets/vendor/SOURCE.json`.

@@ -116,7 +116,12 @@ that every student has the same copy of the paper; `python -m dewmark fingerprin
 my-exam.exam.md` prints it. When a student saves at the finish sheet, the page
 gives a **receipt**, such as `7F3A 92C1`, and puts it in the file. `python -m
 dewmark receipt FILE` checks a handed-in file against its receipt, and says if
-the file was changed after it was saved. Work saved on another version of a paper
+the file was changed after it was saved. On the finish sheet the student saves their answer file and a **PDF** of their
+answers (`docs/PDF_FILE.md`): each part's heading and the answer as typed, with
+the student's name, number and the exam code on every page and the Paper ID and
+receipt at the foot. The PDF is made by the page, with no network. A student whose
+answer holds a character the PDF's fonts lack (Arabic or Chinese, say) is told, and
+offerred the browser's own print window. Work saved on another version of a paper
 is not put into a new version: the page keeps it aside and starts the student
 again.
 

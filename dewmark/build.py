@@ -40,9 +40,9 @@ from .secrecy import find_leaks, mutation_test, scheme_strings, without_hints
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 
 # The page's behaviour, in the order it is joined into one script: the answer
-# kinds, saving and finishing; then the reading settings; then the screens
-# before the paper, which also start the page.
-SCRIPTS = ("page.js", "page-reading.js", "page-start.js")
+# kinds, saving and finishing; the reading settings; the PDF writer; then the
+# screens before the paper, which also start the page.
+SCRIPTS = ("page.js", "page-reading.js", "page-pdf.js", "page-start.js")
 
 # What a built page may do: run its own script and style, show pictures it
 # carries, use the fonts it carries, and nothing else. It connects to nothing,
@@ -58,6 +58,10 @@ DETAILS = ("full name", "student number")
 
 # The reading fonts, carried in every page so that a student's choice never
 # depends on the computer. The files are copies from dewlab (assets/vendor/SOURCE.json).
+# The fonts a PDF is set in (assets/vendor/pdf-fonts/, made by dev/make_pdf_fonts.py),
+# carried as the TrueType files they are and written into each PDF the page makes.
+PDF_FONTS = {"sans": "DejaVuSans-subset.ttf", "mono": "DejaVuSansMono-subset.ttf"}
+
 FONTS = (("Lexend", 400, "lexend-latin-400.woff2"), ("Lexend", 700, "lexend-latin-700.woff2"),
          ("OpenDyslexic", 400, "opendyslexic-latin-400.woff2"),
          ("OpenDyslexic", 700, "opendyslexic-latin-700.woff2"))
@@ -142,7 +146,11 @@ def page_model(paper, variant, code=""):
     return {"format": "dewmark-page/1", "variant": variant,
             "exam": {"code": settings["code"], "version": settings.get("version", "1"),
                      "title": settings.get("title", ""), "kind": settings.get("kind", ""),
-                     "marks": paper["total"], "fingerprint": code},
+                     "marks": paper["total"], "fingerprint": code,
+                     "institution": settings.get("institution", ""),
+                     "college": settings.get("college", ""), "module": settings.get("module", ""),
+                     "moduleCode": settings.get("module code", ""),
+                     "session": settings.get("session", "")},
             "reading": READING,
             "sections": sections, "questions": questions}
 
@@ -401,6 +409,13 @@ def _before_screen(paper, variant, base_dir, code):
 </section>"""
 
 
+def pdf_fonts_json():
+    """The PDF fonts as one JSON object of base64 text, for the page's data block."""
+    carried = {name: base64.b64encode((ASSETS / "vendor" / "pdf-fonts" / file).read_bytes()).decode("ascii")
+               for name, file in PDF_FONTS.items()}
+    return json.dumps(carried)
+
+
 def fonts_css():
     """The reading fonts as @font-face rules, each file carried as a data address."""
     rules = []
@@ -464,14 +479,18 @@ def build_page(paper, variant, base_dir, code=""):
     <p>{hand_in or "Save your answer file, and hand it in as your teacher has said."}</p>
     <div class="dm-actions">
       <button type="button" id="dm-submit" class="dm-primary">Save my answer file</button>
+      <button type="button" id="dm-save-pdf" class="dm-primary">Save a PDF</button>
       <button type="button" id="dm-save-readable" class="dm-secondary">Save a readable copy</button>
+      <button type="button" id="dm-print" class="dm-secondary">Print or save as PDF</button>
       <button type="button" id="dm-keep-working" class="dm-secondary">Keep working</button>
     </div>
     <p id="dm-saved" class="dm-restore-note" role="status" hidden></p>
+    <p id="dm-pdf-note" class="dm-note" role="status" hidden></p>
   </div>
 </section>
 
 <script type="application/json" id="dewmark-page-model">{model}</script>
+<script type="application/json" id="dewmark-pdf-fonts">{pdf_fonts_json()}</script>
 <script>{js}</script>
 </body>
 </html>

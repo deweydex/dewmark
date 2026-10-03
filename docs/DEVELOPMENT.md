@@ -38,14 +38,17 @@ paper's blocks as HTML and `dewmark/build.py` assembles the pages and refuses a
 paper that leaks, and both need the `markdown` and `latex2mathml` packages. Nothing
 in the pure core imports them, and `dev/build_site.py` leaves them out of the
 checker page's bundle (`NOT_IN_THE_PAGE`), which `tests/test_web.py` checks. The
-page they build is `assets/page.css` and three scripts joined in this order:
+page they build is `assets/page.css` and four scripts joined in this order:
 `assets/page.js` (answer kinds, saving, finishing), `assets/page-reading.js`
-(reading settings, the Aa drawer, the ruler) and `assets/page-start.js` (the two
-screens, the list of what the paper needs, and the start of the page). They are
+(reading settings, the Aa drawer, the ruler), `assets/page-pdf.js` (the PDF writer,
+`docs/PDF_FILE.md`) and `assets/page-start.js` (the two screens, the list of what
+the paper needs, and the start of the page). They are
 not `exam-page.*`, which belong to `build_exam.py`. Its answer file is
 `docs/ANSWER_FILE.md`. The reading fonts in `assets/vendor/fonts/` are copies
 from dewlab with a record in `assets/vendor/SOURCE.json`; `tests/test_vendor.py`
-fails if one is edited, and an update is a new copy and a new record.
+fails if one is edited, and an update is a new copy and a new record. The PDF fonts in
+`assets/vendor/pdf-fonts/` are subsets of DejaVu made by `dev/make_pdf_fonts.py`
+(`pip install fonttools`), recorded the same way.
 
 ```sh
 python -m dewmark check samples/pdp-5n2927/*.exam.md
@@ -86,7 +89,9 @@ practice pages of every paper it builds and stops on a leak; `tests/test_build.p
 builds the specimen and the four PDP papers that way, and shows a renderer that
 lets the scheme, the right option or a hint through being caught.
 
-`tests/test_receipt.py` freezes the canonical form, a sample receipt and a sample
+`tests/browser/test_pdf.py` has the page write PDFs and reads them back with PyMuPDF
+(`pip install pymupdf`), qpdf and Ghostscript (system programs; CI installs them), and
+checks the file's own table byte by byte. `tests/test_receipt.py` freezes the canonical form, a sample receipt and a sample
 fingerprint, and checks what does and does not change them. `tests/test_start.py` covers the band and its branding, the two screens, the
 list of what a paper needs and the description of the reading settings the
 builder draws twice. `tests/test_page_css.py` computes the contrast of every pair
@@ -119,6 +124,7 @@ cheat sheet in `dewmark/data/` drifts from §8 of `docs/EXAM_FORMAT.md`.
                        with every colour a variable set per scheme
     page.js            ...with a registry of answer kinds (docs/ANSWER_FILE.md)
     page-reading.js    reading settings, the Aa drawer and the ruler
+    page-pdf.js        the PDF writer (docs/PDF_FILE.md)
     page-start.js      the two screens before the paper, and the page's start
     vendor/            fonts copied from dewlab, and where from (SOURCE.json)
   workbench/
