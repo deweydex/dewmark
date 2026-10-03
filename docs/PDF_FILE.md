@@ -68,6 +68,35 @@ between letters, and a part's heading is never left alone at the foot of a page:
 run of headings and the first two lines under them go together to the next page.
 A long answer runs over as many pages as it takes.
 
+## The browser's own print window
+
+**Print or save as PDF** (and Ctrl+P) makes a PDF the way the browser does. It is the
+backup for a student whose answer holds a character the page's fonts lack, or for a
+computer where the page cannot make its own PDF, so it carries the same frame and
+the same answers, drawn by the browser (`tests/browser/test_print.py`):
+
+- **The header and footer** are CSS page margin boxes (`@page` in `assets/page.css`):
+  the student's name, number and the exam code at the top left of every page,
+  "Page 3 of 5" at the top right, and the Paper ID and the receipt at the foot. Just
+  before the page prints (the browser's `beforeprint` event), `assets/page-finish.js`
+  puts the text in two custom properties, `--dm-print-who` and `--dm-print-foot`,
+  which the margins read; it clears them afterwards. A student who has not yet saved
+  gets "No receipt yet: save your answer file and PDF first" in place of a receipt.
+- **Whole answers.** A browser prints only what a text box shows, and clips a long
+  answer to its last lines, so for the printing each box gets a twin that holds its
+  whole text, and the box itself is hidden. The twins are made on `beforeprint` and
+  removed on `afterprint`; they are never in the page's other files.
+- **Standard size.** The print is set at 12 points whatever size the student chose
+  for reading, so the number of pages does not depend on a reading setting.
+- **A long answer runs over onto the next page**, and a heading stays with what
+  follows it. A choice, gaps, boxes or a table stay whole.
+
+**Which browsers.** Page margin boxes are in Chrome and Edge from version 131, which
+the plan names for the college's computers. A browser without them (Firefox and Safari
+at the time of writing) prints the paper whole, with no header or footer, and the
+PDF the page makes, which every browser can make, always has both. The rehearsals
+run in Chromium only.
+
 ## Changing it
 
 The fonts' characters are listed in `dev/make_pdf_fonts.py`; adding a range means

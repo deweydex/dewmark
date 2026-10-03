@@ -225,9 +225,13 @@ decision against the design documents. The documents remain the target.
   instructions, the folder for the files, the time and Begin), saves in the
   browser and into a folder the student chose, hands in an answer file and a PDF
   with a receipt, and has a clock, extra time, breaks and the invigilator's code.
-  It has no print headers on every printed page, and `python exec` is an
-  editor with no Run: the Python rows of the list of what the paper needs say
-  so. The workbench does not read its answer file until step 6.
+  It has a frame on every page of the browser's own print window in Chrome
+  and Edge only (below), and `python exec` is an editor with no Run: the Python
+  rows of the list of what the paper needs say so. The workbench does not read its answer file until step 6.
+- **The print window has a header and footer in Chrome and Edge only.** They are
+  CSS page margin boxes (Chrome and Edge 131 or later); Firefox and Safari print
+  the paper without them. The page's own PDF, which every browser can make, always
+  has them. Nothing tests the print window in a browser but Chromium.
 - **The invigilator's code is a guard against accidents.** The page holds a hash
   of a six-digit number, which a program searches in seconds, and a student who
   can read the page can change what it checks. The plan says so (D4) and so does

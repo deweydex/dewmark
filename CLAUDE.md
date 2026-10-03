@@ -30,7 +30,7 @@ python -m pytest tests/browser/test_checker.py              # the checker page; 
 
 Student-facing text lives in `build_exam.py`, `assets/exam-page.js`,
 `assets/exam-page.css`, `dewmark/build.py`, `dewmark/render.py`, `assets/page.js`,
-`assets/page-reading.js`, `assets/page-pdf.js`, `assets/page-start.js`, `assets/page-time.js`,
+`assets/page-reading.js`, `assets/page-pdf.js`, `assets/page-finish.js`, `assets/page-start.js`, `assets/page-time.js`,
 `assets/page-invigilator.js`, `assets/page.css` and the built pages; teacher-facing text in
 `workbench/index.html`, `checker/index.html`, `docs/FOR_TEACHERS.md`, the builder's
 messages and the paste route's mode names and notices in `dewmark/package.py`.

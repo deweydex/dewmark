@@ -541,7 +541,27 @@ html[data-wrap="on"] .dm-code { white-space: pre-wrap; }
   .dm-card { padding: 1.1rem 1.1rem; }
   .dm-screen { padding: 0 0.7rem; }
 }
+/* The frame of a printed page: the student's name, number and exam code at the top with the page
+   number, the Paper ID and the receipt at the foot. They are page margin boxes (Chrome and Edge
+   from 131), whose text assets/page-finish.js sets in two custom properties just before the
+   page prints. A browser without margin boxes prints no frame. A box's text prints from its
+   twin, since a printed text box shows only what fits. */
+.dm-print-twin { display: none; }
+@page {
+  size: A4; margin: 24mm 16mm 22mm;
+  @top-left { content: var(--dm-print-who, ""); font: 9pt system-ui, sans-serif; color: #000000; }
+  @top-right { content: "Page " counter(page) " of " counter(pages); font: 9pt system-ui, sans-serif; color: #000000; }
+  @bottom-left { content: var(--dm-print-foot, ""); font: 9pt system-ui, sans-serif; color: #000000; }
+}
 @media print {
+  html { font-size: 12pt; }
+  .dm-answer textarea, .dm-answer input[type="text"] { display: none !important; }
+  .dm-print-twin {
+    display: block; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 3.2em;
+    padding: 0.4rem 0.6rem; border: 1px solid #000000; color: #000000; background: #ffffff;
+  }
+  span.dm-print-twin { display: inline-block; min-height: 0; min-width: 6em; padding: 0 0.3rem; vertical-align: baseline; }
+  .dm-code-twin { font-family: var(--dm-mono); font-size: 0.9em; }
   #dm-topbar button, #dm-panel, .dm-save-pill, .dm-screen, #dm-finish-screen,
   #dm-aa, #dm-drawer, #dm-scrim, #dm-ruler, .dm-timebox, dialog, #dm-clock-note { display: none !important; }
   #dm-topbar { position: static; padding-right: 1.2rem; }
@@ -551,6 +571,10 @@ html[data-wrap="on"] .dm-code { white-space: pre-wrap; }
   }
   body { background: #ffffff; font-size: 11pt; }
   #dm-paper { max-width: none; }
-  .dm-answer, .dm-question, .dm-part { break-inside: avoid; }
+  /* A long answer may run on to the next page, and a heading stays with what follows it. A short
+     answer, whose parts belong together, does not split. */
+  #dm-paper h2, #dm-paper h3, #dm-paper h4 { break-after: avoid; }
+  .dm-answer[data-kind="choice"], .dm-answer[data-kind="boxes"], .dm-answer[data-kind="blanks"],
+  .dm-answer[data-kind="table"] { break-inside: avoid; }
   .dm-writing, .dm-code { resize: none; overflow: visible; border-color: #000000; }
 }

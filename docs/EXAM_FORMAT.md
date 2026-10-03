@@ -30,7 +30,7 @@
 > step 8. The two start screens, reading settings, branding and the list of what a
 > paper needs are built (`DECISIONS_LOG.md`, entry 0.13), and so are the PDF and
 > the finish sheet (0.15, 0.16), and the timer, extra time, breaks and the
-> invigilator's code (0.17); print headers on every printed page are not. A paper's **fingerprint** (the Paper ID students see) is made when
+> invigilator's code (0.17), and the header and footer of the browser's own print window (0.18). A paper's **fingerprint** (the Paper ID students see) is made when
 > it is built, from the paper above the marking scheme and the pictures it carries
 > (`dewmark/receipt.py`, `docs/ANSWER_FILE.md`).
 > Not yet built: the dewlab import form (§4.11) and the JSON schema for a

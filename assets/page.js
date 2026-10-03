@@ -563,7 +563,7 @@ function readableCopy() {
   const clone = document.documentElement.cloneNode(true);
   for (const el of clone.querySelectorAll(
       "script, button, dialog, #dm-panel, .dm-screen, #dm-drawer, #dm-scrim, #dm-aa, #dm-ruler, "
-      + "#dm-fonts, .dm-save-pill, .dm-timebox, #dm-clock-live, #dm-clock-note")) {
+      + "#dm-fonts, .dm-save-pill, .dm-timebox, #dm-clock-live, #dm-clock-note, .dm-print-twin")) {
     el.remove();
   }
   for (const el of clone.querySelectorAll("#dm-app, #dm-topbar")) el.hidden = false;

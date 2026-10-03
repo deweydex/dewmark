@@ -126,7 +126,10 @@ against its receipt, and says if the file was changed after it was saved.
 
 The PDF (`docs/PDF_FILE.md`) has each part's heading and the answer as typed, with
 the student's name, number and the exam code on every page and the Paper ID and
-receipt at the foot. The page makes it with no network. A student whose answer
+receipt at the foot. The page makes it with no network. **Print or save as PDF**
+(and Ctrl+P) gives the browser's own version, with the same header and footer and
+the whole of every answer, in Chrome and Edge; Firefox and Safari print the paper
+without a header or footer, so for a student who uses one, hand in the page's PDF. A student whose answer
 holds a character the PDF's fonts lack (Arabic or Chinese, say) is told which, and
 offered the browser's own print window instead.
 

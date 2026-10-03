@@ -812,7 +812,7 @@ What it settles:
   be continued from, which sets the work the page holds aside first. Nothing here
   deletes anything.
 
-Not done: print headers on every printed page; deleting old saved work and old
+Not done: deleting old saved work and old
 clocks (§5.2's 14 days, which is not built, so the list shows no expiry); the
 workbench's accommodations column (step 6; the file already carries what it needs);
 the code on a studio sitting card (step 7; until then the command prints it); a
@@ -824,3 +824,46 @@ rule for the clock is `millisecondsLeft` in `assets/page-time.js` and must agree
 with `docs/ANSWER_FILE.md`, *Time*. A change to the hash in `dewmark/invigilator.py`
 and `invigilatorCheck` changes every page already built, so
 `tests/test_timer.py` freezes a value.
+
+**0.18 — The header and footer of the print window.** The last piece of step 4's
+list. **Print or save as PDF**, and Ctrl+P, now carry the frame the page's own PDF
+has: the student's name, number and the exam code at the top of every page, "Page
+3 of 5", and the Paper ID and the receipt at the foot (`docs/PDF_FILE.md`).
+
+What it settles:
+
+- *The frame is page margins, not boxes.* The plan's note was "a fixed-position header
+  and footer in the print CSS". I tried that first. In Chromium's print layout a fixed
+  box with a negative offset landed at the foot of the page, and the footer was missing
+  from some pages. CSS page margin boxes put the header, footer and page number in the
+  margins of every page. The text comes from two custom properties that the page sets
+  just before printing (the `beforeprint` event, which Ctrl+P also sends) and clears
+  afterwards. A name with quotes, backslashes or CSS in it is escaped, and the tests
+  print four such names.
+- *It is Chrome and Edge only.* Page margin boxes are in Chrome and Edge from 131, which
+  the plan names for the college's computers. Firefox and Safari print the paper with
+  no frame. I could not test them here, and a fallback I could not test might put
+  boxes on top of the paper, so there is none. The page's own PDF, which every browser
+  can make, always has the frame, and the teacher guide says to hand that in from
+  Firefox or Safari.
+- *The print window used to clip long answers.* A browser prints only what a text box
+  shows: a sixty-line answer printed its last four lines. Each box now has a twin that
+  holds its whole text for the printing, made on `beforeprint` and removed on
+  `afterprint`. This was a real loss in the backup route, found while building the
+  frame.
+- *Print is set at a standard size, and a long answer may run over.* The page's reading
+  size does not change the printout, so the page count does not depend on it. The old
+  rule that no answer may split sent a long answer to a page of its own after a page
+  holding only a heading (nine pages where five do). Now an answer runs over, a
+  heading stays with what follows it, and a choice, gaps, boxes or a table stay whole.
+- *No receipt yet.* A student who prints before saving gets "No receipt yet: save your
+  answer file and PDF first" at the foot. Printing does not fix a receipt: only the
+  finish sheet's save does, so a print can never carry a receipt the file does not.
+
+Not done: Firefox and Safari; a print of the finish sheet (Ctrl+P there prints
+nothing of the paper); pictures in a print (step 8).
+
+*Changing it:* the margins and their text are in the `@page` rule of `assets/page.css`,
+the properties in `fillPrintFrame` in `assets/page-finish.js`. `tests/browser/test_print.py`
+prints a page to PDF with Chromium and reads it back with PyMuPDF; a change to the
+frame is a change a marker will notice.
