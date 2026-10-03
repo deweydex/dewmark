@@ -71,7 +71,9 @@ either.
 
 ## What is not in it
 
-No marks and nothing from the marking scheme: the file holds what a student
+No marks and nothing from the marking scheme, and none of the student's reading
+settings (font, text size, colours, ruler), which belong to the computer and
+never travel in a file that a marker will open: the file holds what a student
 wrote, so it is as safe to hand in as the paper was to sit. Nothing about the
 timer, breaks or extra time yet. The PDF a student also hands in (decision 23)
 is a separate file, and so are the receipt and the fingerprint; they come with

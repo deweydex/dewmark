@@ -52,7 +52,7 @@ describes the new one. Where `planning/PROPOSAL.md` and an older
 `planning/` document disagree, the proposal wins until the older one is
 rewritten.
 
-## Three traps
+## Four traps
 
 **Never commit a real exam or a submission.** The repository is public.
 Keep real papers under `private/`, which git ignores. Submissions and
@@ -66,6 +66,11 @@ Once a paper has been sat, renaming any of them strands that work. The
 same lesson as dewlab's cell ids. For papers in the new format,
 `names.lock.json` beside the file enforces it (`dewmark/lock.py`).
 
+**Files in `assets/vendor/` are copies from dewlab, never edited here.**
+`SOURCE.json` holds the dewlab commit and a checksum for each, and
+`tests/test_vendor.py` fails on a hand edit. To update one, copy it again and
+record the new commit and checksum.
+
 **The start screen must never write.** The page holds a blank state
 until the student presses Begin or Continue, and writing it (from a
 save, an unload handler, a second window) wipes the saved work the start
@@ -75,4 +80,8 @@ student's work goes through; the one
 deliberate write before Begin is `setAsideStoredWork()`, which copies
 earlier work aside when a student starts again. `tests/browser/` fails
 if another write gets past, on either page. Each page of an exam keeps its own save slot
-(`dewmark:<exam code>:<page>`), and the answer key saves nothing.
+(`dewmark:<exam code>:<page>`), and the answer key saves nothing. Two things on the new
+page are written before Begin, and neither is the student's work: the reading settings
+(`dewmark:reading-settings`, only when a student changes one; never in the answer file),
+and a small storage test that removes itself. Saved work is offered only for the student
+number it belongs to.

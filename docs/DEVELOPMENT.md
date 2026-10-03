@@ -37,8 +37,14 @@ paper's blocks as HTML and `dewmark/build.py` assembles the pages and refuses a
 paper that leaks, and both need the `markdown` and `latex2mathml` packages. Nothing
 in the pure core imports them, and `dev/build_site.py` leaves them out of the
 checker page's bundle (`NOT_IN_THE_PAGE`), which `tests/test_web.py` checks. The
-page they build is `assets/page.css` and `assets/page.js` (not `exam-page.*`,
-which belong to `build_exam.py`), and its answer file is `docs/ANSWER_FILE.md`.
+page they build is `assets/page.css` and three scripts joined in this order:
+`assets/page.js` (answer kinds, saving, finishing), `assets/page-reading.js`
+(reading settings, the Aa drawer, the ruler) and `assets/page-start.js` (the two
+screens, the list of what the paper needs, and the start of the page). They are
+not `exam-page.*`, which belong to `build_exam.py`. Its answer file is
+`docs/ANSWER_FILE.md`. The reading fonts in `assets/vendor/fonts/` are copies
+from dewlab with a record in `assets/vendor/SOURCE.json`; `tests/test_vendor.py`
+fails if one is edited, and an update is a new copy and a new record.
 
 ```sh
 python -m dewmark check samples/pdp-5n2927/*.exam.md
@@ -77,7 +83,10 @@ practice pages of every paper it builds and stops on a leak; `tests/test_build.p
 builds the specimen and the four PDP papers that way, and shows a renderer that
 lets the scheme, the right option or a hint through being caught.
 
-`tests/test_build.py` also covers the reader's blocks, each kind's markup, what
+`tests/test_start.py` covers the band and its branding, the two screens, the
+list of what a paper needs and the description of the reading settings the
+builder draws twice. `tests/test_page_css.py` computes the contrast of every pair
+of colours in every scheme. `tests/test_build.py` also covers the reader's blocks, each kind's markup, what
 hostile prose, links and pictures turn into, the page model, the three pages'
 differences, and the command line. `tests/browser/test_page.py` sits a paper with
 every kind of box in Chromium: the step-2 rehearsals again for the new page, what
@@ -102,8 +111,12 @@ cheat sheet in `dewmark/data/` drifts from §8 of `docs/EXAM_FORMAT.md`.
   assets/
     exam-page.css      styles inlined into every page build_exam.py builds
     exam-page.js       behaviour inlined into every page build_exam.py builds
-    page.css           the same, for the pages `python -m dewmark build` builds
+    page.css           the same, for the pages `python -m dewmark build` builds,
+                       with every colour a variable set per scheme
     page.js            ...with a registry of answer kinds (docs/ANSWER_FILE.md)
+    page-reading.js    reading settings, the Aa drawer and the ruler
+    page-start.js      the two screens before the paper, and the page's start
+    vendor/            fonts copied from dewlab, and where from (SOURCE.json)
   workbench/
     index.html         the marking workbench, one self-contained page
   samples/             openly shareable exam files and their pictures
@@ -195,16 +208,25 @@ decision against the design documents. The documents remain the target.
   (`dewmark:<exam code>:<page>`). Work left in the old slot stays in
   the browser but is no longer offered for restore. No class had sat a
   dewmark paper, so nothing real was stranded.
-- **Starting again keeps earlier work aside, but nothing yet shows it.**
-  It is stored under `dewmark:<exam code>:<page>:set-aside:<time>`;
-  the invigilator's view that lists and recovers it comes with the new
-  start screens (the second slice of step 4).
-- **The new page is a first slice.** It draws every kind of box but
-  `match`, `order`, `photo` and `on-paper` (the build refuses those), saves in
-  the browser and, in Chrome and Edge, to a file, and hands in an answer file
-  and a readable copy. It has one plain start screen, no reading settings, no
-  branding beyond a band, no timer, breaks or PDF, and `python exec` is an
-  editor with no Run. The workbench does not read its answer file until step 6.
+- **The new page is two slices in of five.** It draws every kind of box but
+  `match`, `order`, `photo` and `on-paper` (the build refuses those), opens on
+  two screens (details, reading settings and what the paper needs; then the
+  instructions, the answer file and Begin), saves in the browser and, in Chrome
+  and Edge, into a file the student chose, and hands in an answer file and a
+  readable copy. It has no timer, breaks or PDF, no extra time and no print
+  headers, and `python exec` is an editor with no Run: the Python rows of the
+  list of what the paper needs say so. The workbench does not read its answer
+  file until step 6.
+- **Saved work that was set aside cannot be recovered from the page.** A
+  student who starts again, or a different student who begins, causes the
+  earlier work to be kept under `dewmark:<code>:<page>:set-aside:<time>`. The
+  invigilator's view that lists and recovers it comes with the invigilator's code
+  (the timer slice), because without a code any student could open it.
+- **Reading settings are not tested with a screen reader.** The structure is
+  there (labelled controls, a dialog that traps the keyboard and returns focus,
+  states written as words), and the contrast of every scheme is computed by
+  `tests/test_page_css.py`, but the plan's walk-through with NVDA and by
+  keyboard alone needs a person at a college computer.
 - **Two markers, one folder, is unhandled.** The marking record is a
   single file with no merging; the last save wins.
 - **The accessibility baseline is only partly met.** Answer spaces have

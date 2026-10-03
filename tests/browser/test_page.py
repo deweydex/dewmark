@@ -3,13 +3,17 @@
 The bugs these guard against live in the page, not the builder, so each test
 sits a paper in a real Chromium and looks at what browser storage and the
 downloaded files hold afterwards. They carry the step-2 rehearsals
-(tests/browser/test_saving.py) over to the new page, and add what only the new
-page has: a registry of answer kinds that each save and restore in a fixed
-shape, an answer file that is checked rather than trusted, and a page that
-connects to nothing.
+(tests/browser/test_saving.py) over to the new page, and cover what only the
+new page has: a registry of answer kinds that each save and restore in a fixed
+shape, an answer file that is checked rather than trusted, a page that
+connects to nothing, the two screens before the paper, saved work offered only
+once its owner's number is typed, reading settings that belong to the computer
+and never to the answer file, and a list of what the paper needs.
 
 The paper is one with every kind of box the page draws (conftest.py,
-REHEARSAL_PAPER); its boxes are named for their parts, q1a to q3d.
+REHEARSAL_PAPER); its boxes are named for their parts, q1a to q3d. Chromium
+cannot show a file-save window to a test, so a page gets a stand-in for
+window.showSaveFilePicker that keeps what is written in memory (FAKE_PICKER).
 """
 
 import json
@@ -18,6 +22,7 @@ import re
 import pytest
 
 KEY = "dewmark:rehearsal:student"
+READING = "dewmark:reading-settings"
 WRITING = '[data-answer="q1a"] textarea'
 
 EVERYTHING = {
@@ -32,8 +37,27 @@ EVERYTHING = {
     "q3d": ["3", "4"],
 }
 
+# A stand-in for the browser's save window: it hands the page a file that keeps
+# every write in window.__saved.
+FAKE_PICKER = """
+window.__saved = [];
+window.showSaveFilePicker = async (options) => ({
+  name: options.suggestedName,
+  createWritable: async () => {
+    let text = "";
+    return { write: async (data) => { text = data; },
+             close: async () => { window.__saved.push(text); } };
+  },
+});
+"""
+NO_PICKER = "delete window.showSaveFilePicker;"
+CANCELLED_PICKER = ("window.showSaveFilePicker = async () => "
+                    "{ throw new DOMException('cancelled', 'AbortError'); };")
+BROKEN_STORAGE = ("Storage.prototype.setItem = function () "
+                  "{ throw new DOMException('full', 'QuotaExceededError'); };")
 
-def open_page(context, path, accept_dialogs=False):
+
+def open_page(context, path, accept_dialogs=False, picker=FAKE_PICKER, init=None):
     page = context.new_page()
     page.errors, page.dialogs = [], []
     page.on("pageerror", lambda e: page.errors.append(str(e)))
@@ -46,15 +70,61 @@ def open_page(context, path, accept_dialogs=False):
             dialog.dismiss()
 
     page.on("dialog", on_dialog)
+    for script in (picker, init):
+        if script:
+            page.add_init_script(script)
     page.goto(path.resolve().as_uri())
     return page
 
 
-def begin(page, name="Agnes Nitt", number="S12345"):
-    page.fill('[data-detail="full name"]', name)
-    page.fill('[data-detail="student number"]', number)
+def wait_for(page, expression, timeout=5000):
+    """Wait until a JavaScript expression is true in the page. Playwright's own
+    wait_for_function evaluates a string, which the page's policy forbids."""
+    waited = 0
+    while not page.evaluate("() => " + expression):
+        page.wait_for_timeout(50)
+        waited += 50
+        assert waited < timeout, f"never true: {expression}"
+
+
+def type_details(page, name="Agnes Nitt", number="S12345"):
+    page.fill("#dm-name", name)
+    page.fill("#dm-number", number)
+
+
+def next_screen(page):
+    page.click("#dm-next")
+    page.wait_for_selector("#dm-before:not([hidden])")
+
+
+def choose_file(page):
+    if page.is_visible("#dm-choose-file"):
+        page.click("#dm-choose-file")
+        wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
+
+
+def press_begin(page):
     page.click("#dm-begin")
     page.wait_for_selector("#dm-app:not([hidden])")
+
+
+def begin(page, name="Agnes Nitt", number="S12345", choose=True):
+    """The whole way in: details, Next, where the file goes, Begin."""
+    type_details(page, name, number)
+    next_screen(page)
+    if choose:
+        choose_file(page)
+    press_begin(page)
+
+
+def resume(page, number="S12345"):
+    """Type the number, Continue my work, then Begin."""
+    page.fill("#dm-number", number)
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-continue")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    choose_file(page)
+    press_begin(page)
 
 
 def write(page, value):
@@ -82,9 +152,9 @@ def holds(records, name, value):
                for record in records.values() if isinstance(record, dict))
 
 
-def sit_and_leave(context, path, value):
+def sit_and_leave(context, path, value, number="S12345"):
     page = open_page(context, path)
-    begin(page)
+    begin(page, number=number)
     write(page, value)
     page.close()
 
@@ -115,17 +185,73 @@ def finish_and_download(page, tmp_path, button="#dm-submit"):
     return target
 
 
+# --- the two screens ----------------------------------------------------------------------------------------
+
+def test_the_page_opens_on_the_start_screen_and_the_paper_is_not_in_view(context, pages):
+    page = open_page(context, pages["student"])
+    assert page.is_visible("#dm-start") and page.is_hidden("#dm-before") and page.is_hidden("#dm-app")
+    assert page.is_visible("#dm-checklist") and page.is_visible(".dm-band")
+    assert not page.errors
+
+
+def test_next_goes_to_before_you_begin_back_returns_and_begin_enters_the_paper(context, pages):
+    page = open_page(context, pages["student"])
+    type_details(page)
+    next_screen(page)
+    assert page.is_hidden("#dm-start")
+    assert page.evaluate("document.activeElement.id") == "dm-before-h"
+    assert "Instructions to candidates" in page.text_content("#dm-before")
+    page.click("#dm-back")
+    assert page.is_visible("#dm-start") and page.input_value("#dm-name") == "Agnes Nitt"
+    assert page.evaluate("document.activeElement.id") == "dm-start-h"
+    next_screen(page)
+    choose_file(page)
+    press_begin(page)
+    assert page.is_hidden("#dm-start") and page.is_hidden("#dm-before")
+    assert page.text_content("#dm-top-student") == "Agnes Nitt · S12345"
+    assert not page.errors
+
+
+def test_enter_in_a_field_is_next_not_a_form_sent_anywhere(context, pages):
+    page = open_page(context, pages["student"])
+    type_details(page)
+    page.press("#dm-number", "Enter")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    assert page.url.startswith("file:") and not page.errors
+
+
+def test_each_detail_is_asked_for_in_words_before_next(context, pages):
+    page = open_page(context, pages["student"])
+    page.click("#dm-next")
+    assert page.text_content("#dm-name-err") == "Type your full name."
+    assert page.text_content("#dm-number-err") == "Type your student number."
+    assert page.get_attribute("#dm-name", "aria-invalid") == "true"
+    assert page.evaluate("document.activeElement.id") == "dm-name"
+    assert page.is_visible("#dm-start") and page.is_hidden("#dm-before")
+    page.fill("#dm-name", "A")
+    assert page.is_hidden("#dm-name-err") and page.get_attribute("#dm-name", "aria-invalid") is None
+    assert page.is_visible("#dm-number-err")
+    assert stored(page) == {}, "the start screen wrote something"
+
+
+def test_the_start_screen_writes_nothing_however_far_the_student_gets(context, pages):
+    page = open_page(context, pages["student"])
+    type_details(page)
+    next_screen(page)
+    choose_file(page)
+    page.click("#dm-back")
+    page.click('[name="start-font"][value="sans"]')
+    assert set(stored(page)) == {READING}, "only the reading settings may be written before Begin"
+
+
 # --- the start screen must never write -------------------------------------------------------------------------
 
 def test_a_reload_on_the_start_screen_keeps_the_saved_answers(context, pages):
     sit_and_leave(context, pages["student"], "4")
     page = open_page(context, pages["student"])
-    page.wait_for_selector(".dm-restore-note")
     page.reload()
-    page.wait_for_selector(".dm-restore-note")
     assert holds(stored(page), "q1a", "4")
-    page.click(".dm-restore-note button")
-    page.wait_for_selector("#dm-app:not([hidden])")
+    resume(page)
     assert page.input_value(WRITING) == "4"
     assert not page.errors
 
@@ -133,43 +259,145 @@ def test_a_reload_on_the_start_screen_keeps_the_saved_answers(context, pages):
 def test_closing_the_start_screen_keeps_the_saved_answers(context, pages):
     sit_and_leave(context, pages["student"], "4")
     page = open_page(context, pages["student"])
-    page.wait_for_selector(".dm-restore-note")
+    page.fill("#dm-number", "S12345")
     page.close(run_before_unload=True)
     assert holds(stored(open_page(context, pages["student"])), "q1a", "4")
 
 
-def test_beginning_again_sets_the_saved_answers_aside_rather_than_deleting_them(context, pages):
+def test_starting_again_sets_the_saved_answers_aside_rather_than_deleting_them(context, pages):
     sit_and_leave(context, pages["student"], "4")
-    page = open_page(context, pages["student"], accept_dialogs=True)
-    page.wait_for_selector(".dm-restore-note")
-    begin(page)
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "S12345")
+    page.fill("#dm-name", "Agnes Nitt")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-again")
+    assert page.is_visible("#dm-again-text")
+    next_screen(page)
+    choose_file(page)
+    press_begin(page)
     assert page.input_value(WRITING) == ""
     write(page, "9")
     records = stored(page)
     assert holds(records, "q1a", "4"), "the earlier answers were deleted"
     assert holds(records, "q1a", "9")
     assert any(":set-aside:" in key for key in records)
+    assert page.dialogs == [], "the student had already said so on the screen; no second question"
     assert not page.errors
 
 
-def test_declining_to_start_again_changes_nothing(context, pages):
-    sit_and_leave(context, pages["student"], "4")
+def test_work_for_another_number_is_set_aside_not_overwritten_when_someone_else_begins(context, pages):
+    sit_and_leave(context, pages["student"], "4", number="S12345")
+    page = open_page(context, pages["student"], accept_dialogs=True)
+    begin(page, name="Tiffany Aching", number="S99999")
+    write(page, "7")
+    records = stored(page)
+    assert holds(records, "q1a", "4") and holds(records, "q1a", "7")
+    assert any(":set-aside:" in key for key in records)
+    assert page.dialogs and "saved work" in page.dialogs[0]
+
+
+def test_declining_the_question_about_another_students_work_changes_nothing(context, pages):
+    sit_and_leave(context, pages["student"], "4", number="S12345")
     page = open_page(context, pages["student"], accept_dialogs=False)
-    page.wait_for_selector(".dm-restore-note")
-    page.fill('[data-detail="full name"]', "Agnes Nitt")
-    page.fill('[data-detail="student number"]', "S12345")
+    type_details(page, "Tiffany Aching", "S99999")
+    next_screen(page)
+    choose_file(page)
     page.click("#dm-begin")
     page.wait_for_timeout(300)
-    assert page.is_hidden("#dm-app")
-    assert holds(stored(page), "q1a", "4")
+    assert page.is_hidden("#dm-app") and page.is_visible("#dm-before")
+    records = stored(page)
+    assert holds(records, "q1a", "4") and not any(":set-aside:" in key for key in records)
 
 
-def test_each_detail_is_required_before_begin(context, pages):
+# --- saved work is offered once its owner's number is typed ----------------------------------------------------------------
+
+def test_saved_work_is_not_offered_before_a_number_is_typed_or_to_another_number(context, pages):
+    sit_and_leave(context, pages["student"], "4", number="S12345")
     page = open_page(context, pages["student"])
+    assert page.is_hidden("#dm-restore")
+    assert "answers" not in page.text_content("#dm-start").replace("Reading settings", "")
+    page.fill("#dm-number", "S99999")
+    assert page.is_hidden("#dm-restore")
+    page.fill("#dm-number", "s1234")
+    assert page.is_hidden("#dm-restore")
+
+
+def test_saved_work_is_offered_for_its_own_number_in_any_capitals_with_its_count_and_time(context, pages):
+    sit_and_leave(context, pages["student"], "4", number="S12345")
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "  s12345 ")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    text = page.text_content("#dm-restore-text")
+    assert "1 answer," in text and "last saved" in text
+    page.fill("#dm-number", "S9")
+    assert page.is_hidden("#dm-restore")
+
+
+def test_this_is_not_my_number_clears_the_number_and_the_offer(context, pages):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "S12345")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-not-me")
+    assert page.input_value("#dm-number") == "" and page.is_hidden("#dm-restore")
+    assert page.evaluate("document.activeElement.id") == "dm-number"
+
+
+def test_next_asks_for_a_choice_while_saved_work_is_on_offer(context, pages):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, pages["student"])
+    type_details(page)
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-next")
+    assert "Choose Continue my work or Start again first." in page.text_content("#dm-restore-err")
+    assert page.is_visible("#dm-start") and page.is_hidden("#dm-before")
+
+
+def test_continuing_takes_the_name_from_the_saved_work_and_says_so_on_the_next_screen(context, pages):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "S12345")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-continue")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    assert "Your work is ready to continue: 1 answer, saved" in page.text_content("#dm-resume-line")
+    assert page.input_value("#dm-name") == "Agnes Nitt"
+
+
+def test_changing_the_number_after_continuing_lets_the_saved_work_go(context, pages):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "S12345")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-continue")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    page.click("#dm-back")
+    page.fill("#dm-number", "S77777")
+    next_screen(page)
+    assert page.is_hidden("#dm-resume-line")
+    choose_file(page)
     page.click("#dm-begin")
-    page.wait_for_timeout(200)
-    assert page.is_hidden("#dm-app") and page.dialogs
-    assert stored(page) == {}
+    page.wait_for_timeout(300)
+    assert page.is_hidden("#dm-app"), "another student's saved work must raise the question"
+    assert page.dialogs and "saved work" in page.dialogs[0]
+
+
+def test_correcting_the_name_after_continuing_keeps_the_work_and_the_corrected_name(context, pages):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "S12345")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-continue")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    page.click("#dm-back")
+    page.fill("#dm-name", "Agnes Nitt-Smith")
+    next_screen(page)
+    assert page.is_visible("#dm-resume-line")
+    choose_file(page)
+    press_begin(page)
+    assert page.input_value(WRITING) == "4"
+    assert stored(page)[KEY]["student"] == {"full name": "Agnes Nitt-Smith", "student number": "S12345"}
+    assert page.dialogs == []
 
 
 # --- one paper's pages keep separate slots ---------------------------------------------------------------------
@@ -177,15 +405,14 @@ def test_each_detail_is_required_before_begin(context, pages):
 def test_the_practice_page_does_not_offer_the_student_pages_work(context, pages):
     sit_and_leave(context, pages["student"], "4")
     practice = open_page(context, pages["practice"])
+    practice.fill("#dm-number", "S12345")
     practice.wait_for_timeout(300)
-    assert practice.locator(".dm-restore-note").count() == 0
+    assert practice.is_hidden("#dm-restore")
     begin(practice)
     write(practice, "7")
     practice.close()
     student = open_page(context, pages["student"])
-    student.wait_for_selector(".dm-restore-note")
-    student.click(".dm-restore-note button")
-    student.wait_for_selector("#dm-app:not([hidden])")
+    resume(student)
     assert student.input_value(WRITING) == "4"
     assert set(stored(student)) == {KEY, "dewmark:rehearsal:practice"}
 
@@ -204,10 +431,71 @@ def test_a_second_window_never_writes_over_the_first(context, pages):
     write(first, "4")
     second = open_page(context, pages["student"])
     second.wait_for_timeout(500)
-    assert second.is_disabled("#dm-begin")
+    assert second.is_disabled("#dm-next") and second.is_disabled("#dm-load-file")
+    type_details(second)
+    second.press("#dm-number", "Enter")
+    second.wait_for_timeout(200)
+    assert second.is_hidden("#dm-before"), "Enter must not get past a disabled Next"
     second.close(run_before_unload=True)
     assert holds(stored(first), "q1a", "4")
     assert first.input_value(WRITING) == "4"
+
+
+# --- where the answer file goes -----------------------------------------------------------------------------------------
+
+def test_a_chosen_file_is_written_into_as_the_student_works(context, pages):
+    page = open_page(context, pages["student"])
+    begin(page)
+    write(page, "alpha")
+    wait_for(page, "window.__saved.length > 0")
+    record = json.loads(page.evaluate("window.__saved[window.__saved.length - 1]"))
+    assert record["answers"] == {"q1a": "alpha"} and record["student"]["student number"] == "S12345"
+    assert "File ✓" in page.text_content("#dm-save-file")
+
+
+def test_the_status_names_the_file_that_was_chosen(context, pages):
+    page = open_page(context, pages["student"])
+    type_details(page)
+    next_screen(page)
+    page.click("#dm-choose-file")
+    wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
+    assert "dewmark_rehearsal_s12345_agnes-nitt.json" in page.text_content("#dm-file-status")
+    assert page.text_content("#dm-choose-file").startswith("Choose a different place")
+
+
+def test_a_browser_that_cannot_save_to_a_file_says_so_and_still_begins(context, pages):
+    page = open_page(context, pages["student"], picker=NO_PICKER)
+    type_details(page)
+    next_screen(page)
+    assert page.is_hidden("#dm-choose-file")
+    assert "downloads files instead" in page.text_content("#dm-file-status")
+    press_begin(page)
+    assert page.dialogs == [] and "File saving is off" in page.text_content("#dm-save-file")
+
+
+def test_a_student_who_cancels_the_save_window_is_told_and_may_begin(context, pages):
+    page = open_page(context, pages["student"], picker=CANCELLED_PICKER)
+    type_details(page)
+    next_screen(page)
+    page.click("#dm-choose-file")
+    wait_for(page, "document.getElementById('dm-file-status').textContent.length > 0")
+    assert "No place was chosen" in page.text_content("#dm-file-status")
+    press_begin(page)
+    assert page.dialogs == []
+
+
+def test_begin_without_choosing_a_file_asks_once_and_the_student_may_go_back_and_choose(context, pages):
+    page = open_page(context, pages["student"], accept_dialogs=False)
+    type_details(page)
+    next_screen(page)
+    page.click("#dm-begin")
+    page.wait_for_timeout(300)
+    assert page.is_hidden("#dm-app") and "You have not chosen where to save" in page.dialogs[0]
+    accepting = open_page(context, pages["practice"], accept_dialogs=True)
+    type_details(accepting)
+    next_screen(accepting)
+    press_begin(accepting)
+    assert "You have not chosen" in accepting.dialogs[0]
 
 
 # --- every kind saves in its shape and comes back --------------------------------------------------------------
@@ -231,8 +519,7 @@ def test_every_kind_comes_back_after_a_reload(context, pages):
     begin(page)
     fill_everything(page)
     page.reload()
-    page.click(".dm-restore-note button")
-    page.wait_for_selector("#dm-app:not([hidden])")
+    resume(page)
     assert stored(page)[KEY]["answers"] == EVERYTHING
     assert page.input_value('[data-answer="q1b"] textarea') == "x = 2"
     assert page.input_value('[data-answer="q2b"] textarea') == "print(2)"
@@ -273,6 +560,7 @@ def test_the_finish_report_names_the_empty_parts_and_what_they_were_worth(contex
     begin(page)
     write(page, "x")
     page.click("#dm-finish")
+    assert page.evaluate("document.activeElement.id") == "dm-finish-h"
     report = page.text_content("#dm-finish-report")
     assert "8 parts are empty, worth 16 marks" in report
     assert "1(a)" not in report.split("empty")[1] and "3(d)" in report
@@ -309,7 +597,10 @@ def test_an_answer_file_loads_into_a_fresh_browser_and_the_work_is_back(
         with fresh.expect_file_chooser() as chooser:
             fresh.click("#dm-load-file")
         chooser.value.set_files(str(file))
-        fresh.wait_for_selector("#dm-app:not([hidden])")
+        fresh.wait_for_selector("#dm-before:not([hidden])")
+        assert "Your work is ready to continue: 9 answers" in fresh.text_content("#dm-resume-line")
+        choose_file(fresh)
+        press_begin(fresh)
         assert fresh.input_value('[data-answer="q1b"] textarea') == "x = 2"
         assert fresh.is_checked('[data-answer="q3a"] input[value="C"]')
         assert stored(fresh)[KEY]["answers"] == EVERYTHING
@@ -317,6 +608,30 @@ def test_an_answer_file_loads_into_a_fresh_browser_and_the_work_is_back(
         assert not fresh.errors
     finally:
         other.close()
+
+
+def test_choosing_a_file_over_different_work_in_the_browser_keeps_the_browsers_work_aside(
+        context, pages, tmp_path):
+    other = open_page(context, pages["student"])
+    begin(other, name="Tiffany Aching", number="S99999")
+    write(other, "browser work")
+    other.close()
+    file = tmp_path / "file.json"
+    file.write_text(json.dumps(good_record(
+        student={"full name": "Agnes Nitt", "student number": "S12345"},
+        answers={"q1a": "file work"})))
+    page = open_page(context, pages["student"], accept_dialogs=True)
+    load(page, file)
+    page.wait_for_selector("#dm-before:not([hidden])")
+    assert page.dialogs and "This browser also holds saved work" in page.dialogs[0]
+    records = stored(page)
+    assert holds(records, "q1a", "browser work") and any(":set-aside:" in key for key in records)
+    choose_file(page)
+    press_begin(page)
+    assert page.input_value(WRITING) == "file work"
+    assert stored(page)[KEY]["answers"] == {"q1a": "file work"}
+    aside = [v for k, v in stored(page).items() if ":set-aside:" in k]
+    assert aside and aside[0]["answers"] == {"q1a": "browser work"}
 
 
 def load(browser_page, path):
@@ -345,15 +660,15 @@ def good_record(**changes):
     ("no-student.json", json.dumps({**good_record(), "student": None})),
     ("a-list.json", json.dumps([1, 2])),
 ])
-def test_a_file_that_is_not_an_answer_file_for_this_paper_is_refused(
+def test_a_file_that_is_not_an_answer_file_for_this_paper_is_refused_in_words(
         context, pages, tmp_path, name, content):
     file = tmp_path / name
     file.write_text(content)
     page = open_page(context, pages["student"])
     load(page, file)
-    assert page.dialogs, "no message was shown"
-    assert page.is_hidden("#dm-app")
-    assert stored(page) == {} and not page.errors
+    assert "Nothing has changed." in page.text_content("#dm-file-msg")
+    assert page.is_hidden("#dm-before") and page.is_visible("#dm-start")
+    assert stored(page) == {} and not page.errors and page.dialogs == []
 
 
 def test_an_answer_file_with_the_wrong_shapes_in_it_cannot_run_or_break_anything(
@@ -373,7 +688,9 @@ def test_an_answer_file_with_the_wrong_shapes_in_it_cannot_run_or_break_anything
     file.write_text(json.dumps(hostile))
     page = open_page(context, pages["student"])
     load(page, file)
-    page.wait_for_selector("#dm-app:not([hidden])")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    choose_file(page)
+    press_begin(page)
     assert page.input_value(WRITING) == "<img src=x onerror=\"window.hacked=1\">"
     assert page.evaluate("window.hacked") is None
     assert page.locator("#dm-paper img").count() == 0
@@ -396,11 +713,15 @@ def test_the_readable_copy_has_the_answers_as_text_and_nothing_that_runs(
     copy = finish_and_download(page, tmp_path, "#dm-save-readable")
     html = copy.read_text()
     assert copy.suffix == ".html"
-    assert "<script" not in html.split("</textarea>")[0] and html.count("<script") == 0
+    assert html.count("<script") == 0
     assert "<textarea" not in html and "<input" not in html and "<select" not in html
     assert "&lt;/textarea&gt;&lt;script&gt;window.hacked=1&lt;/script&gt;" in html
     assert "x = 2" in html and "print(2)" in html and "stem" in html and "leaves" in html
     assert "Agnes Nitt" in html and "Readable copy of a dewmark answer file" in html
+    assert "@font-face" not in html, "the reading fonts are not carried into a copy"
+    for furniture in ('id="dm-drawer"', 'id="dm-scrim"', 'id="dm-aa"', 'id="dm-start"',
+                      'id="dm-before"', 'id="dm-ruler"', 'id="dm-finish-screen"'):
+        assert furniture not in html, furniture
 
     reader = open_page(context, copy)
     assert reader.evaluate("window.hacked") is None and not reader.errors
@@ -436,12 +757,14 @@ def test_a_page_reaches_nothing_and_the_policy_stops_every_way_it_is_told_to_try
     page.expose_function("report", lambda what: violations.append(what))
     page.add_init_script("""document.addEventListener("securitypolicyviolation",
         (e) => window.report(e.effectiveDirective));""")
+    page.add_init_script(FAKE_PICKER)
     page.goto(pages["student"].resolve().as_uri())
     begin(page)
     fill_everything(page)
     page.evaluate("""() => {
         fetch("https://example.invalid/steal").catch(() => {});
         const img = new Image(); img.src = "https://example.invalid/pixel.png";
+        new FontFace("x", "url(https://example.invalid/f.woff2)").load().catch(() => {});
         const form = document.createElement("form");
         form.action = "https://example.invalid/post"; form.method = "post";
         document.body.appendChild(form);
@@ -450,12 +773,285 @@ def test_a_page_reaches_nothing_and_the_policy_stops_every_way_it_is_told_to_try
     page.wait_for_timeout(500)
     # Chromium names a blocked picture as a request that failed; none finished.
     assert [u for u in reached if not u.startswith("file:")] == []
-    assert {"connect-src", "img-src", "form-action"} <= set(violations)
+    assert {"connect-src", "img-src", "form-action", "font-src"} <= set(violations)
 
 
-def test_the_paper_page_is_laid_out_without_the_page_scrolling_sideways(context, pages):
+def test_none_of_the_three_screens_scrolls_sideways_even_at_the_largest_text(context, pages):
     page = context.new_page()
+    page.add_init_script(FAKE_PICKER)
     page.set_viewport_size({"width": 1024, "height": 768})
     page.goto(pages["student"].resolve().as_uri())
+    page.eval_on_selector('#dm-start [data-setting="size"]',
+                          "(el) => { el.value = 32; el.dispatchEvent(new Event('input', {bubbles: true})); }")
+    fits = "document.documentElement.scrollWidth <= window.innerWidth"
+    assert page.evaluate(fits), "the start screen"
+    type_details(page)
+    next_screen(page)
+    assert page.evaluate(fits), "before you begin"
+    choose_file(page)
+    press_begin(page)
+    assert page.evaluate(fits), "the paper"
+
+
+# --- reading settings -----------------------------------------------------------------------------------------------
+
+def body_style(page, prop):
+    return page.evaluate(f"getComputedStyle(document.body).{prop}")
+
+
+def test_nothing_is_written_for_reading_settings_until_one_is_changed(context, pages):
+    page = open_page(context, pages["student"])
+    type_details(page)
+    next_screen(page)
+    assert stored(page) == {}
+    assert page.evaluate("document.documentElement.getAttribute('data-scheme')") is None
+
+
+def test_the_settings_change_the_page_at_once_and_are_kept_on_this_computer(context, pages):
+    page = open_page(context, pages["student"])
+    page.click('#dm-start [name="start-font"][value="lexend"]')
+    assert "Lexend" in body_style(page, "fontFamily")
+    page.click('#dm-start [data-step="size"][data-d="1"]')
+    assert page.evaluate("getComputedStyle(document.documentElement).fontSize") == "19px"
+    assert page.text_content('#dm-start [data-out="size"]') == "19"
+    page.click('#dm-start [name="start-scheme"][value="dark"]')
+    assert page.evaluate("document.documentElement.getAttribute('data-scheme')") == "dark"
+    assert body_style(page, "backgroundColor") == "rgb(23, 28, 36)"
+    page.click('#dm-start [data-setting="ruler"]')
+    assert page.evaluate("document.documentElement.getAttribute('data-ruler')") == "on"
+    page.click("#dm-start .dm-more summary")
+    page.click('#dm-start [name="start-spacing"][value="wide"]')
+    page.click('#dm-start [name="start-width"][value="84ch"]')
+    page.click('#dm-start [data-setting="wrap"]')
+    page.click('#dm-start [name="start-codeScheme"][value="light"]')
+    assert stored(page) == {READING: {
+        "font": "lexend", "size": 19, "scheme": "dark", "ruler": True, "lineHeight": 1.6,
+        "spacing": "wide", "width": "84ch", "motion": False, "codeSize": 16,
+        "codeScheme": "light", "wrap": True}}
+    assert not page.errors
+
+
+def test_the_settings_are_there_when_the_page_is_opened_again_with_a_note_and_a_way_back(context, pages):
+    page = open_page(context, pages["student"])
+    page.click('#dm-start [name="start-scheme"][value="cream"]')
+    page.click('#dm-start [name="start-font"][value="dyslexic"]')
+    page.close()
+    again = open_page(context, pages["student"])
+    assert again.evaluate("document.documentElement.getAttribute('data-scheme')") == "cream"
+    assert "OpenDyslexic" in body_style(again, "fontFamily")
+    assert again.is_checked('#dm-start [name="start-font"][value="dyslexic"]')
+    assert again.is_visible("#dm-start [data-kept]")
+    assert "kept on this computer" in again.text_content("#dm-start [data-kept]")
+    again.click("#dm-start [data-reset]")
+    assert again.evaluate("document.documentElement.getAttribute('data-scheme')") is None
+    assert "OpenDyslexic" not in body_style(again, "fontFamily")
+    assert stored(again) == {} and again.is_hidden("#dm-start [data-kept]")
+    assert again.is_checked('#dm-start [name="start-font"][value="serif"]')
+
+
+def test_reading_settings_are_never_in_the_answer_file_or_the_record(context, pages, tmp_path):
+    page = open_page(context, pages["student"])
+    page.click('#dm-start [name="start-font"][value="dyslexic"]')
+    page.click('#dm-start [data-step="size"][data-d="1"]')
     begin(page)
+    write(page, "x")
+    file = finish_and_download(page, tmp_path)
+    text = file.read_text()
+    for word in ("dyslexic", "OpenDyslexic", "size", "scheme", "reading", "font"):
+        assert word not in text, word
+    assert "dyslexic" not in json.dumps(stored(page)[KEY])
+    with page.expect_download() as caught:
+        page.click("#dm-save-readable")
+    caught.value.save_as(tmp_path / "copy.html")
+    copy = (tmp_path / "copy.html").read_text()
+    # The copy carries the page's stylesheet, so the word is in it; what must not be
+    # there is the student's choice: no attribute on the page, no inline variable.
+    assert re.search(r"<html[^>]*>", copy).group(0) == '<html lang="en-IE">'
+    assert 'style="--dm' not in copy and "--dm-size:" not in copy.split("</style>")[-1]
+
+
+@pytest.mark.parametrize("raw", [
+    json.dumps({"size": 9999, "font": "<script>", "scheme": "javascript:", "width": "expression(1)",
+                "lineHeight": "tall", "codeSize": -5, "ruler": "yes", "unknown": 1, "wrap": 1,
+                "spacing": ["wide"], "codeScheme": {"x": 1}, "motion": "true"}),
+    "this is not json", json.dumps([1, 2, 3]), json.dumps("a string"), "null"])
+def test_stored_settings_that_are_wrong_or_hostile_become_standard_ones(context, pages, raw):
+    page = open_page(context, pages["student"])
+    page.evaluate("(raw) => localStorage.setItem('dewmark:reading-settings', raw)", raw)
+    page.reload()
+    root = "document.documentElement"
+    assert page.evaluate(f"{root}.getAttribute('data-scheme')") is None
+    assert page.evaluate(f"{root}.getAttribute('data-ruler')") is None
+    assert page.evaluate(f"{root}.getAttribute('data-wrap')") is None
+    assert page.evaluate(f"{root}.style.getPropertyValue('--dm-font-body')") == "var(--dm-ff-serif)"
+    assert page.evaluate(f"{root}.style.getPropertyValue('--dm-measure')") == "68ch"
+    expected = "32" if raw.startswith('{"size"') else "18"
+    assert page.evaluate(f"{root}.style.getPropertyValue('--dm-size')") == expected
+    assert page.evaluate("document.querySelectorAll('script').length") == 2
+    assert not page.errors
+
+
+def test_match_my_computer_follows_the_computers_scheme_until_one_is_chosen(context, pages):
+    page = open_page(context, pages["student"])
+    page.emulate_media(color_scheme="dark")
+    assert body_style(page, "backgroundColor") == "rgb(23, 28, 36)"
+    page.click('#dm-start [name="start-scheme"][value="light"]')
+    assert body_style(page, "backgroundColor") == "rgb(253, 252, 250)"
+    page.click('#dm-start [name="start-scheme"][value=""]')
+    assert body_style(page, "backgroundColor") == "rgb(23, 28, 36)"
+    page.emulate_media(color_scheme="light")
+    assert body_style(page, "backgroundColor") == "rgb(253, 252, 250)"
+
+
+def test_reduce_motion_is_on_by_itself_when_the_computer_asks_for_it(context, pages):
+    page = context.new_page()
+    page.emulate_media(reduced_motion="reduce")
+    page.goto(pages["student"].resolve().as_uri())
+    assert page.evaluate("document.documentElement.getAttribute('data-motion')") == "reduce"
+    page.click("#dm-start .dm-more summary")
+    assert page.is_checked('#dm-start [data-setting="motion"]')
+    assert stored(page) == {}
+
+
+def test_the_drawer_opens_on_aa_traps_the_keyboard_and_closes_on_escape(context, pages):
+    page = open_page(context, pages["student"])
+    page.focus("#dm-aa")
+    page.keyboard.press("Enter")
+    assert page.is_visible("#dm-drawer") and page.evaluate("document.activeElement.id") == "dm-drawer-close"
+    assert page.evaluate("document.getElementById('dm-start').inert")
+    assert page.get_attribute("#dm-drawer", "role") == "dialog"
+    page.click('#dm-drawer [name="drawer-font"][value="sans"]')
+    assert page.is_checked('#dm-start [name="start-font"][value="sans"]'), "the two copies of a setting agree"
+    page.keyboard.press("Escape")
+    assert page.is_hidden("#dm-drawer") and page.evaluate("document.activeElement.id") == "dm-aa"
+    assert not page.evaluate("document.getElementById('dm-start').inert")
+
+
+def test_the_drawer_works_on_the_paper_and_the_finish_screen(context, pages):
+    page = open_page(context, pages["student"])
+    begin(page)
+    page.click("#dm-aa")
+    page.click('#dm-drawer [data-step="size"][data-d="1"]')
+    page.click("#dm-drawer-close")
+    assert page.evaluate("getComputedStyle(document.documentElement).fontSize") == "19px"
+    page.click("#dm-finish")
+    page.click("#dm-aa")
+    assert page.is_visible("#dm-drawer")
+    page.click("#dm-scrim", position={"x": 5, "y": 5})
+    assert page.is_hidden("#dm-drawer")
+
+
+def test_the_reading_ruler_follows_the_pointer_and_the_line_being_typed(context, pages):
+    page = open_page(context, pages["student"])
+    page.click('#dm-start [data-setting="ruler"]')
+    assert page.evaluate("getComputedStyle(document.getElementById('dm-ruler')).display") == "block"
+    page.mouse.move(300, 500)
+    top = page.evaluate("document.getElementById('dm-ruler').getBoundingClientRect().top")
+    height = page.evaluate("document.getElementById('dm-ruler').getBoundingClientRect().height")
+    assert abs(top + height / 2 - 500) < 2 and height > 10
+    page.mouse.move(300, 200)
+    assert page.evaluate("document.getElementById('dm-ruler').getBoundingClientRect().top") < top
+    begin(page)
+    page.click(WRITING)
+    page.keyboard.type("first line")
+    first = page.evaluate("(() => { const r = document.getElementById('dm-ruler').getBoundingClientRect(); return r.top + r.height / 2; })()")
+    page.keyboard.press("Enter")
+    page.keyboard.type("second line")
+    second = page.evaluate("(() => { const r = document.getElementById('dm-ruler').getBoundingClientRect(); return r.top + r.height / 2; })()")
+    box = page.evaluate("(() => { const r = document.querySelector('[data-answer=q1a] textarea').getBoundingClientRect(); return [r.top, r.bottom]; })()")
+    assert box[0] < first < second < box[1]
+    assert second - first > 15, "the ruler moved down a line"
+
+
+def test_off_the_ruler_is_hidden_and_does_not_follow(context, pages):
+    page = open_page(context, pages["student"])
+    assert page.evaluate("getComputedStyle(document.getElementById('dm-ruler')).display") == "none"
+
+
+# --- what the paper needs --------------------------------------------------------------------------------------------
+
+def states(page):
+    return page.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#dm-checklist li')]
+        .map((li) => [li.dataset.need, [li.dataset.state, li.querySelector('.dm-cw').textContent]]))""")
+
+
+def test_a_paper_that_needs_python_says_this_page_cannot_run_it_yet(context, pages):
+    page = open_page(context, pages["student"])
+    wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
+    assert states(page) == {
+        "paper": ["ready", "Ready"], "fonts": ["ready", "Ready"],
+        "python": ["problem", "Not ready"],
+        "storage": ["ready", "Ready"], "file": ["ready", "Ready"]}
+    assert "Something this paper needs is not ready. Tell your invigilator before you begin." in \
+        page.text_content("#dm-load-status")
+    page.close()
+    press = open_page(context, pages["student"])
+    type_details(press)
+    next_screen(press)
+    assert "not ready" in press.text_content("#dm-ready-line")
+
+
+def test_a_paper_that_needs_nothing_to_load_is_ready(context, branded):
+    page = open_page(context, branded["student"])
+    wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
+    assert set(states(page)) == {"paper", "fonts", "storage", "file"}
+    assert page.text_content("#dm-load-status") == "Everything this paper needs is ready."
+    assert all(state == "ready" for state, _ in states(page).values())
+
+
+def test_a_browser_that_keeps_nothing_says_so_in_the_list_and_the_student_can_still_go_on(context, branded):
+    page = open_page(context, branded["student"], init=BROKEN_STORAGE)
+    wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
+    assert states(page)["storage"] == ["problem", "Problem"]
+    assert "Tell your invigilator" in page.text_content('#dm-checklist [data-need="storage"]')
+    assert "not ready" in page.text_content("#dm-load-status")
+    type_details(page)
+    next_screen(page)
+    assert page.is_enabled("#dm-begin")
+
+
+def test_a_browser_that_downloads_instead_of_saving_to_a_file_gets_a_note_not_a_problem(context, branded):
+    page = open_page(context, branded["student"], picker=NO_PICKER)
+    wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
+    assert states(page)["file"] == ["note", "Note"]
+    assert "Save a copy" in page.text_content('#dm-checklist [data-need="file"]')
+    assert page.text_content("#dm-load-status") == "Everything this paper needs is ready."
+
+
+def test_the_storage_test_leaves_nothing_behind(context, branded):
+    page = open_page(context, branded["student"])
+    wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
+    assert stored(page) == {}
+
+
+def test_the_answer_key_lists_nothing_about_saving(context, pages):
+    page = open_page(context, pages["answer_key"])
+    wait_for(page, "document.getElementById('dm-load-status').textContent.length > 0")
+    assert set(states(page)) == {"paper", "fonts", "python"}
+
+
+# --- the band -------------------------------------------------------------------------------------------------------
+
+def test_the_band_carries_the_logo_and_the_names_and_says_what_kind_of_page_it_is(context, branded):
+    page = open_page(context, branded["student"])
+    band = page.text_content(".dm-band")
+    assert "Examination" in band and "Branded Paper" in band
+    assert "Dublin and Dún Laoghaire ETB · Dublin College Dundrum" in band
+    assert "Testing (5N0000)" in band and "2026–2027" in band and "Time allowed: 30 minutes" in band
+    assert page.evaluate("(() => { const i = document.querySelector('.dm-band-logo'); "
+                         "return i.complete && i.naturalWidth > 0; })()")
+    assert page.get_attribute(".dm-band-logo", "alt") == "Dublin and Dún Laoghaire ETB logo"
+    practice = open_page(context, branded["practice"])
+    assert "Practice version" in practice.text_content(".dm-band-kind")
+    assert "As on your student card, for example D00123456." in page.text_content("#dm-number-hint")
+
+
+def test_the_band_does_not_cover_the_aa_button_or_the_page_it_belongs_to(context, branded):
+    page = context.new_page()
+    page.set_viewport_size({"width": 420, "height": 800})
+    page.add_init_script(FAKE_PICKER)
+    page.goto(branded["student"].resolve().as_uri())
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    band = page.evaluate("document.querySelector('.dm-band-text').getBoundingClientRect().right")
+    aa = page.evaluate("document.getElementById('dm-aa').getBoundingClientRect().left")
+    assert band <= aa + 1

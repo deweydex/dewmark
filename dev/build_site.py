@@ -228,8 +228,9 @@ student paper, a practice version with hints, and an answer key.</p>
 <h2>The new page, a first draft</h2>
 <p>The page that will replace the ones above, built from an exam file in the
 <a href="https://github.com/deweydex/dewmark/blob/main/docs/EXAM_FORMAT.md">new format</a>.
-It has every kind of answer box but the few still to come, and saves as the
-others do. It has no timer, breaks or PDF yet, so it cannot be sat as an exam.</p>
+It has every kind of answer box but the few still to come, two start screens,
+reading settings (the <b>Aa</b> button) and saves as the others do. It has no
+timer, breaks or PDF yet, so it cannot be sat as an exam.</p>
 <ul>{new_pages}</ul>
 
 <h2>Before dewmark</h2>
