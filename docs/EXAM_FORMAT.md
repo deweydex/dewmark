@@ -29,7 +29,9 @@
 > `match`, `order`, `photo` or `on-paper` is refused with a message until
 > step 8. The two start screens, reading settings, branding and the list of what a
 > paper needs are built (`DECISIONS_LOG.md`, entry 0.13); the timer, breaks and PDF
-> of step 4 are not.
+> of step 4 are not. A paper's **fingerprint** (the Paper ID students see) is made when
+> it is built, from the paper above the marking scheme and the pictures it carries
+> (`dewmark/receipt.py`, `docs/ANSWER_FILE.md`).
 > Not yet built: the dewlab import form (§4.11) and the JSON schema for a
 > connected model (§4.10). `build_exam.py` still builds the pages of the
 > older format in `planning/THE_EXAM_FILE.md` for the workbench, which reads

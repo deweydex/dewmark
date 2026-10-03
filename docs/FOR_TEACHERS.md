@@ -110,6 +110,16 @@ shared computer the next student finds them, so the page says so and offers
 **Use standard settings**. The **Aa** button at the top right opens the same
 settings on every screen.
 
+Every page built from one paper shows the same **Paper ID**, such as `7KQ-4MD`,
+on the second screen, and writes it into the answer file. Read it out to check
+that every student has the same copy of the paper; `python -m dewmark fingerprint
+my-exam.exam.md` prints it. When a student saves at the finish sheet, the page
+gives a **receipt**, such as `7F3A 92C1`, and puts it in the file. `python -m
+dewmark receipt FILE` checks a handed-in file against its receipt, and says if
+the file was changed after it was saved. Work saved on another version of a paper
+is not put into a new version: the page keeps it aside and starts the student
+again.
+
 Before the real sitting, open the student page and sit the paper
 yourself. Reading your own exam as a student finds more problems than
 any automatic check.

@@ -14,12 +14,14 @@ policy allows it to connect to nothing at all.
 ```json
 {
   "format": "dewmark-answers/1",
-  "exam": { "code": "specimen-short", "version": "1", "title": "Specimen Paper" },
+  "exam": { "code": "specimen-short", "version": "1", "title": "Specimen Paper",
+            "fingerprint": "1WV-H2V" },
   "page": "student",
   "student": { "full name": "Agnes Nitt", "student number": "S12345" },
   "started_at": "2027-01-12T09:02:11.403Z",
   "saved_at": "2027-01-12T10:01:52.918Z",
   "finished_at": "2027-01-12T10:01:52.918Z",
+  "receipt": "2337 B2A0",
   "answers": {
     "q1a": "8",
     "q1b": ["B"],
@@ -33,12 +35,49 @@ policy allows it to connect to nothing at all.
 | Field | Meaning |
 |---|---|
 | `format` | Always `dewmark-answers/1` for this shape. A page refuses a file with any other. |
-| `exam` | The paper's `code`, `version` and `title` from its settings. A page refuses a file whose `code` is not its own. |
+| `exam` | The paper's `code`, `version` and `title` from its settings, and its `fingerprint` (the Paper ID, below). A page refuses a file whose `code` or `version` is not its own, because a teacher raises the version when names or marks change, and the answers may not fit. |
 | `page` | Which page the work was done on: `student` or `practice`. A page refuses work from a page of the other kind. The answer key saves nothing. |
 | `student` | What the start screen asked: `full name` and `student number`. |
 | `started_at`, `saved_at` | When the student pressed Begin, and when the page last saved. UTC, to the millisecond. |
-| `finished_at` | When the student pressed *Save my answer file* on the finish sheet. `null` until then. |
+| `finished_at` | When the student pressed *Save my answer file* on the finish sheet. `null` until then, and `null` again if the student changes an answer afterwards. |
+| `receipt` | The receipt of the record (below). `null` until the student saves at the finish sheet, and `null` again if they change an answer afterwards. |
 | `answers` | One entry for each answer box that has something in it, keyed by the box's permanent name. |
+
+## The Paper ID and the receipt
+
+Two short codes let a person or a program check that a file is the file it
+should be. Both are made by `dewmark/receipt.py`, and the page makes the same
+codes in JavaScript.
+
+**The Paper ID** (the *fingerprint*, such as `7KQ-4MD`) identifies exactly the
+paper students were given: the exam file above `# Marking scheme` with its
+hints taken out, line endings and trailing spaces made the same, and a checksum
+of every picture it carries. It is made when the paper is built, shown to the
+student on the *Before you begin* screen and in the file's `exam.fingerprint`,
+and printed by `python -m dewmark fingerprint FILE`. The marking scheme is never
+in it, so correcting a key does not change it; a changed word, mark, setting or
+picture does. The student page, the practice page and the answer key of one
+paper share it.
+
+**The receipt** (such as `7F3A 92C1`) identifies exactly one answer file as it
+was handed in: the first eight hexadecimal digits of the SHA-256 of the record
+in its canonical form, leaving out `saved_at` (which changes every time the
+page saves) and `receipt` itself. The page shows it when the student saves, and
+writes it into the file. `python -m dewmark receipt FILE` works it out again
+and says whether the file is as it was saved; the marking workbench will do the
+same. It finds a file that was changed by accident or after it was handed in. It
+is not a signature: nothing in it is secret, so someone who can edit a file can
+also write a receipt to match.
+
+The **canonical form** is the record as JSON with the keys of every object in
+sorted order (by code point), no spaces, and every character outside printable
+ASCII written as a lower-case `\uXXXX` escape (a character above U+FFFF as two).
+That is `json.dumps(record, sort_keys=True, separators=(",", ":"),
+ensure_ascii=True)` in Python. A page that changes how it writes this text
+changes every receipt already handed out, so `tests/test_receipt.py` freezes
+a sample record's text and receipt, and `tests/browser/test_page.py` checks that
+the page and Python agree on a record full of the characters most likely to
+differ.
 
 ## What an answer looks like
 
@@ -76,8 +115,8 @@ settings (font, text size, colours, ruler), which belong to the computer and
 never travel in a file that a marker will open: the file holds what a student
 wrote, so it is as safe to hand in as the paper was to sit. Nothing about the
 timer, breaks or extra time yet. The PDF a student also hands in (decision 23)
-is a separate file, and so are the receipt and the fingerprint; they come with
-the PDF writer.
+is a separate file, and comes with the PDF writer; it will carry the receipt and
+the Paper ID on every page.
 
 ## Files and names
 

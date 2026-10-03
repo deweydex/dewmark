@@ -25,7 +25,8 @@ the plan at a time. Today it holds the reader for the exam format in
 `docs/EXAM_FORMAT.md` (`dewmark/reader.py`, with `settings.py`,
 `numbers.py`, `kinds.py` and `scheme.py`), the names lock that holds an
 issued paper's names still (`dewmark/lock.py`), the marker's half as JSON (`dewmark/scheme_json.py`) and the two layers
-that keep it off a student page (`dewmark/secrecy.py`), the paste route
+that keep it off a student page (`dewmark/secrecy.py`), the receipt of an
+answer file and the fingerprint of a paper (`dewmark/receipt.py`), the paste route
 (`dewmark/package.py` builds what a teacher gives an assistant,
 `dewmark/reply.py` checks what comes back, and `dewmark/data/` holds the
 cheat sheet and the specimen paper it sends), and the converter for the
@@ -51,6 +52,8 @@ python -m dewmark check samples/pdp-5n2927/*.exam.md
 python -m dewmark lock FILE --sitting "2026-10-20 Group A"
 python -m dewmark build FILE -o DIR
 python -m dewmark scheme FILE -o scheme.json
+python -m dewmark fingerprint FILE
+python -m dewmark receipt ANSWER_FILE
 python -m dewmark package tidy FILE -o package.txt
 python -m dewmark reply tidy FILE REPLY.txt -o reworded.exam.md
 python -m dewmark.convert_pdp samples/pdp-5n2927 experiments/pdp-5n2927/*.html
@@ -83,7 +86,8 @@ practice pages of every paper it builds and stops on a leak; `tests/test_build.p
 builds the specimen and the four PDP papers that way, and shows a renderer that
 lets the scheme, the right option or a hint through being caught.
 
-`tests/test_start.py` covers the band and its branding, the two screens, the
+`tests/test_receipt.py` freezes the canonical form, a sample receipt and a sample
+fingerprint, and checks what does and does not change them. `tests/test_start.py` covers the band and its branding, the two screens, the
 list of what a paper needs and the description of the reading settings the
 builder draws twice. `tests/test_page_css.py` computes the contrast of every pair
 of colours in every scheme. `tests/test_build.py` also covers the reader's blocks, each kind's markup, what

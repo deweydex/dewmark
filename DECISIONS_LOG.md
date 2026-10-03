@@ -522,3 +522,76 @@ stored settings have no format number: a setting that is unknown or invalid
 becomes its default, so a new one can be added without one.
 A colour added to the stylesheet goes into the pairs of `tests/test_page_css.py`
 in the same commit.
+
+**0.14 — The receipt, the Paper ID, and work from another version.** The first
+part of step 4's fourth slice (the PDF, the finish sheet and the receipt). Two
+short codes, made by `dewmark/receipt.py` and by the page, let a person or a
+program check that a file is the file it should be: the **Paper ID**
+(`7KQ-4MD`, the plan's *fingerprint*), which identifies a paper, and the
+**receipt** (`7F3A 92C1`), which identifies an answer file as it was handed in.
+`docs/ANSWER_FILE.md` describes both.
+
+What it settles:
+
+- *The Paper ID is made at build, not at issue.* The plan had the studio's Issue
+  button write it (step 7). It is a plain function of the paper, so the builder
+  makes it every time, `python -m dewmark fingerprint FILE` prints it, and the
+  studio will show it. Nothing is stored that could go stale. It is the start of
+  a SHA-256 of the exam file above `# Marking scheme` (settings, questions,
+  reference cards) without its hints and with line endings and trailing spaces
+  made the same, together with a checksum of every picture and the logo; six
+  letters of Crockford's alphabet. The marking scheme is never in it, which
+  keeps a page's bytes independent of the scheme, as the mutation test demands,
+  and means that correcting a key does not change what students sat. The student
+  page, the practice page and the answer key of one paper share it.
+- *The receipt is a hash of the whole record.* Everything but `saved_at`
+  (which changes every few seconds) and `receipt` itself: the answers, the name
+  and number, the paper, the start and finish times. Eight hexadecimal digits in
+  two groups of four, short enough to read down a telephone. It finds a file
+  changed by accident or after it was handed in. It is **not a signature**:
+  nothing in it is secret, and someone who can edit a file can write a matching
+  receipt. It is evidence for the marker, not security against a determined
+  student; the PDF, which the page writes at the same moment, is the second
+  copy a marker can compare.
+- *One canonical form, two languages.* JSON with sorted keys, no spaces, every
+  character outside printable ASCII as a lower-case `\uXXXX` escape. Python's
+  `ensure_ascii=True` writes exactly that; the page writes it by hand, sorting
+  keys by code point as Python does (not by UTF-16 unit, which differ for
+  characters above U+FFFF) and keeping a key named `__proto__` as a key. The
+  page's SHA-256 is also written by hand, so the receipt does not depend on
+  `crypto.subtle`, which browsers offer only to a secure context, and is worked
+  out at once. `tests/test_receipt.py` freezes a sample's canonical text and
+  receipt, and `tests/browser/test_page.py` checks the page's hash against
+  Python's for thirteen lengths around the block boundaries, and its canonical
+  text and receipt against Python's for a record of the characters most likely
+  to differ (accents, `≥`, an emoji, DEL, control characters, `__proto__`).
+- *Saving at the finish sheet fixes the receipt, and a later change withdraws
+  it.* The page gathers the answers, sets `finished_at`, works the receipt out
+  and shows it with the Paper ID and the number of answers. If the student then
+  changes an answer, `finished_at` and `receipt` go back to `null` and the finish
+  sheet asks for another save, so a file and a receipt never describe a paper
+  that has since changed.
+- *Work from another version is set aside, not restored.* The plan said so
+  (§5.2) and the page now does it: saved work for another `version` is not
+  offered when the number is typed, and Begin sets it aside after the usual
+  question; an answer file from another version is refused in words that give
+  both versions. A teacher raises the version when names or marks change, so the
+  answers may not fit the boxes. Work saved on the *same* version of a paper that
+  was corrected in wording (a different Paper ID) is kept and continued, with a
+  sentence saying the paper was corrected; the file made at the end carries the
+  Paper ID of the paper it was finished on.
+- *Two commands for before the workbench exists.* `python -m dewmark receipt
+  FILE...` checks each handed-in answer file against the receipt in it (exit 1
+  if any fails) and `python -m dewmark fingerprint FILE` prints the Paper ID.
+
+Not done: the receipt on every page of the PDF (there is no PDF yet), the
+"Checked: the file holds 17 answers" read-back (it needs the folder the finish
+sheet will write into, next), the receipt shown by the workbench (step 6), and
+the sitting card with the Paper ID (the studio, step 7). The Paper ID is shown
+to students as "Paper ID", because "fingerprint" is a word they would have to
+be told.
+
+*Changing it:* the material of a receipt or a fingerprint, the canonical form, or
+the alphabet changes every code already handed out. A change is a decision, and
+a new format number for the answer file if receipts already issued must still
+verify; the frozen values in `tests/test_receipt.py` fail first.

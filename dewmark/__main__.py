@@ -2,6 +2,8 @@
 python -m dewmark lock EXAM_FILE --sitting "2026-10-20 Group A"
 python -m dewmark build EXAM_FILE [-o DIR]
 python -m dewmark scheme EXAM_FILE [-o OUT]
+python -m dewmark receipt ANSWER_FILE [ANSWER_FILE ...]
+python -m dewmark fingerprint EXAM_FILE
 python -m dewmark package MODE FILE [--set "key: value" ...] [-o OUT]
 python -m dewmark reply MODE ORIGINAL REPLY [--set "key: value" ...] [-o OUT]
 
@@ -21,6 +23,15 @@ a paper that uses a kind of box no page draws yet, and any page that would give
 away the scheme or a hint (§4.5); and with no -o it only checks. It needs the
 `markdown` and `latex2mathml` packages (requirements.txt).
 
+receipt checks each answer file a student handed in: it works out the receipt
+(dewmark/receipt.py) from the file and says whether it is the one the page
+wrote into it. A file that was changed after it was saved does not match. It
+exits 1 if any file does not.
+
+fingerprint prints the paper's ID, the code students see as "Paper ID" and the
+code in every answer file made from the paper. It needs the `markdown` and
+`latex2mathml` packages, since it reads the pictures the paper carries.
+
 scheme writes the marking scheme of a paper as dewmark-scheme/1 JSON, the
 file the marking workbench reads (§4.6). It holds the paper's secrets: keep
 it with the teacher's files, never in a folder students receive. It refuses
@@ -37,12 +48,14 @@ and with -o writes the file with every change made.
 """
 
 import datetime
+import json
 import os
 import sys
 
 from . import lock as names_lock
 from .package import ABOUT_KEYS, MODES, build_package
 from .reader import read
+from .receipt import receipt as receipt_of
 from .reply import check_reply
 from .scheme_json import dumps, scheme_json
 
@@ -159,6 +172,47 @@ def build(argv):
     return 0
 
 
+def receipts(paths):
+    """Check the receipt in each answer file against the file."""
+    failed = False
+    for path in paths:
+        try:
+            record = json.loads(_read_text(path))
+        except (OSError, ValueError) as error:
+            print(f"{path}: cannot be read as an answer file ({error}).")
+            failed = True
+            continue
+        if not isinstance(record, dict) or record.get("format") != "dewmark-answers/1":
+            print(f"{path}: not a dewmark answer file (its format is not dewmark-answers/1).")
+            failed = True
+            continue
+        written = record.get("receipt")
+        found = receipt_of(record)
+        student = record.get("student") or {}
+        who = f"{student.get('full name', '?')}, {student.get('student number', '?')}"
+        if not written:
+            print(f"{path}: {who}: no receipt. The student did not save at the finish sheet "
+                  f"(the receipt would be {found}).")
+            failed = True
+        elif written == found:
+            count = len(record.get("answers") or {})
+            print(f"{path}: {who}: receipt {found} matches. "
+                  f"{count} answer{'' if count == 1 else 's'}; paper ID "
+                  f"{(record.get('exam') or {}).get('fingerprint', '?')}.")
+        else:
+            print(f"{path}: {who}: receipt {written} does not match the file, which works out "
+                  f"to {found}. The file was changed after it was saved.")
+            failed = True
+    return 1 if failed else 0
+
+
+def fingerprint_of(path):
+    from .build import paper_fingerprint            # needs markdown: only when asked
+    text = _read_text(path)
+    print(paper_fingerprint(text, read(text), os.path.dirname(os.path.abspath(path))))
+    return 0
+
+
 def scheme(argv):
     rest, _, out = _options(argv)
     if len(rest) != 1:
@@ -237,6 +291,10 @@ def main(argv):
         return build(argv[1:])
     if argv and argv[0] == "scheme":
         return scheme(argv[1:])
+    if len(argv) >= 2 and argv[0] == "receipt":
+        return receipts(argv[1:])
+    if len(argv) == 2 and argv[0] == "fingerprint":
+        return fingerprint_of(argv[1])
     if argv and argv[0] == "package":
         return package(argv[1:])
     if argv and argv[0] == "reply":

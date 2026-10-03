@@ -24,14 +24,18 @@ and its drawer cannot disagree about what a setting is.
 """
 
 import base64
+import hashlib
 import html
 import json
 from pathlib import Path
 
+from .package import split_halves
 from .reader import read
-from .render import VARIANTS, _picture, check_buildable, render_front, render_paper
+from .receipt import fingerprint
+from .render import (IMAGE_RE, VARIANTS, _picture, check_buildable, picture_file, render_front,
+                     render_paper)
 from .scheme_json import dumps, scheme_json
-from .secrecy import find_leaks, mutation_test, scheme_strings
+from .secrecy import find_leaks, mutation_test, scheme_strings, without_hints
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 
@@ -90,7 +94,24 @@ def esc(value):
     return html.escape(str(value), quote=True)
 
 
-def page_model(paper, variant):
+def paper_fingerprint(text, paper, base_dir):
+    """The paper's fingerprint (dewmark/receipt.py): its text as students are
+    given it, and a checksum of every picture it carries, the logo included.
+    Nothing from the marking scheme or a hint goes into it, so it is the same
+    for every page built from one paper and does not change when a key does."""
+    head, _ = split_halves(text, reference=False)
+    paths = {path for _, path in IMAGE_RE.findall(without_hints(head))}
+    if paper["settings"].get("logo"):
+        paths.add(paper["settings"]["logo"])
+    pictures = []
+    for path in paths:
+        found = picture_file(base_dir, path)
+        if found:
+            pictures.append((path, hashlib.sha256(found[1]).hexdigest()))
+    return fingerprint(text, pictures)
+
+
+def page_model(paper, variant, code=""):
     """What the page's own behaviour needs: names, kinds, marks, and the shape
     of the paper. It holds nothing of the marking scheme or the hints, and the
     leak checks run over it with the rest of the page."""
@@ -121,7 +142,7 @@ def page_model(paper, variant):
     return {"format": "dewmark-page/1", "variant": variant,
             "exam": {"code": settings["code"], "version": settings.get("version", "1"),
                      "title": settings.get("title", ""), "kind": settings.get("kind", ""),
-                     "marks": paper["total"]},
+                     "marks": paper["total"], "fingerprint": code},
             "reading": READING,
             "sections": sections, "questions": questions}
 
@@ -349,7 +370,7 @@ def _start_screen(paper, variant):
 </section>"""
 
 
-def _before_screen(paper, variant, base_dir):
+def _before_screen(paper, variant, base_dir, code):
     settings = paper["settings"]
     instructions = render_front(paper, base_dir) or "<p>Read each question carefully.</p>"
     if variant == "answer-key":
@@ -371,6 +392,7 @@ def _before_screen(paper, variant, base_dir):
   <div class="dm-card"><h3>Your answer file</h3>{where}</div>
   {time}
   <p id="dm-ready-line" class="dm-ready-line" role="status"></p>
+  <p class="dm-hint-text">Paper ID {esc(code)}. Your invigilator may ask you to read it out.</p>
   <div class="dm-actions">
     <button type="button" class="dm-secondary" id="dm-back">Back</button>
     <button type="button" class="dm-primary dm-big" id="dm-begin">Begin</button>
@@ -389,13 +411,13 @@ def fonts_css():
     return "".join(rules)
 
 
-def build_page(paper, variant, base_dir):
+def build_page(paper, variant, base_dir, code=""):
     """One complete page as text: styles, screens, paper, finish screen, data
-    block and behaviour, all in one file."""
+    block and behaviour, all in one file. `code` is the paper's fingerprint."""
     settings = paper["settings"]
     css = (ASSETS / "page.css").read_text(encoding="utf-8")
     js = "\n".join((ASSETS / name).read_text(encoding="utf-8") for name in SCRIPTS)
-    model = json.dumps(page_model(paper, variant)).replace("<", "\\u003c")
+    model = json.dumps(page_model(paper, variant, code)).replace("<", "\\u003c")
     hand_in = esc(settings.get("hand in", ""))
     title = esc(settings.get("title", ""))
     return f"""<!doctype html>
@@ -416,7 +438,7 @@ def build_page(paper, variant, base_dir):
 
 {_start_screen(paper, variant)}
 
-{_before_screen(paper, variant, base_dir)}
+{_before_screen(paper, variant, base_dir, code)}
 
 <div id="dm-app" hidden>
   <div id="dm-topbar">
@@ -436,6 +458,8 @@ def build_page(paper, variant, base_dir):
 <section id="dm-finish-screen" class="dm-screen" aria-labelledby="dm-finish-h" hidden>
   <div class="dm-card">
     <h2 id="dm-finish-h" tabindex="-1">Check before you hand in</h2>
+    <p id="dm-changed" class="dm-note" role="status" hidden>You changed your answers after you saved.
+      Save your answer file again before you hand it in.</p>
     <div id="dm-finish-report"></div>
     <p>{hand_in or "Save your answer file, and hand it in as your teacher has said."}</p>
     <div class="dm-actions">
@@ -443,6 +467,7 @@ def build_page(paper, variant, base_dir):
       <button type="button" id="dm-save-readable" class="dm-secondary">Save a readable copy</button>
       <button type="button" id="dm-keep-working" class="dm-secondary">Keep working</button>
     </div>
+    <p id="dm-saved" class="dm-restore-note" role="status" hidden></p>
   </div>
 </section>
 
@@ -464,10 +489,14 @@ def build_pages(text, base_dir):
     problems = check_buildable(paper, base_dir)
     if problems:
         raise BuildError(problems)
-    pages = {variant: build_page(paper, variant, base_dir) for variant in VARIANTS}
+    code = paper_fingerprint(text, paper, base_dir)
+    pages = {variant: build_page(paper, variant, base_dir, code) for variant in VARIANTS}
 
     def builder(variant):
-        return lambda changed: build_page(read(changed), variant, base_dir)
+        def build_again(changed):
+            again = read(changed)
+            return build_page(again, variant, base_dir, paper_fingerprint(changed, again, base_dir))
+        return build_again
 
     leaks = []
     for variant, strings in (("student", scheme_strings(text, student=True)),

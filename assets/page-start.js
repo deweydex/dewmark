@@ -60,8 +60,12 @@ function validateDetails() {
 
 /* --- saved work, offered after the number is typed --------------------------------- */
 
+/* Work saved on another version of the paper is not offered: a teacher raises
+   the version when names or marks have changed, so its answers may not belong
+   to these boxes. It is still on the computer, and Begin sets it aside. */
+const sameVersion = (record) => String((record.exam || {}).version) === String(MODEL.exam.version);
 const savedWork = SAVES ? readStoredState() : null;
-const holdsWork = countAnswers(savedWork) > 0;
+const holdsWork = countAnswers(savedWork) > 0 && sameVersion(savedWork);
 const sameNumber = (a, b) => a !== "" && a.toLowerCase() === b.trim().toLowerCase();
 
 function offerSavedWork() {
@@ -79,12 +83,16 @@ function offerSavedWork() {
 }
 
 function resumeWork(record) {
+  const corrected = Boolean(record.exam.fingerprint)
+    && record.exam.fingerprint !== MODEL.exam.fingerprint;
   adoptState(record);
   begun.resuming = true;
   begun.startAgain = false;
   $("dm-restore").hidden = true;
   say("dm-resume-line", "Your work is ready to continue: "
-    + plural(countAnswers(record), "answer", "answers") + ", saved " + whenSaved(record) + ".");
+    + plural(countAnswers(record), "answer", "answers") + ", saved " + whenSaved(record) + "."
+    + (corrected ? " The paper has been corrected since you saved this work. Your answers are kept."
+      : ""));
   showScreen("before");
 }
 
@@ -159,6 +167,12 @@ function loadAnswerFile() {
     if (!validState(loaded)) {
       say("dm-file-msg", "That file is not an answer file for this paper, so it cannot be loaded here. "
         + "Nothing has changed.");
+      return;
+    }
+    if (!sameVersion(loaded)) {
+      say("dm-file-msg", "That file was saved on version " + loaded.exam.version + " of this paper, and "
+        + "this page is version " + MODEL.exam.version + ", so its answers may not fit. Nothing has changed. "
+        + "Ask your invigilator for the page that matches your file.");
       return;
     }
     say("dm-file-msg", "");

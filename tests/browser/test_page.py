@@ -16,10 +16,14 @@ cannot show a file-save window to a test, so a page gets a stand-in for
 window.showSaveFilePicker that keeps what is written in memory (FAKE_PICKER).
 """
 
+import hashlib
 import json
 import re
 
 import pytest
+
+from dewmark.build import build_pages
+from dewmark.receipt import canonical, receipt
 
 KEY = "dewmark:rehearsal:student"
 READING = "dewmark:reading-settings"
@@ -507,10 +511,13 @@ def test_every_kind_is_saved_in_its_own_shape(context, pages):
     record = stored(page)[KEY]
     assert record["answers"] == EVERYTHING
     assert record["format"] == "dewmark-answers/1"
+    code = record["exam"].pop("fingerprint")
+    assert re.fullmatch(r"[0-9A-HJKMNP-TV-Z]{3}-[0-9A-HJKMNP-TV-Z]{3}", code)
     assert record["exam"] == {"code": "rehearsal", "version": "1", "title": "Rehearsal Paper"}
     assert record["page"] == "student"
     assert record["student"] == {"full name": "Agnes Nitt", "student number": "S12345"}
-    assert record["started_at"] and record["saved_at"] and record["finished_at"] is None
+    assert record["started_at"] and record["saved_at"]
+    assert record["finished_at"] is None and record["receipt"] is None
     assert not page.errors
 
 
@@ -1055,3 +1062,189 @@ def test_the_band_does_not_cover_the_aa_button_or_the_page_it_belongs_to(context
     band = page.evaluate("document.querySelector('.dm-band-text').getBoundingClientRect().right")
     aa = page.evaluate("document.getElementById('dm-aa').getBoundingClientRect().left")
     assert band <= aa + 1
+
+
+# --- receipts and the paper's fingerprint ---------------------------------------------------------------------------
+
+SAMPLE_RECORD = {
+    "format": "dewmark-answers/1",
+    "exam": {"code": "x", "version": "1", "title": "T", "fingerprint": "7KQ-4MD"},
+    "page": "student",
+    "student": {"full name": "Síle Ní Bhriain", "student number": "D00123456"},
+    "started_at": "2027-01-12T09:02:11.403Z",
+    "saved_at": "2027-01-12T10:01:52.918Z",
+    "finished_at": "2027-01-12T10:01:52.918Z",
+    "answers": {"q1a": "x ≥ 5 😀\n\ttab \"q\" \\", "q1b": ["B", "A"]},
+}
+
+
+def test_the_pages_hash_agrees_with_pythons_for_every_length_that_matters(context, pages):
+    page = open_page(context, pages["student"])
+    for size in (0, 1, 3, 55, 56, 57, 63, 64, 65, 119, 120, 121, 1000, 100001):
+        data = bytes((i * 37 + size) % 256 for i in range(size))
+        got = page.evaluate("(bytes) => hex(sha256(Uint8Array.from(bytes)))", list(data))
+        assert got == hashlib.sha256(data).hexdigest(), size
+
+
+def test_the_pages_canonical_text_is_the_text_python_writes(context, pages):
+    tricky = {
+        "z": [1, None, True, {"b": "é", "a": "😀"}], "a": "\u007f\u0000\u001f",
+        "\U0001F600": 1, "\uff5e": 2, "m": "quote \" backslash \\ tab \t newline \n",
+        "q1a": "x ≥ 5", "": "", "Z": "\u2028\u2029", "__proto__": {"x": 1},
+    }
+    page = open_page(context, pages["student"])
+    got = page.evaluate("(v) => canonicalJSON(JSON.parse(v))", json.dumps(tricky))
+    assert got == canonical(json.loads(json.dumps(tricky)))
+
+
+def test_the_pages_receipt_is_the_receipt_python_works_out_from_the_same_record(context, pages):
+    page = open_page(context, pages["student"])
+    assert page.evaluate("(r) => receiptOf(r)", SAMPLE_RECORD) == receipt(SAMPLE_RECORD) == "77FD 81FB"
+    changed = {**SAMPLE_RECORD, "saved_at": "2030-01-01T00:00:00.000Z", "receipt": "0000 0000"}
+    assert page.evaluate("(r) => receiptOf(r)", changed) == "77FD 81FB"
+
+
+def saved_file(page, tmp_path):
+    with page.expect_download() as caught:
+        page.click("#dm-submit")
+    target = tmp_path / caught.value.suggested_filename
+    caught.value.save_as(target)
+    return json.loads(target.read_text())
+
+
+def test_saving_the_answer_file_gives_a_receipt_the_workbench_can_check_and_says_so(
+        context, pages, tmp_path):
+    page = open_page(context, pages["student"])
+    begin(page)
+    fill_everything(page)
+    page.click("#dm-finish")
+    record = saved_file(page, tmp_path)
+    assert re.fullmatch(r"[0-9A-F]{4} [0-9A-F]{4}", record["receipt"])
+    assert record["receipt"] == receipt(record), "Python must reach the page's receipt from the file"
+    assert re.fullmatch(r"[0-9A-HJKMNP-TV-Z]{3}-[0-9A-HJKMNP-TV-Z]{3}", record["exam"]["fingerprint"])
+    saved = page.text_content("#dm-saved")
+    assert saved == (f"Saved. The file holds 9 answers. Receipt {record['receipt']}. "
+                     f"Paper ID {record['exam']['fingerprint']}.")
+    assert stored(page)[KEY]["receipt"] == record["receipt"]
+
+
+def test_the_paper_id_on_the_second_screen_is_the_one_in_the_file(context, pages, tmp_path):
+    page = open_page(context, pages["student"])
+    type_details(page)
+    next_screen(page)
+    shown = re.search(r"Paper ID ([0-9A-Z-]+)\.", page.text_content("#dm-before")).group(1)
+    choose_file(page)
+    press_begin(page)
+    write(page, "x")
+    page.click("#dm-finish")
+    assert saved_file(page, tmp_path)["exam"]["fingerprint"] == shown
+
+
+def test_a_change_after_saving_withdraws_the_receipt_and_asks_for_another_save(
+        context, pages, tmp_path):
+    page = open_page(context, pages["student"])
+    begin(page)
+    write(page, "first")
+    page.click("#dm-finish")
+    first = saved_file(page, tmp_path)
+    assert page.is_hidden("#dm-changed") and page.is_visible("#dm-saved")
+    page.click("#dm-keep-working")
+    page.wait_for_selector("#dm-app:not([hidden])")
+    write(page, "second")
+    record = stored(page)[KEY]
+    assert record["finished_at"] is None and record["receipt"] is None
+    page.click("#dm-finish")
+    assert page.is_visible("#dm-changed") and page.is_hidden("#dm-saved")
+    assert "after you saved" in page.text_content("#dm-changed")
+    second = saved_file(page, tmp_path)
+    assert second["receipt"] != first["receipt"] and second["receipt"] == receipt(second)
+    assert page.is_hidden("#dm-changed") and page.is_visible("#dm-saved")
+
+
+def test_opening_the_finish_sheet_and_leaving_it_changes_nothing(context, pages, tmp_path):
+    page = open_page(context, pages["student"])
+    begin(page)
+    write(page, "x")
+    page.click("#dm-finish")
+    saved_file(page, tmp_path)
+    page.click("#dm-keep-working")
+    page.click("#dm-finish")
+    assert page.is_hidden("#dm-changed"), "looking is not changing"
+    assert stored(page)[KEY]["receipt"] is not None
+
+
+def test_work_continued_on_a_corrected_paper_is_kept_and_the_student_is_told(context, pages, tmp_path):
+    sit_and_leave(context, pages["student"], "4")
+    from conftest import REHEARSAL_PAPER, ROOT
+    corrected = REHEARSAL_PAPER.replace("Say something.", "Say something clearly.")
+    out = tmp_path / "corrected"
+    out.mkdir()
+    for name, text in build_pages(corrected, ROOT).items():
+        (out / name).write_text(text, encoding="utf-8")
+    page = open_page(context, out / "rehearsal.student.html")
+    page.fill("#dm-number", "S12345")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-continue")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    assert "The paper has been corrected since you saved this work. Your answers are kept." in \
+        page.text_content("#dm-resume-line")
+    choose_file(page)
+    press_begin(page)
+    assert page.input_value(WRITING) == "4"
+    new_id = re.search(r"Paper ID ([0-9A-Z-]+)\.", page.text_content("#dm-before")).group(1)
+    assert stored(page)[KEY]["exam"]["fingerprint"] == new_id
+
+
+def test_work_continued_on_the_same_paper_is_not_told_it_was_corrected(context, pages):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, pages["student"])
+    page.fill("#dm-number", "S12345")
+    page.wait_for_selector("#dm-restore:not([hidden])")
+    page.click("#dm-continue")
+    page.wait_for_selector("#dm-before:not([hidden])")
+    assert "corrected" not in page.text_content("#dm-resume-line")
+
+
+# --- another version of the paper ---------------------------------------------------------------------------------------
+
+def build_version(tmp_path, version):
+    from conftest import REHEARSAL_PAPER, ROOT
+    text = REHEARSAL_PAPER.replace("total marks: 18\n", f"total marks: 18\nversion: {version}\n")
+    out = tmp_path / f"v{version}"
+    out.mkdir()
+    for name, body in build_pages(text, ROOT).items():
+        (out / name).write_text(body, encoding="utf-8")
+    return out / "rehearsal.student.html"
+
+
+def test_work_saved_on_another_version_is_not_offered_and_is_set_aside_when_someone_begins(
+        context, pages, tmp_path):
+    sit_and_leave(context, pages["student"], "4")
+    page = open_page(context, build_version(tmp_path, 2), accept_dialogs=True)
+    page.fill("#dm-number", "S12345")
+    page.wait_for_timeout(300)
+    assert page.is_hidden("#dm-restore"), "work from version 1 must not be put into version 2"
+    begin(page)
+    assert page.input_value(WRITING) == "" and page.dialogs and "saved work" in page.dialogs[0]
+    records = stored(page)
+    assert any(":set-aside:" in key for key in records) and holds(records, "q1a", "4")
+    assert stored(page)["dewmark:rehearsal:student"]["exam"]["version"] == "2"
+
+
+def test_an_answer_file_from_another_version_is_refused_in_words(context, pages, tmp_path):
+    file = tmp_path / "v1.json"
+    file.write_text(json.dumps(good_record(answers={"q1a": "x"})))
+    page = open_page(context, build_version(tmp_path, 3))
+    load(page, file)
+    message = page.text_content("#dm-file-msg")
+    assert "saved on version 1 of this paper" in message and "this page is version 3" in message
+    assert "Nothing has changed." in message
+    assert page.is_hidden("#dm-before") and stored(page) == {}
+
+
+def test_an_answer_file_from_the_same_version_still_loads(context, pages, tmp_path):
+    file = tmp_path / "v1.json"
+    file.write_text(json.dumps(good_record(answers={"q1a": "x"})))
+    page = open_page(context, pages["student"])
+    load(page, file)
+    page.wait_for_selector("#dm-before:not([hidden])")
